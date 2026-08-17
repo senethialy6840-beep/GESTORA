@@ -1,0 +1,268 @@
+[
+  {
+    "id": "1786202529936",
+    "ref": "FAC-2026-012",
+    "client": "Client de passage",
+    "items": [
+      {
+        "id": "1785866142146",
+        "companyId": "local-company-1",
+        "createdAt": "2026-08-04T17:55:42.146Z",
+        "updatedAt": "2026-08-04T17:55:42.158Z",
+        "name": "Smartphone Galaxy S23",
+        "price": 550000,
+        "cost": 450000,
+        "stock": 15,
+        "stockAlert": 5,
+        "qty": 1
+      }
+    ],
+    "total": 550000,
+    "date": "2026-08-08T15:22:09.936Z",
+    "status": "Payé"
+  },
+  {
+    "id": "1786202525162",
+    "ref": "FAC-2026-011",
+    "client": "Client de passage",
+    "items": [
+      {
+        "id": "1785866142148",
+        "companyId": "local-company-1",
+        "createdAt": "2026-08-04T17:55:42.158Z",
+        "updatedAt": "2026-08-04T17:55:42.158Z",
+        "name": "Écouteurs sans fil AirPods Pro",
+        "price": 150000,
+        "cost": 110000,
+        "stock": 30,
+        "stockAlert": 10,
+        "qty": 2
+      }
+    ],
+    "total": 300000,
+    "date": "2026-08-08T15:22:05.162Z",
+    "status": "Payé"
+  },
+  {
+    "id": "1786202474480",
+    "ref": "FAC-2026-010",
+    "client": "Client de passage",
+    "items": [
+      {
+        "id": "1785866142147",
+        "companyId": "local-company-1",
+        "createdAt": "2026-08-04T17:55:42.158Z",
+        "updatedAt": "2026-08-06T13:11:14.932Z",
+        "name": "Ordinateur Portable HP ProBook",
+        "price": 420000,
+        "cost": 350000,
+        "stock": 8,
+        "stockAlert": 3,
+        "qty": 1
+      }
+    ],
+    "total": 420000,
+    "date": "2026-08-08T15:21:14.480Z",
+    "status": "Payé"
+  },
+  {
+    "id": "1785950068948",
+    "ref": "FAC-2026-009",
+    "client": "Client de passage",
+    "items": [
+      {
+        "id": "1785866142147",
+        "companyId": "local-company-1",
+        "createdAt": "2026-08-04T17:55:42.158Z",
+        "updatedAt": "2026-08-04T17:55:42.158Z",
+        "name": "Ordinateur Portable HP ProBook",
+        "price": 420000,
+        "cost": 350000,
+        "stock": 8,
+        "stockAlert": 3,
+        "qty": 1
+      }
+    ],
+    "total": 420000,
+    "date": "2026-08-05T17:14:28.947Z",
+    "status": "Payé"
+  },
+  {
+    "id": "1785866386898",
+    "ref": "FAC-2026-008",
+    "client": "Client de passage",
+    "items": [
+      {
+        "id": "1785866142152",
+        "companyId": "local-company-1",
+        "createdAt": "2026-08-04T17:55:42.158Z",
+        "updatedAt": "2026-08-04T17:55:42.158Z",
+        "name": "Tablette iPad Air",
+        "price": 380000,
+        "cost": 300000,
+        "stock": 7,
+        "stockAlert": 3,
+        "qty": 1
+      }
+    ],
+    "total": 380000,
+    "date": "2026-08-04T17:59:46.898Z",
+    "status": "Payé"
+  },
+  {
+    "id": "1785866383820",
+    "ref": "FAC-2026-007",
+    "client": "Client de passage",
+    "items": [
+      {
+        "id": "1785866142153",
+        "companyId": "local-company-1",
+        "createdAt": "2026-08-04T17:55:42.158Z",
+        "updatedAt": "2026-08-04T17:55:42.158Z",
+        "name": "Disque Dur Externe 1To",
+        "price": 40000,
+        "cost": 28000,
+        "stock": 45,
+        "stockAlert": 10,
+        "qty": 1
+      }
+    ],
+    "total": 40000,
+    "date": "2026-08-04T17:59:43.820Z",
+    "status": "Payé"
+  },
+  {
+    "id": "1785866372507",
+    "ref": "FAC-2026-006",
+    "client": "Client de passage",
+    "items": [
+      {
+        "id": "1785866142147",
+        "companyId": "local-company-1",
+        "createdAt": "2026-08-04T17:55:42.158Z",
+        "updatedAt": "2026-08-04T17:55:42.158Z",
+        "name": "Ordinateur Portable HP ProBook",
+        "price": 420000,
+        "cost": 350000,
+        "stock": 8,
+        "stockAlert": 3,
+        "qty": 1
+      }
+    ],
+    "total": 420000,
+    "date": "2026-08-04T17:59:32.507Z",
+    "status": "Payé"
+  },
+  {
+    "id": "1785866283310",
+    "ref": "FAC-2026-005",
+    "client": "Client de passage",
+    "items": [
+      {
+        "id": "1785866142152",
+        "companyId": "local-company-1",
+        "createdAt": "2026-08-04T17:55:42.158Z",
+        "updatedAt": "2026-08-04T17:55:42.158Z",
+        "name": "Tablette iPad Air",
+        "price": 380000,
+        "cost": 300000,
+        "stock": 7,
+        "stockAlert": 3,
+        "qty": 1
+      }
+    ],
+    "total": 380000,
+    "date": "2026-08-04T17:58:03.310Z",
+    "status": "Payé"
+  },
+  {
+    "id": "1785864496918",
+    "ref": "FAC-2026-004",
+    "client": "Client de passage",
+    "items": [
+      {
+        "id": "1785863760672",
+        "name": "vantilo",
+        "sku": "VT",
+        "price": 30000,
+        "cost": 15000,
+        "stockAlert": 2,
+        "companyId": "local-company-1",
+        "createdAt": "2026-08-04T17:16:00.734Z",
+        "updatedAt": "2026-08-04T17:16:00.734Z",
+        "qty": 1
+      }
+    ],
+    "total": 30000,
+    "date": "2026-08-04T17:28:16.918Z",
+    "status": "Payé"
+  },
+  {
+    "id": "1785863773438",
+    "ref": "FAC-2026-003",
+    "client": "Client de passage",
+    "items": [
+      {
+        "id": "1785861241498",
+        "name": "CLIM",
+        "sku": "cm",
+        "price": 30000,
+        "cost": 15000,
+        "stockAlert": 2,
+        "stock": 10,
+        "companyId": "local-company-1",
+        "createdAt": "2026-08-04T16:34:01.552Z",
+        "updatedAt": "2026-08-04T17:14:57.078Z",
+        "qty": 1
+      }
+    ],
+    "total": 30000,
+    "date": "2026-08-04T17:16:13.438Z",
+    "status": "Payé"
+  },
+  {
+    "id": "1785862354604",
+    "ref": "FAC-2026-002",
+    "client": "Client de passage",
+    "items": [
+      {
+        "id": 1,
+        "name": "cafe",
+        "price": 800,
+        "qty": 1
+      },
+      {
+        "id": 3,
+        "name": "Thé vert",
+        "price": 500,
+        "qty": 1
+      }
+    ],
+    "total": 1534,
+    "date": "2026-08-04T16:52:34.603Z",
+    "status": "Payé"
+  },
+  {
+    "id": 1785861102702,
+    "ref": "FAC-2026-001",
+    "client": "Client de passage",
+    "date": "2026-08-04T16:31:42.703Z",
+    "total": 35400,
+    "status": "Payé",
+    "items": [
+      {
+        "id": "1785860933546",
+        "name": "vantilo",
+        "sku": "VT",
+        "price": 30000,
+        "cost": 15000,
+        "stockAlert": 5,
+        "stock": 30,
+        "companyId": "local-company-1",
+        "createdAt": "2026-08-04T16:28:53.599Z",
+        "updatedAt": "2026-08-04T16:28:53.599Z",
+        "qty": 1
+      }
+    ]
+  }
+]

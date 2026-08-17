@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-brand: #2563EB; /* Bright blue for accents */
+  --color-success: #10B981;
+  --color-warning: #F97066;
+  --color-accent-cta: #F5A623;
+  --color-sidebar: #0A1226;
+  --color-sidebar-foreground: #FFFFFF;
+  --color-card: rgba(255, 255, 255, 0.03);
+  --color-card-border: rgba(255, 255, 255, 0.08);
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --animate-marquee: marquee 30s linear infinite;
+  --animate-marquee-reverse: marquee-reverse 30s linear infinite;
+  --animate-bounce-slow: bounce-slow 3s infinite ease-in-out;
+}
+
+@keyframes bounce-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+:root {
+  --background: #FFFFFF;
+  --foreground: #0A1226;
+  --color-card: rgba(0, 0, 0, 0.03);
+  --color-card-border: rgba(0, 0, 0, 0.08);
+}
+
+.dark {
+  --background: #0A1226; /* Deep midnight blue */
+  --foreground: #FFFFFF;
+  --color-card: rgba(255, 255, 255, 0.03);
+  --color-card-border: rgba(255, 255, 255, 0.08);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-100%); }
+}
+
+@keyframes marquee-reverse {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(0%); }
+}
+
+/* Recharts overrides */
+.recharts-wrapper, 
+.recharts-surface,
+.recharts-responsive-container {
+  outline: none !important;
+}
+
+.recharts-wrapper *:focus, 
+.recharts-surface:focus {
+  outline: none !important;
+}
