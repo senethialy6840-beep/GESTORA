@@ -22,7 +22,7 @@ export function PurchaseModal({ isOpen, onClose, onSave, initialData }: Purchase
       if (initialData) {
         setFormData({
           orderNo: initialData.orderNo || '',
-          supplier: initialData.supplier || '',
+          supplier: initialData.supplier?.name || initialData.supplier || '',
           totalAmount: initialData.totalAmount?.toString() || '',
           status: initialData.status || 'PENDING'
         });
@@ -109,14 +109,15 @@ export function PurchaseModal({ isOpen, onClose, onSave, initialData }: Purchase
               <div>
                 <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Montant total (FCFA) *</label>
                 <input 
-                  type="number" 
+                  type="text" 
                   name="totalAmount"
                   required
-                  min="0"
-                  step="0.01"
-                  value={formData.totalAmount}
-                  onChange={handleChange}
-                  placeholder="0.00"
+                  value={formData.totalAmount === '' ? '' : Number(formData.totalAmount).toLocaleString('fr-FR')}
+                  onChange={(e) => {
+                    const rawValue = e.target.value.replace(/\s/g, '').replace(/[^0-9]/g, '');
+                    setFormData(prev => ({ ...prev, totalAmount: rawValue }));
+                  }}
+                  placeholder="0"
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-gray-50 dark:bg-[#0A1226] text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-slate-500"
                 />
               </div>

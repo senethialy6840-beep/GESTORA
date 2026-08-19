@@ -10,8 +10,10 @@ interface EmployeeModalProps {
 
 export function EmployeeModal({ isOpen, onClose, onSave, initialData }: EmployeeModalProps) {
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
+    phone: '',
     role: 'CASHIER', // MANAGER, CASHIER, ADMIN, SALES
     status: 'ACTIVE' // ACTIVE, INACTIVE
   });
@@ -21,15 +23,19 @@ export function EmployeeModal({ isOpen, onClose, onSave, initialData }: Employee
     if (isOpen) {
       if (initialData) {
         setFormData({
-          name: initialData.name || '',
+          firstName: initialData.firstName || '',
+          lastName: initialData.lastName || '',
           email: initialData.email || '',
+          phone: initialData.phone || '',
           role: initialData.role || 'CASHIER',
           status: initialData.status || 'ACTIVE'
         });
       } else {
         setFormData({
-          name: '',
+          firstName: '',
+          lastName: '',
           email: '',
+          phone: '',
           role: 'CASHIER',
           status: 'ACTIVE'
         });
@@ -42,9 +48,10 @@ export function EmployeeModal({ isOpen, onClose, onSave, initialData }: Employee
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave({
-      id: initialData?.id || Date.now().toString(),
+      id: initialData?.id,
       ...formData,
-      dateJoined: initialData?.dateJoined || new Date().toISOString()
+      department: initialData?.department || 'Général',
+      salary: initialData?.salary || 0,
     });
     onClose();
   };
@@ -79,14 +86,40 @@ export function EmployeeModal({ isOpen, onClose, onSave, initialData }: Employee
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Prénom & Nom *</label>
+                <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Prénom *</label>
                 <input 
                   type="text" 
-                  name="name"
+                  name="firstName"
                   required
-                  value={formData.name}
+                  value={formData.firstName}
                   onChange={handleChange}
-                  placeholder="Ex: Amadou Diallo"
+                  placeholder="Ex: Amadou"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-gray-50 dark:bg-[#0A1226] text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-slate-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Nom *</label>
+                <input 
+                  type="text" 
+                  name="lastName"
+                  required
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  placeholder="Ex: Diallo"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-gray-50 dark:bg-[#0A1226] text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-slate-500"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Téléphone</label>
+                <input 
+                  type="tel" 
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="Ex: +221 77 123 45 67"
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-gray-50 dark:bg-[#0A1226] text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-slate-500"
                 />
               </div>

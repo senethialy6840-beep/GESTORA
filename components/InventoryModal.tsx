@@ -6,48 +6,58 @@ interface InventoryModalProps {
   onClose: () => void;
   onSave: (inventory: any) => void;
   initialData?: any;
+  products: any[];
 }
 
-export function InventoryModal({ isOpen, onClose, onSave, initialData }: InventoryModalProps) {
+export function InventoryModal({ isOpen, onClose, onSave, initialData, products }: InventoryModalProps) {
   const [formData, setFormData] = useState({
-    productName: '',
+    productId: '',
     type: 'IN', // IN or OUT
     quantity: '',
     reason: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Reset form when opened
   useEffect(() => {
     if (isOpen) {
       if (initialData) {
         setFormData({
-          productName: initialData.productName || '',
+          productId: initialData.productId || (products.length > 0 ? products[0].id : ''),
           type: initialData.type || 'IN',
           quantity: initialData.quantity?.toString() || '',
           reason: initialData.reason || ''
         });
       } else {
         setFormData({
-          productName: '',
+          productId: products.length > 0 ? products[0].id : '',
           type: 'IN',
           quantity: '',
           reason: ''
         });
       }
+      setIsSubmitting(false);
     }
-  }, [isOpen, initialData]);
+  }, [isOpen, initialData, products]);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({
-      id: initialData?.id || Date.now().toString(),
-      ...formData,
-      quantity: parseInt(formData.quantity) || 0,
-      date: initialData?.date || new Date().toISOString()
-    });
-    onClose();
+    setIsSubmitting(true);
+    try {
+      await onSave({
+        id: initialData?.id,
+        ...formData,
+        quantity: parseInt(formData.quantity) || 0,
+        date: initialData?.date || new Date().toISOString()
+      });
+      onClose();
+    } catch (error) {
+      console.error("Error saving inventory", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -75,20 +85,23 @@ export function InventoryModal({ isOpen, onClose, onSave, initialData }: Invento
         </div>
 
         {/* Form body */}
-        <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
-          <form id="inventory-form" onSubmit={handleSubmit} className="space-y-6">
+        <form id="inventory-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
+          <div className="p-6 space-y-6 flex-1">
             
             <div>
               <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Produit *</label>
-              <input 
-                type="text" 
-                name="productName"
+              <select 
+                name="productId"
                 required
-                value={formData.productName}
+                value={formData.productId}
                 onChange={handleChange}
-                placeholder="Ex: T-shirt en coton bio"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-gray-50 dark:bg-[#0A1226] text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-slate-500"
-              />
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-gray-50 dark:bg-[#0A1226] text-gray-900 dark:text-white"
+              >
+                <option value="" disabled>Sélectionnez un produit...</option>
+                {products.map(p => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -130,27 +143,29 @@ export function InventoryModal({ isOpen, onClose, onSave, initialData }: Invento
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-gray-50 dark:bg-[#0A1226] text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-slate-500 resize-none"
               />
             </div>
-          </form>
-        </div>
+          </div>
 
-        {/* Footer */}
-        <div className="px-6 py-4 border-t border-gray-200 dark:border-slate-700/50 bg-gray-50/50 dark:bg-[#1E293B]/50 flex justify-end space-x-3">
-          <button 
-            onClick={onClose}
-            className="px-5 py-2.5 rounded-xl font-bold text-gray-700 dark:text-slate-300 bg-white dark:bg-[#162032] border border-gray-200 dark:border-slate-700/50 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors shadow-sm"
-          >
-            Annuler
-          </button>
-          <button 
-            type="submit"
-            form="inventory-form"
-            className="px-5 py-2.5 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-all"
-          >
-            Enregistrer
-          </button>
-        </div>
+          {/* Footer */}
+          <div className="px-6 py-4 border-t border-gray-200 dark:border-slate-700/50 bg-gray-50/50 dark:bg-[#1E293B]/50 flex justify-end space-x-3 mt-auto">
+            <button 
+              type="button"
+              onClick={onClose}
+              className="px-5 py-2.5 rounded-xl font-bold text-gray-700 dark:text-slate-300 bg-white dark:bg-[#162032] border border-gray-200 dark:border-slate-700/50 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors shadow-sm"
+            >
+              Annuler
+            </button>
+            <button 
+              type="submit"
+              disabled={isSubmitting}
+              className="px-5 py-2.5 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-all disabled:opacity-50"
+            >
+              {isSubmitting ? 'Enregistrement...' : 'Enregistrer'}
+            </button>
+          </div>
+        </form>
 
       </div>
     </div>
   );
 }
+

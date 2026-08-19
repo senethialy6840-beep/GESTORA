@@ -22,7 +22,7 @@ export function TransactionModal({ isOpen, onClose, onSave, initialData }: Trans
         setFormData({
           description: initialData.description || '',
           type: initialData.type || 'INCOME',
-          amount: initialData.amount?.toString() || '',
+          amount: initialData.amount ? initialData.amount.toLocaleString('fr-FR').replace(/\u202f/g, ' ') : '',
         });
       } else {
         setFormData({
@@ -41,10 +41,9 @@ export function TransactionModal({ isOpen, onClose, onSave, initialData }: Trans
     onSave({
       id: initialData?.id || Date.now().toString(),
       ...formData,
-      amount: parseFloat(formData.amount) || 0,
+      amount: parseFloat(formData.amount.replace(/\s/g, '')) || 0,
       date: initialData?.date || new Date().toISOString()
     });
-    onClose();
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -104,14 +103,20 @@ export function TransactionModal({ isOpen, onClose, onSave, initialData }: Trans
               <div>
                 <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Montant (FCFA) *</label>
                 <input 
-                  type="number" 
+                  type="text" 
                   name="amount"
                   required
-                  min="0"
-                  step="0.01"
                   value={formData.amount}
-                  onChange={handleChange}
-                  placeholder="0.00"
+                  onChange={(e) => {
+                    const rawValue = e.target.value.replace(/[^0-9]/g, '');
+                    if (!rawValue) {
+                      setFormData(prev => ({ ...prev, amount: '' }));
+                      return;
+                    }
+                    const formatted = parseInt(rawValue, 10).toLocaleString('fr-FR').replace(/\u202f/g, ' '); 
+                    setFormData(prev => ({ ...prev, amount: formatted }));
+                  }}
+                  placeholder="0"
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-gray-50 dark:bg-[#0A1226] text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-slate-500"
                 />
               </div>

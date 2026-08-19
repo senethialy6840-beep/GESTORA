@@ -2,14 +2,25 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, LayoutDashboard, LineChart } from 'lucide-react';
+import { ArrowLeft, LayoutDashboard, LineChart, Loader2 } from 'lucide-react';
+import { forgotPassword } from '@/app/actions/authActions';
 
 export default function ForgotPasswordPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [email, setEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitted(true);
+    if (!email) return;
+
+    setIsLoading(true);
+    const res = await forgotPassword(email);
+    setIsLoading(false);
+    
+    if (res.success) {
+      setIsSubmitted(true);
+    }
   };
 
   return (
@@ -31,9 +42,11 @@ export default function ForgotPasswordPage() {
           <p className="text-gray-500 dark:text-slate-400 mb-8 font-medium">Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe.</p>
 
           {isSubmitted ? (
-            <div className="bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 p-6 rounded-xl border border-emerald-100 dark:border-emerald-500/20 mb-6">
-              <h3 className="font-bold mb-2">Email envoyé !</h3>
-              <p className="text-sm">Si un compte existe avec cette adresse, vous recevrez un email contenant les instructions de réinitialisation d'ici quelques minutes.</p>
+            <div className="space-y-4 mb-6">
+              <div className="bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 p-6 rounded-xl border border-emerald-100 dark:border-emerald-500/20">
+                <h3 className="font-bold mb-2">Email envoyé !</h3>
+                <p className="text-sm">Si un compte existe avec cette adresse, vous recevrez un email contenant les instructions de réinitialisation d'ici quelques minutes. Pensez à vérifier vos courriers indésirables (Spams).</p>
+              </div>
             </div>
           ) : (
             <form className="space-y-6" onSubmit={handleSubmit}>
@@ -42,12 +55,19 @@ export default function ForgotPasswordPage() {
                 <input 
                   type="email" 
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="vous@entreprise.com"
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700/50 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] transition-all bg-gray-50 dark:bg-[#162032] text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-slate-500"
                 />
               </div>
 
-              <button type="submit" className="w-full py-3.5 px-4 bg-[#0A1226] dark:bg-[#2563EB] hover:bg-slate-800 dark:hover:bg-blue-600 text-white font-bold rounded-xl shadow-sm transition-all hover:shadow-md">
+              <button 
+                type="submit" 
+                disabled={isLoading}
+                className="w-full flex items-center justify-center py-3.5 px-4 bg-[#0A1226] dark:bg-[#2563EB] hover:bg-slate-800 dark:hover:bg-blue-600 text-white font-bold rounded-xl shadow-sm transition-all hover:shadow-md disabled:opacity-70"
+              >
+                {isLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
                 Envoyer le lien de réinitialisation
               </button>
             </form>

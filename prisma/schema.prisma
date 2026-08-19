@@ -11,56 +11,69 @@ datasource db {
 // -----------------------------------------------------------------------------
 
 model Company {
-  id          String   @id @default(uuid())
-  name        String
-  domain      String?  @unique
-  logoUrl     String?
-  taxNumber   String?
-  address     String?
-  phone       String?
-  email       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  isActive    Boolean  @default(true)
+  id        String   @id @default(uuid())
+  name      String
+  domain    String?  @unique
+  logoUrl   String?
+  taxNumber String?
+  address   String?
+  phone     String?
+  email     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isActive  Boolean  @default(true)
 
-  users       User[]
-  warehouses  Warehouse[]
-  products    Product[]
-  customers   Customer[]
-  sales       Sale[]
-  purchases   Purchase[]
+  users        User[]
+  warehouses   Warehouse[]
+  products     Product[]
+  customers    Customer[]
+  sales        Sale[]
+  purchases    Purchase[]
+  suppliers    Supplier[]
+  employees    Employee[]
+  transactions AccountingTransaction[]
+  stockMovements StockMovement[]
 }
 
 model User {
-  id          String   @id @default(uuid())
-  email       String   @unique
-  password    String?
-  firstName   String
-  lastName    String
-  avatarUrl   String?
-  role        String   @default("USER") // SUPER_ADMIN, ADMIN, MANAGER, CASHIER, STOCK_KEEPER, USER
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String?
+  firstName String
+  lastName  String
+  avatarUrl String?
+  role      String   @default("USER") // SUPER_ADMIN, ADMIN, MANAGER, CASHIER, STOCK_KEEPER, USER
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  companyId   String
-  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 }
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  email     String
+  token     String   @unique
+  expires   DateTime
+  createdAt DateTime @default(now())
+}
+
 
 // -----------------------------------------------------------------------------
 // INVENTORY & WAREHOUSE MANAGEMENT
 // -----------------------------------------------------------------------------
 
 model Warehouse {
-  id          String   @id @default(uuid())
-  name        String
-  location    String?
-  isDefault   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(uuid())
+  name      String
+  location  String?
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  companyId   String
-  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 }
 
 model Product {
@@ -76,6 +89,23 @@ model Product {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  stockMovements StockMovement[]
+}
+
+model StockMovement {
+  id          String   @id @default(uuid())
+  type        String   // IN, OUT
+  quantity    Int
+  reason      String?
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
   companyId   String
   company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
 }
@@ -85,19 +115,19 @@ model Product {
 // -----------------------------------------------------------------------------
 
 model Customer {
-  id          String   @id @default(uuid())
-  name        String
-  email       String?
-  phone       String?
-  address     String?
-  mensualite  Float    @default(0)
-  balance     Float    @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(uuid())
+  name       String
+  email      String?
+  phone      String?
+  address    String?
+  mensualite Float    @default(0)
+  balance    Float    @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  companyId   String
-  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  sales       Sale[]
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  sales     Sale[]
 }
 
 model Sale {
@@ -108,28 +138,42 @@ model Sale {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  companyId   String
-  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
-  customerId  String?
-  customer    Customer? @relation(fields: [customerId], references: [id])
-  
-  items       SaleItem[]
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id])
+
+  items SaleItem[]
 }
 
 model SaleItem {
-  id          String   @id @default(uuid())
+  id          String @id @default(uuid())
   description String
   quantity    Int
   price       Float
-  
-  saleId      String
-  sale        Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+
+  saleId String
+  sale   Sale   @relation(fields: [saleId], references: [id], onDelete: Cascade)
 }
 
 // -----------------------------------------------------------------------------
 // PURCHASES & SUPPLIERS
 // -----------------------------------------------------------------------------
+
+model Supplier {
+  id        String   @id @default(uuid())
+  name      String
+  email     String?
+  phone     String?
+  address   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  companyId String
+  company   Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  purchases Purchase[]
+}
 
 model Purchase {
   id          String   @id @default(uuid())
@@ -139,6 +183,62 @@ model Purchase {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  companyId   String
-  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  supplierId String?
+  supplier   Supplier? @relation(fields: [supplierId], references: [id])
+
+  items PurchaseItem[]
+}
+
+model PurchaseItem {
+  id          String @id @default(uuid())
+  description String
+  quantity    Int
+  price       Float
+
+  purchaseId String
+  purchase   Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+}
+
+// -----------------------------------------------------------------------------
+// HUMAN RESOURCES (HR)
+// -----------------------------------------------------------------------------
+
+model Employee {
+  id         String    @id @default(uuid())
+  firstName  String
+  lastName   String
+  email      String?
+  phone      String?
+  role       String
+  department String?
+  joinDate   DateTime?
+  salary     Float     @default(0)
+  status     String    @default("ACTIVE") // ACTIVE, ON_LEAVE, TERMINATED
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+// -----------------------------------------------------------------------------
+// ACCOUNTING
+// -----------------------------------------------------------------------------
+
+model AccountingTransaction {
+  id          String   @id @default(uuid())
+  date        DateTime
+  description String
+  type        String // INCOME, EXPENSE
+  category    String
+  amount      Float
+  status      String   @default("COMPLETED") // COMPLETED, PENDING, CANCELLED
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 }

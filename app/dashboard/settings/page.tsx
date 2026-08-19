@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Settings, Save, Building2, Globe, FileText, Users, UploadCloud, Image as ImageIcon, Loader2, Check, X, Phone, Mail, MapPin } from 'lucide-react';
 import { getSettings, saveSettings } from '../../actions/settingsActions';
+import { SkeletonForm } from '../../../components/Skeletons';
 import { useSession } from 'next-auth/react';
 
 export default function SettingsPage() {
@@ -94,14 +95,6 @@ export default function SettingsPage() {
           <h1 className="text-3xl font-black text-gray-900 dark:text-white">Paramètres</h1>
           <p className="text-gray-500 dark:text-slate-400 mt-1">Gérez les configurations générales de votre espace de travail.</p>
         </div>
-        <button 
-          onClick={handleSave}
-          disabled={isSaving || isLoading}
-          className="flex items-center px-5 py-2.5 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-all shadow-sm disabled:opacity-50"
-        >
-          {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-          Enregistrer
-        </button>
       </div>
       
       {/* SUCCESS MODAL */}
@@ -164,8 +157,11 @@ export default function SettingsPage() {
 
         {/* Content */}
         <div className="flex-1 space-y-6">
-          
-          {activeTab === 'profil' && (
+          {isLoading ? (
+            <SkeletonForm />
+          ) : (
+            <>
+              {activeTab === 'profil' && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 space-y-6">
               
               {/* Logo Section */}
@@ -439,6 +435,19 @@ export default function SettingsPage() {
             </div>
           )}
 
+          {/* Action Footer */}
+          <div className="pt-6 mt-6 border-t border-gray-200 dark:border-slate-700/50 flex justify-end">
+            <button 
+              onClick={handleSave}
+              disabled={isSaving || isLoading}
+              className="flex items-center px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-all shadow-sm disabled:opacity-50"
+            >
+              {isSaving ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : <Save className="w-5 h-5 mr-2" />}
+              Enregistrer les modifications
+            </button>
+          </div>
+            </>
+          )}
         </div>
       </div>
     </div>

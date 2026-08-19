@@ -7,9 +7,7 @@ import {
   Search as SearchIcon, Users, FileText, Package, ArrowRight, 
   ShoppingCart, Briefcase, Calculator
 } from 'lucide-react';
-import { getProducts } from '@/app/actions/productActions';
-import { getSales } from '@/app/actions/saleActions';
-
+import { globalSearch } from '@/app/actions/searchActions';
 import { useSession } from 'next-auth/react';
 
 function SearchResults() {
@@ -28,100 +26,58 @@ function SearchResults() {
 
     const performSearch = async () => {
       setIsSearching(true);
-      const q = query.toLowerCase().trim();
+      const q = query.trim();
       let foundResults: any[] = [];
 
       const addResult = (id: string, type: string, title: string, description: string, icon: any, link: string) => {
         foundResults.push({ id, type, title, description, icon, link });
       };
 
-      const safeParse = (data: string | null, fallback: any[]) => {
-        if (!data) return fallback;
-        try { return JSON.parse(data); } catch (e) { return fallback; }
-      };
-
-      // 1. Clients
-      const clients = safeParse(localStorage.getItem('gestora_clients'), [
-        { id: '1', name: "Fatou Séne", phone: "777042509", email: "luminobusiness128@gmail.com" }
-      ]);
-      clients.forEach((c: any) => {
-        if (c.name?.toLowerCase().includes(q) || c.phone?.includes(q) || c.email?.toLowerCase().includes(q)) {
-          addResult(`client-${c.id}`, 'Client', c.name, `Tél: ${c.phone} | Email: ${c.email}`, <Users className="w-5 h-5 text-blue-500" />, '/dashboard/clients');
-        }
-      });
-
-      // 2. Factures
-      const invoices = safeParse(localStorage.getItem('gestora_invoices'), [
-        { id: 'INV-202604-939', client: 'Client Sans Nom', amount: 2360 },
-        { id: 'INV-345442-000', client: 'Cansaas Agency', amount: 250000 },
-        { id: 'INV-345442-001', client: 'Alpha Diallo', amount: 1500000 }
-      ]);
-      invoices.forEach((inv: any) => {
-        if (inv.id?.toLowerCase().includes(q) || inv.client?.toLowerCase().includes(q)) {
-          addResult(`inv-${inv.id}`, 'Facture', inv.id, `Client: ${inv.client} | Montant: ${inv.amount} FCFA`, <FileText className="w-5 h-5 text-emerald-500" />, '/dashboard/invoices');
-        }
-      });
-
-      // 3. Stock / Produits (LocalStorage AND Backend JSON)
-      const inventory = safeParse(localStorage.getItem('gestora_inventory'), []);
-      inventory.forEach((item: any) => {
-        if (item.product?.toLowerCase().includes(q) || item.sku?.toLowerCase().includes(q) || item.name?.toLowerCase().includes(q)) {
-          addResult(`invt-${item.id}`, 'Mouvement Stock', item.product || item.name, `Ref: ${item.sku || 'N/A'}`, <Package className="w-5 h-5 text-purple-500" />, '/dashboard/inventory');
-        }
-      });
-
       try {
-        const prodRes = await getProducts(session.user.companyId);
-        if (prodRes && prodRes.data) {
-          prodRes.data.forEach((p: any) => {
-            if (p.name?.toLowerCase().includes(q) || p.sku?.toLowerCase().includes(q)) {
-              addResult(`prod-${p.id}`, 'Produit', p.name, `Prix: ${p.price} FCFA`, <Package className="w-5 h-5 text-indigo-500" />, '/dashboard/products');
-            }
+        const res = await globalSearch(q, session.user.companyId);
+        if (res.success && res.data) {
+          const d = res.data;
+          
+          // Clients
+          d.customers?.forEach((c: any) => {
+            addResult(`client-${c.id}`, 'Client', c.name, `Tél: ${c.phone || 'N/A'} | Email: ${c.email || 'N/A'}`, <Users className="w-5 h-5 text-blue-500" />, '/dashboard/clients');
+          });
+
+          // Invoices / Sales
+          d.sales?.forEach((s: any) => {
+            addResult(`inv-${s.id}`, 'Facture', s.invoiceNo, `Client: ${s.customer?.name || 'Inconnu'} | Montant: ${s.totalAmount} FCFA`, <FileText className="w-5 h-5 text-emerald-500" />, '/dashboard/invoices');
+          });
+
+          // Products
+          d.products?.forEach((p: any) => {
+            addResult(`prod-${p.id}`, 'Produit', p.name, `Prix: ${p.price} FCFA | Stock: ${p.stock}`, <Package className="w-5 h-5 text-indigo-500" />, '/dashboard/products');
+          });
+
+          // Stock Movements
+          d.movements?.forEach((m: any) => {
+            addResult(`mov-${m.id}`, 'Mouvement Stock', m.product?.name || 'Produit inconnu', `${m.type === 'IN' ? '+' : '-'}${m.quantity} | ${m.reason || 'Aucun motif'}`, <Package className="w-5 h-5 text-purple-500" />, '/dashboard/inventory');
+          });
+
+          // HR / Employees
+          d.employees?.forEach((emp: any) => {
+            addResult(`hr-${emp.id}`, 'Employé', `${emp.firstName} ${emp.lastName}`, `Poste: ${emp.role}`, <Briefcase className="w-5 h-5 text-teal-500" />, '/dashboard/hr');
+          });
+
+          // Accounting
+          d.accounting?.forEach((trx: any) => {
+            addResult(`acc-${trx.id}`, 'Comptabilité', trx.description, `Catégorie: ${trx.category} | ${trx.amount} FCFA`, <Calculator className="w-5 h-5 text-red-500" />, '/dashboard/accounting');
           });
         }
-      } catch (err) {}
-
-      // 4. Ventes (LocalStorage AND Backend JSON)
-      const localSales = safeParse(localStorage.getItem('gestora_sales'), []);
-      localSales.forEach((s: any) => {
-        if (s.clientName?.toLowerCase().includes(q) || s.reference?.toLowerCase().includes(q)) {
-          addResult(`sale-loc-${s.id}`, 'Vente', s.reference || 'Vente', `Client: ${s.clientName} | Total: ${s.total} FCFA`, <ShoppingCart className="w-5 h-5 text-orange-500" />, '/dashboard/sales');
-        }
-      });
-
-      try {
-        const saleRes = await getSales(session.user.companyId);
-        if (saleRes && saleRes.data) {
-          saleRes.data.forEach((s: any) => {
-            if (s.client?.toLowerCase().includes(q) || s.ref?.toLowerCase().includes(q)) {
-              addResult(`sale-${s.id}`, 'Vente', s.ref || 'Vente', `Client: ${s.client} | Total: ${s.total} FCFA`, <ShoppingCart className="w-5 h-5 text-orange-600" />, '/dashboard/sales');
-            }
-          });
-        }
-      } catch (err) {}
-
-      // 5. Ressources Humaines (HR)
-      const hr = safeParse(localStorage.getItem('gestora_hr'), []);
-      hr.forEach((emp: any) => {
-        if (emp.name?.toLowerCase().includes(q) || emp.role?.toLowerCase().includes(q)) {
-          addResult(`hr-${emp.id}`, 'Employé', emp.name, `Poste: ${emp.role}`, <Briefcase className="w-5 h-5 text-teal-500" />, '/dashboard/hr');
-        }
-      });
-
-      // 6. Comptabilité (Accounting)
-      const acc = safeParse(localStorage.getItem('gestora_accounting'), []);
-      acc.forEach((trx: any) => {
-        if (trx.description?.toLowerCase().includes(q) || trx.category?.toLowerCase().includes(q)) {
-          addResult(`acc-${trx.id}`, 'Comptabilité', trx.description, `Catégorie: ${trx.category} | ${trx.amount} FCFA`, <Calculator className="w-5 h-5 text-red-500" />, '/dashboard/accounting');
-        }
-      });
+      } catch (err) {
+        console.error("Search error", err);
+      }
 
       setResults(foundResults);
       setIsSearching(false);
     };
 
     performSearch();
-  }, [query]);
+  }, [query, session?.user?.companyId]);
 
   return (
     <div className="space-y-8">
@@ -178,7 +134,7 @@ function SearchResults() {
           </div>
           <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Aucun résultat trouvé pour "{query}"</h3>
           <p className="text-gray-500 dark:text-slate-400 max-w-md">
-            Essayez avec d'autres mots-clés ou vérifiez l'orthographe. GESTORA a cherché dans les clients, factures, produits, ventes, et employés.
+            Essayez avec d'autres mots-clés ou vérifiez l'orthographe. GESTORA a cherché dans toute la base de données.
           </p>
         </div>
       ) : (

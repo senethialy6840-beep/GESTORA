@@ -3,43 +3,73 @@
 import React, { useState, useEffect } from 'react';
 import { Users2, Plus, Search, Edit, Trash2, Shield, UserCog, UserCheck, UserX } from 'lucide-react';
 import { EmployeeModal } from '../../../components/EmployeeModal';
+import { useSession } from 'next-auth/react';
+import { getEmployees, createEmployee, updateEmployee, deleteEmployee } from '@/app/actions/hrActions';
 
 export default function HrPage() {
+  const { data: session } = useSession();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [employees, setEmployees] = useState<any[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load from localStorage on mount
+  // Load from DB on mount
   useEffect(() => {
-    const saved = localStorage.getItem('gestora_hr');
-    if (saved) {
-      try {
-        setEmployees(JSON.parse(saved));
-      } catch (e) {
-        console.error("Error parsing hr from local storage", e);
+    async function loadData() {
+      if (session?.user?.companyId) {
+        const res = await getEmployees(session.user.companyId);
+        if (res.success && res.data) {
+          setEmployees(res.data);
+        }
       }
+      setIsLoaded(true);
     }
-    setIsLoaded(true);
-  }, []);
+    loadData();
+  }, [session?.user?.companyId]);
 
-  // Save to localStorage whenever employees changes
-  useEffect(() => {
-    if (isLoaded) {
-      localStorage.setItem('gestora_hr', JSON.stringify(employees));
-    }
-  }, [employees, isLoaded]);
+  const handleSaveEmployee = async (newItem: any) => {
+    if (!session?.user?.companyId) return;
 
-  const handleSaveEmployee = (newItem: any) => {
-    if (editingItem) {
-      setEmployees(prev => prev.map(p => p.id === newItem.id ? newItem : p));
+    if (editingItem && editingItem.id) {
+      // Update
+      const res = await updateEmployee(editingItem.id, {
+        firstName: newItem.firstName,
+        lastName: newItem.lastName,
+        email: newItem.email,
+        phone: newItem.phone,
+        role: newItem.role,
+        status: newItem.status,
+        department: newItem.department,
+        salary: Number(newItem.salary),
+      });
+      if (res.success && res.data) {
+        setEmployees(prev => prev.map(p => p.id === editingItem.id ? res.data : p));
+      }
     } else {
-      setEmployees(prev => [newItem, ...prev]);
+      // Create
+      const res = await createEmployee({
+        firstName: newItem.firstName,
+        lastName: newItem.lastName,
+        email: newItem.email,
+        phone: newItem.phone,
+        role: newItem.role,
+        status: newItem.status,
+        department: newItem.department || "Général",
+        salary: Number(newItem.salary) || 0,
+        companyId: session.user.companyId,
+        joinDate: new Date(),
+      });
+      if (res.success && res.data) {
+        setEmployees(prev => [res.data, ...prev]);
+      }
     }
   };
 
-  const handleDeleteEmployee = (id: string) => {
-    setEmployees(prev => prev.filter(p => p.id !== id));
+  const handleDeleteEmployee = async (id: string) => {
+    const res = await deleteEmployee(id);
+    if (res.success) {
+      setEmployees(prev => prev.filter(p => p.id !== id));
+    }
   };
 
   const getRoleBadge = (role: string) => {
@@ -149,10 +179,10 @@ export default function HrPage() {
                   <tr key={item.id} className="bg-white dark:bg-[#162032] border-b border-gray-100 dark:border-slate-800/60 hover:bg-gray-50 dark:hover:bg-slate-800/30 transition-colors">
                     <td className="px-6 py-4 font-medium text-gray-900 dark:text-white flex items-center">
                       <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 mr-3 uppercase font-bold text-sm">
-                        {item.name.substring(0, 2)}
+                        {item.firstName.substring(0, 1)}{item.lastName.substring(0, 1)}
                       </div>
                       <div>
-                        <div className="font-bold">{item.name}</div>
+                        <div className="font-bold">{item.firstName} {item.lastName}</div>
                         <div className="text-xs text-gray-500 dark:text-slate-400 font-normal">{item.email}</div>
                       </div>
                     </td>
@@ -160,7 +190,7 @@ export default function HrPage() {
                       {getRoleBadge(item.role)}
                     </td>
                     <td className="px-6 py-4 text-gray-500 dark:text-slate-400">
-                      {new Date(item.dateJoined).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      {new Date(item.joinDate || item.createdAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
                     </td>
                     <td className="px-6 py-4">
                       {item.status === 'ACTIVE' ? (

@@ -6,13 +6,14 @@ import { fr } from 'date-fns/locale';
 
 export type DashboardStats = {
   revenue: number;
-  pending: number;
-  overdue: number;
+  expenses: number;
+  netProfit: number;
   newCustomers: number;
   areaData: any[];
   pieData: any[];
   barData: any[];
-  topClientsData: any[];
+  topSellingProducts: any[];
+  lowStockProducts: any[];
 };
 
 export async function getDashboardStats(companyId: string, startDate?: string, endDate?: string): Promise<{ success: boolean; data?: DashboardStats; error?: string }> {
@@ -34,35 +35,44 @@ export async function getDashboardStats(companyId: string, startDate?: string, e
     });
     const revenue = revenueAggr._sum.totalAmount || 0;
 
-    // 2. Factures en attente
-    const pendingAggr = await prisma.sale.aggregate({
+    // 2. Dépenses totales
+    const expensesAggr = await prisma.accountingTransaction.aggregate({
       where: {
         companyId,
-        status: 'PENDING',
+        type: 'EXPENSE',
+        date: { gte: start, lte: end }
+      },
+      _sum: { amount: true }
+    });
+    const purchasesAggr = await prisma.purchase.aggregate({
+      where: {
+        companyId,
         createdAt: { gte: start, lte: end }
       },
       _sum: { totalAmount: true }
     });
-    const pending = pendingAggr._sum.totalAmount || 0;
+    const expenses = (expensesAggr._sum.amount || 0) + (purchasesAggr._sum.totalAmount || 0);
 
-    // 3. En retard (Assuming status OVERDUE exists, otherwise 0)
-    const overdueAggr = await prisma.sale.aggregate({
-      where: {
-        companyId,
-        status: 'OVERDUE',
-        createdAt: { gte: start, lte: end }
-      },
-      _sum: { totalAmount: true }
-    });
-    const overdue = overdueAggr._sum.totalAmount || 0;
+    // 3. Bénéfice net
+    const netProfit = revenue - expenses;
 
-    // 4. Nouveaux clients
-    const newCustomers = await prisma.customer.count({
-      where: {
-        companyId,
-        createdAt: { gte: start, lte: end }
-      }
+    // 4. Stocks faibles
+    const allProducts = await prisma.product.findMany({
+      where: { companyId },
+      select: { id: true, name: true, stock: true, stockAlert: true }
     });
+    
+    const lowStockProducts = allProducts
+      .filter(p => p.stock <= (p.stockAlert || 0))
+      .map(p => ({
+        id: p.id,
+        name: p.name,
+        stock: p.stock,
+        alert: p.stockAlert || 0
+      }))
+      .slice(0, 5);
+
+    // Removed newCustomers as per user request
 
     // 5. AreaChart Data (7 derniers mois)
     const salesOverTime = await prisma.sale.findMany({
@@ -118,38 +128,24 @@ export async function getDashboardStats(companyId: string, startDate?: string, e
       .sort((a, b) => b.ventes - a.ventes)
       .slice(0, 4);
 
-    // 8. Top Clients
-    const customersWithSales = await prisma.customer.findMany({
-      where: { companyId },
-      include: {
-        sales: {
-          where: { createdAt: { gte: start, lte: end } },
-          select: { totalAmount: true }
-        }
-      }
-    });
-
-    const topClientsData = customersWithSales
-      .map(c => {
-        const total = c.sales.reduce((acc, s) => acc + s.totalAmount, 0);
-        return { id: c.id, name: c.name, total: total.toString(), orders: c.sales.length, numericTotal: total };
-      })
-      .filter(c => c.orders > 0)
-      .sort((a, b) => b.numericTotal - a.numericTotal)
-      .slice(0, 3)
-      .map(c => ({ id: c.id, name: c.name, total: new Intl.NumberFormat('fr-FR').format(c.numericTotal), orders: c.orders }));
+    // 8. Top Selling Products (replaces Top Clients)
+    const topSellingProducts = Array.from(productSales.entries())
+      .map(([name, ventes]) => ({ name, ventes }))
+      .sort((a, b) => b.ventes - a.ventes)
+      .slice(0, 5);
 
     return {
       success: true,
       data: {
         revenue,
-        pending,
-        overdue,
-        newCustomers,
+        expenses,
+        netProfit,
+        newCustomers: 0,
         areaData,
         pieData,
         barData: sortedProducts.length > 0 ? sortedProducts : [ { name: 'Aucun', ventes: 0 } ],
-        topClientsData
+        topSellingProducts,
+        lowStockProducts
       }
     };
   } catch (error) {

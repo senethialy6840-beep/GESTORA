@@ -3,46 +3,74 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator, Plus, Search, Edit, Trash2, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { TransactionModal } from '../../../components/TransactionModal';
+import { useSession } from 'next-auth/react';
+import { getTransactions, createTransaction, updateTransaction, deleteTransaction } from '@/app/actions/accountingActions';
+import { SkeletonList } from '../../../components/Skeletons';
 
 export default function AccountingPage() {
+  const { data: session } = useSession();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load from localStorage on mount
+  // Load from DB on mount
   useEffect(() => {
-    const saved = localStorage.getItem('gestora_accounting');
-    if (saved) {
-      try {
-        setTransactions(JSON.parse(saved));
-      } catch (e) {
-        console.error("Error parsing accounting from local storage", e);
+    async function loadData() {
+      if (session?.user?.companyId) {
+        const res = await getTransactions(session.user.companyId);
+        if (res.success && res.data) {
+          setTransactions(res.data);
+        }
+      }
+      setIsLoaded(true);
+    }
+    loadData();
+  }, [session?.user?.companyId]);
+
+  const handleSaveTransaction = async (newItem: any) => {
+    if (!session?.user?.companyId) return;
+
+    if (editingItem && editingItem.id) {
+      // Update
+      const res = await updateTransaction(editingItem.id, {
+        date: new Date(newItem.date),
+        description: newItem.description,
+        type: newItem.type,
+        category: newItem.category || "Général",
+        amount: Number(newItem.amount),
+      });
+      if (res.success && res.data) {
+        setTransactions(prev => prev.map(p => p.id === editingItem.id ? res.data : p));
+      }
+    } else {
+      // Create
+      const res = await createTransaction({
+        date: new Date(newItem.date),
+        description: newItem.description,
+        type: newItem.type,
+        category: newItem.category || "Général",
+        amount: Number(newItem.amount),
+        status: "COMPLETED",
+        companyId: session.user.companyId,
+      });
+      if (res.success && res.data) {
+        setTransactions(prev => [res.data, ...prev]);
       }
     }
-    setIsLoaded(true);
-  }, []);
+    
+    setIsModalOpen(false);
+    setEditingItem(null);
+  };
 
-  // Save to localStorage whenever transactions change
-  useEffect(() => {
-    if (isLoaded) {
-      localStorage.setItem('gestora_accounting', JSON.stringify(transactions));
-    }
-  }, [transactions, isLoaded]);
-
-  const handleSaveTransaction = (newItem: any) => {
-    if (editingItem) {
-      setTransactions(prev => prev.map(p => p.id === newItem.id ? newItem : p));
-    } else {
-      setTransactions(prev => [newItem, ...prev]);
+  const handleDeleteTransaction = async (id: string) => {
+    const res = await deleteTransaction(id);
+    if (res.success) {
+      setTransactions(prev => prev.filter(p => p.id !== id));
     }
   };
 
-  const handleDeleteTransaction = (id: string) => {
-    setTransactions(prev => prev.filter(p => p.id !== id));
-  };
-
-  if (!isLoaded) return null;
+  if (!isLoaded) return <div className="w-full max-w-7xl mx-auto space-y-6 pt-6"><SkeletonList count={5} /></div>;
 
   return (
     <div className="w-full max-w-7xl mx-auto space-y-6">
@@ -102,8 +130,8 @@ export default function AccountingPage() {
             </div>
           </div>
 
-          {/* Table */}
-          <div className="overflow-x-auto">
+          {/* Table (Desktop) */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left text-sm text-gray-500 dark:text-slate-400">
               <thead className="text-xs text-gray-700 dark:text-slate-300 uppercase bg-gray-50 dark:bg-[#1E293B]/50 border-b border-gray-200 dark:border-slate-700/50">
                 <tr>
@@ -160,6 +188,56 @@ export default function AccountingPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Cards (Mobile) */}
+          <div className="md:hidden flex flex-col divide-y divide-gray-100 dark:divide-slate-800/60 pb-4">
+            {transactions.map((item) => (
+              <div key={item.id} className="p-4 bg-white dark:bg-[#162032] flex flex-col gap-3">
+                <div className="flex justify-between items-start">
+                  <div className="pr-2">
+                    <h3 className="font-bold text-gray-900 dark:text-white text-sm line-clamp-1">{item.description}</h3>
+                    <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">
+                      {new Date(item.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                    </p>
+                  </div>
+                  <div className="flex space-x-1 shrink-0">
+                    <button 
+                      onClick={() => {
+                        setEditingItem(item);
+                        setIsModalOpen(true);
+                      }}
+                      className="p-1.5 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => handleDeleteTransaction(item.id)}
+                      className="p-1.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="flex justify-between items-end mt-1">
+                  <div>
+                    {item.type === 'INCOME' ? (
+                      <span className="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-400">
+                        <ArrowDownRight className="w-3 h-3 mr-1" /> Recette
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-bold bg-red-100 text-red-800 dark:bg-red-500/10 dark:text-red-400">
+                        <ArrowUpRight className="w-3 h-3 mr-1" /> Dépense
+                      </span>
+                    )}
+                  </div>
+                  <span className={`text-lg font-black ${item.type === 'INCOME' ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-900 dark:text-white'}`}>
+                    {item.type === 'INCOME' ? '+' : '-'}{item.amount.toLocaleString('fr-FR')} FCFA
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ProductModal } from '../../../components/ProductModal';
 import { getProducts, createProduct, updateProduct, deleteProduct } from '../../actions/productActions';
 import { useSession } from 'next-auth/react';
+import { SkeletonList } from '../../../components/Skeletons';
 
 export default function ProductsPage() {
   const { data: session } = useSession();
@@ -72,7 +73,7 @@ export default function ProductsPage() {
     }
   };
 
-  if (!isLoaded) return null; // Prevent hydration mismatch
+  if (!isLoaded) return <div className="w-full max-w-7xl mx-auto space-y-6 pt-6"><SkeletonList count={5} /></div>;
 
 
   return (

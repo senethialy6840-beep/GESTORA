@@ -2,14 +2,14 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Sparkles, Send, Bot, User } from "lucide-react";
-import { analyzeQuery } from '@/lib/ai/engine';
-import { companyData } from '@/lib/ai/mockData';
+import { analyzeQueryAction } from '@/app/actions/aiActions';
+import { useSession } from 'next-auth/react';
 
 export default function AIPage() {
+  const { data: session } = useSession();
   const [inputValue, setInputValue] = useState('');
   const [messages, setMessages] = useState<{ role: 'user' | 'assistant', text: string, isTyping?: boolean }[]>([]);
   const [isAiTyping, setIsAiTyping] = useState(false);
-  const [userName, setUserName] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -20,25 +20,17 @@ export default function AIPage() {
     scrollToBottom();
   }, [messages]);
 
-  useEffect(() => {
-    const storedProfile = localStorage.getItem('userProfile');
-    if (storedProfile) {
-      try {
-        const profile = JSON.parse(storedProfile);
-        if (profile.prenom) setUserName(profile.prenom);
-      } catch (e) {}
-    }
-  }, []);
+  const userName = session?.user?.name || 'Utilisateur';
 
   const suggestions = [
     "Quels sont mes produits les plus rentables ?",
     "Analyse ma trésorerie du mois",
-    "Quels clients ont le plus gros encours ?",
-    "Que dois-je réapprovisionner en priorité ?"
+    "Que dois-je réapprovisionner en priorité ?",
+    "Comment se porte l'entreprise ?"
   ];
 
   const handleSend = async (text: string) => {
-    if (!text.trim() || isAiTyping) return;
+    if (!text.trim() || isAiTyping || !session?.user?.companyId) return;
     
     // Add user message
     setMessages(prev => [...prev, { role: 'user', text }]);
@@ -48,7 +40,7 @@ export default function AIPage() {
     // Initial delay before AI starts "typing"
     await new Promise(resolve => setTimeout(resolve, 400));
 
-    const fullResponse = analyzeQuery(text);
+    const fullResponse = await analyzeQueryAction(text, session.user.companyId, userName);
     
     // Add empty assistant message with typing flag
     setMessages(prev => [...prev, { role: 'assistant', text: '', isTyping: true }]);

@@ -6,6 +6,7 @@ import { useTheme } from "next-themes";
 import { useEffect, useState, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { getDashboardStats } from "../actions/dashboardActions";
+import { SkeletonKPICard, SkeletonChart } from "../../../components/Skeletons";
 
 const COLORS = ['#2563EB', '#06B6D4', '#F5A623'];
 
@@ -25,7 +26,7 @@ export default function DashboardPage() {
     areaData: [],
     pieData: [],
     barData: [],
-    topClientsData: []
+    topSellingProducts: []
   });
 
   useEffect(() => {
@@ -119,13 +120,23 @@ export default function DashboardPage() {
       </div>
 
       {isLoading ? (
-        <div className="h-[500px] flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+        <div className="w-full space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <SkeletonKPICard />
+            <SkeletonKPICard />
+            <SkeletonKPICard />
+          </div>
+          <SkeletonChart />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <SkeletonChart className="h-[300px]" />
+            <SkeletonChart className="h-[300px]" />
+            <SkeletonChart className="h-[300px]" />
+          </div>
         </div>
       ) : (
         <>
           {/* KPI CARDS */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             
             {/* KPI 1 */}
             <div className="group bg-white dark:bg-[#162032] border border-gray-200 dark:border-slate-700/50 rounded-2xl p-5 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-1 cursor-default">
@@ -144,44 +155,31 @@ export default function DashboardPage() {
             {/* KPI 2 */}
             <div className="group bg-white dark:bg-[#162032] border border-gray-200 dark:border-slate-700/50 rounded-2xl p-5 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-1 cursor-default">
               <div className="flex justify-between items-start mb-4">
-                <h3 className="text-gray-500 dark:text-slate-400 text-sm font-medium">Factures en attente</h3>
-                <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3">
-                  <Wallet className="w-4 h-4" />
+                <h3 className="text-gray-500 dark:text-slate-400 text-sm font-medium">Dépenses Totales</h3>
+                <div className="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400 flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3">
+                  <Receipt className="w-4 h-4" />
                 </div>
               </div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{formatMoney(stats.pending)}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{formatMoney(stats.expenses)}</p>
               <p className="text-xs font-medium text-gray-400 dark:text-slate-500 flex items-center">
-                Paiements non perçus
+                Achats et frais
               </p>
             </div>
 
             {/* KPI 3 */}
             <div className="group bg-white dark:bg-[#162032] border border-gray-200 dark:border-slate-700/50 rounded-2xl p-5 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-1 cursor-default">
               <div className="flex justify-between items-start mb-4">
-                <h3 className="text-gray-500 dark:text-slate-400 text-sm font-medium">Factures en retard</h3>
-                <div className="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400 flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-                  <Receipt className="w-4 h-4" />
+                <h3 className="text-gray-500 dark:text-slate-400 text-sm font-medium">Bénéfice Net</h3>
+                <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                  <Wallet className="w-4 h-4" />
                 </div>
               </div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{formatMoney(stats.overdue)}</p>
-              <p className="text-xs font-medium text-red-600 dark:text-red-400 flex items-center">
-                Action requise
+              <p className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{formatMoney(stats.netProfit)}</p>
+              <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 flex items-center">
+                Marge générée
               </p>
             </div>
 
-            {/* KPI 4 */}
-            <div className="group bg-white dark:bg-[#162032] border border-gray-200 dark:border-slate-700/50 rounded-2xl p-5 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-1 cursor-default">
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="text-gray-500 dark:text-slate-400 text-sm font-medium">Nouveaux clients</h3>
-                <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3">
-                  <Users className="w-4 h-4" />
-                </div>
-              </div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{stats.newCustomers}</p>
-              <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 flex items-center">
-                Sur cette période
-              </p>
-            </div>
           </div>
 
           {/* CHARTS */}
@@ -250,9 +248,9 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* STOCKS FAIBLES (Simulé temporairement car pas de gestion de stock complète) */}
-            <div className="bg-white dark:bg-[#162032] border border-gray-200 dark:border-slate-700/50 rounded-2xl p-5 shadow-sm transition-colors duration-300 flex flex-col h-[300px]">
-              <div className="mb-4">
+            {/* STOCKS FAIBLES */}
+            <div className="bg-white dark:bg-[#162032] border border-gray-200 dark:border-slate-700/50 rounded-2xl p-5 shadow-sm transition-colors duration-300 flex flex-col h-[300px] overflow-hidden">
+              <div className="mb-4 shrink-0">
                 <h3 className="text-gray-900 dark:text-white font-bold mb-1 flex items-center">
                   <AlertTriangle className="w-4 h-4 mr-2 text-amber-500" />
                   Stocks faibles
@@ -260,41 +258,53 @@ export default function DashboardPage() {
                 <p className="text-gray-500 dark:text-slate-400 text-xs">À réapprovisionner</p>
               </div>
               
-              <div className="flex-1 space-y-3 flex items-center justify-center">
-                <div className="text-gray-400 dark:text-slate-500 text-sm text-center">
-                  Aucun produit en stock critique
-                </div>
+              <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-3">
+                {stats.lowStockProducts && stats.lowStockProducts.length > 0 ? (
+                  stats.lowStockProducts.map((product: any, idx: number) => (
+                    <div key={idx} className="flex justify-between items-center p-3 bg-gray-50 dark:bg-slate-800/50 rounded-xl">
+                      <div>
+                        <p className="text-sm font-bold text-gray-900 dark:text-white">{product.name}</p>
+                      </div>
+                      <div className="px-2.5 py-1 bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 rounded-lg text-sm font-black">
+                        {product.stock}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="h-full flex items-center justify-center text-gray-400 dark:text-slate-500 text-sm text-center">
+                    Aucun produit en stock critique
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* MEILLEURS CLIENTS */}
+            {/* PRODUITS LES MIEUX VENDUS (Replaces MEILLEURS CLIENTS) */}
             <div className="bg-white dark:bg-[#162032] border border-gray-200 dark:border-slate-700/50 rounded-2xl p-5 shadow-sm transition-colors duration-300 flex flex-col h-[300px] overflow-hidden">
               <div className="mb-4 shrink-0">
                 <h3 className="text-gray-900 dark:text-white font-bold mb-1 flex items-center">
-                  <Users className="w-4 h-4 mr-2 text-blue-500" />
-                  Top Clients
+                  <Package className="w-4 h-4 mr-2 text-blue-500" />
+                  Produits les mieux vendus
                 </h3>
-                <p className="text-gray-500 dark:text-slate-400 text-xs">Basé sur le CA généré</p>
+                <p className="text-gray-500 dark:text-slate-400 text-xs">Articles les plus demandés</p>
               </div>
               
               <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3 pr-1">
-                {stats.topClientsData.length > 0 ? stats.topClientsData.map((client: any, index: number) => (
-                  <div key={client.id} className="flex justify-between items-center p-3 rounded-xl bg-gray-50 dark:bg-slate-800/30 border border-transparent hover:border-gray-200 dark:hover:border-slate-700 transition-colors">
+                {stats.topSellingProducts && stats.topSellingProducts.length > 0 ? stats.topSellingProducts.map((product: any, index: number) => (
+                  <div key={index} className="flex justify-between items-center p-3 rounded-xl bg-gray-50 dark:bg-slate-800/30 border border-transparent hover:border-gray-200 dark:hover:border-slate-700 transition-colors">
                     <div className="flex items-center gap-3">
                       <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-sm ${index === 0 ? 'bg-amber-500' : index === 1 ? 'bg-gray-400' : index === 2 ? 'bg-amber-700' : 'bg-blue-500'}`}>
                         {index + 1}
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white">{client.name}</p>
-                        <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">{client.orders} commandes</p>
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white">{product.name}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-bold text-gray-900 dark:text-white">{client.total} F</p>
+                      <p className="text-sm font-bold text-gray-900 dark:text-white">{product.ventes} vendus</p>
                     </div>
                   </div>
                 )) : (
-                  <div className="text-center text-gray-500 py-10">Aucun client sur cette période</div>
+                  <div className="text-center text-gray-500 py-10">Aucun produit vendu</div>
                 )}
               </div>
             </div>

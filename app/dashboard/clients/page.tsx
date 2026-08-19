@@ -8,6 +8,7 @@ import {
   Users, Mail, Phone, MapPin, CheckCircle2, X
 } from 'lucide-react';
 import { getCustomers, createCustomer, updateCustomer, deleteCustomer } from '@/app/actions/clientActions';
+import { SkeletonList } from '../../../components/Skeletons';
 
 // Helper to format currency
 const fmt = (num: number) => {
@@ -26,7 +27,7 @@ export default function ClientsPage() {
   // Load clients from DB
   useEffect(() => {
     async function loadClients() {
-      if (session?.user?.companyId) {
+      if ((session?.user as any)?.role === 'SUPER_ADMIN' && session?.user?.companyId) {
         const res = await getCustomers(session.user.companyId);
         if (res.success && res.data) {
           setClients(res.data);
@@ -35,7 +36,23 @@ export default function ClientsPage() {
       setIsLoading(false);
     }
     loadClients();
-  }, [session?.user?.companyId]);
+  }, [session]);
+
+  if (isLoading) return <div className="w-full max-w-7xl mx-auto space-y-6 pt-6"><SkeletonList count={6} /></div>;
+
+  if ((session?.user as any)?.role !== 'SUPER_ADMIN') {
+    return (
+      <div className="flex flex-col items-center justify-center h-[70vh] text-center">
+        <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-4">
+          <X className="w-8 h-8" />
+        </div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Accès refusé</h1>
+        <p className="text-gray-500 dark:text-slate-400 max-w-md">
+          Cette page est exclusivement réservée à l'administrateur système (Propriétaire de GESTORA).
+        </p>
+      </div>
+    );
+  }
 
   const handleSaveClient = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,8 +99,6 @@ export default function ClientsPage() {
       setActiveMenu(null);
     }
   };
-
-  if (isLoading) return null;
 
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-8">

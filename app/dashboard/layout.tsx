@@ -190,13 +190,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   {!isSidebarCollapsed && <span className="truncate">Achats & Fournisseurs</span>}
                 </Link>
               </li>
-              <li>
-                <Link href="/dashboard/clients" className={getLinkClass('/dashboard/clients')} title="Clients">
-                  {isActive('/dashboard/clients') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
-                  <Users className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/clients') ? 'text-blue-400' : ''}`} />
-                  {!isSidebarCollapsed && <span className="truncate">Clients</span>}
-                </Link>
-              </li>
+              {(session?.user as any)?.role === 'SUPER_ADMIN' && (
+                <li>
+                  <Link href="/dashboard/clients" className={getLinkClass('/dashboard/clients')} title="Clients">
+                    {isActive('/dashboard/clients') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
+                    <Users className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/clients') ? 'text-blue-400' : ''}`} />
+                    {!isSidebarCollapsed && <span className="truncate">Clients & Abonnés</span>}
+                  </Link>
+                </li>
+              )}
               <li>
                 <Link href="/dashboard/invoices" className={getLinkClass('/dashboard/invoices')} title="Factures & Devis">
                   {isActive('/dashboard/invoices') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}

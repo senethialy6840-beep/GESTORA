@@ -2,6 +2,12 @@
 
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 const defaultSettings = {
   companyName: "",
@@ -44,6 +50,37 @@ export async function saveSettings(companyId: string, data: any) {
   try {
     if (!companyId) return { success: false };
     
+    let logoUrl = data.logo;
+    
+    // Check if the logo is a new base64 upload
+    if (logoUrl && logoUrl.startsWith('data:image/')) {
+      try {
+        const matches = logoUrl.match(/^data:image\/([A-Za-z-+\/]+);base64,(.+)$/);
+        if (matches && matches.length === 3) {
+          const type = matches[1];
+          const buffer = Buffer.from(matches[2], 'base64');
+          const filename = `${companyId}-${Date.now()}.${type}`;
+          
+          const { data: uploadData, error } = await supabase
+            .storage
+            .from('logos')
+            .upload(filename, buffer, {
+              contentType: `image/${type}`,
+              upsert: true
+            });
+            
+          if (error) {
+            console.error("Supabase upload error:", error);
+          } else {
+            const { data: publicUrlData } = supabase.storage.from('logos').getPublicUrl(filename);
+            logoUrl = publicUrlData.publicUrl;
+          }
+        }
+      } catch (err) {
+        console.error("Error processing logo upload:", err);
+      }
+    }
+    
     const company = await prisma.company.update({
       where: { id: companyId },
       data: {
@@ -52,7 +89,7 @@ export async function saveSettings(companyId: string, data: any) {
         address: data.address,
         email: data.email,
         phone: data.phone,
-        logoUrl: data.logo
+        logoUrl: logoUrl
       }
     });
     

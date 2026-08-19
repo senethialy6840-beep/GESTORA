@@ -7,19 +7,16 @@ import * as htmlToImage from 'html-to-image';
 import { useSession } from 'next-auth/react';
 import { getSettings } from '../../actions/settingsActions';
 import { getSales, createSale, updateSale, deleteSale } from '@/app/actions/saleActions';
+import { SkeletonList, SkeletonForm } from "../../../components/Skeletons";
 
-const filters = ['Tous', 'Brouillon', 'Créée', 'Payée', 'En retard'];
 
 export default function InvoicesPage() {
   const { data: session } = useSession();
   const [invoices, setInvoices] = useState<any[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const [isViewing, setIsViewing] = useState(false);
-  const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [activeFilter, setActiveFilter] = useState('Tous');
-  const [searchQuery, setSearchQuery] = useState('');
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const [settings, setSettings] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -63,17 +60,17 @@ export default function InvoicesPage() {
   
   const [invoiceData, setInvoiceData] = useState({
     dbId: '',
-    number: `FAC-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000)}`,
+    number: `FAC-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}-${Math.floor(Math.random() * 100000)}`,
     date: new Date().toISOString().split('T')[0],
     clientName: '',
     clientAddress: '',
     clientEmail: '',
     clientPhone: '',
-    status: 'BROUILLON',
     items: [{ id: Date.now(), description: 'Prestation / Produit', quantity: 1, price: 0 }] as any[],
   });
 
   const invoiceRef = useRef<HTMLDivElement>(null);
+  const pdfRef = useRef<HTMLDivElement>(null);
 
   const handleAddItem = () => {
     setInvoiceData({
@@ -100,17 +97,17 @@ export default function InvoicesPage() {
   };
 
   const calculateSubtotal = () => {
-    return invoiceData.items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+    return invoiceData.items.reduce((sum, item) => sum + ((Number(item.quantity) || 0) * (Number(item.price) || 0)), 0);
   };
 
   const handleDownloadPDF = async () => {
-    if (!invoiceRef.current) return;
+    if (!pdfRef.current) return;
     
     try {
       setIsDownloading(true);
       await new Promise(resolve => setTimeout(resolve, 300));
       
-      const dataUrl = await htmlToImage.toPng(invoiceRef.current, {
+      const dataUrl = await htmlToImage.toPng(pdfRef.current, {
         quality: 1,
         pixelRatio: 2,
         backgroundColor: '#ffffff',
@@ -123,7 +120,7 @@ export default function InvoicesPage() {
       });
       
       const pdfWidth = 210; // A4 width in mm
-      const pdfHeight = (invoiceRef.current.offsetHeight * pdfWidth) / invoiceRef.current.offsetWidth;
+      const pdfHeight = (pdfRef.current.offsetHeight * pdfWidth) / pdfRef.current.offsetWidth;
       
       const pdf = new jsPDF({
         orientation: 'p',
@@ -156,7 +153,7 @@ export default function InvoicesPage() {
     if (invoiceData.dbId) {
       res = await updateSale(invoiceData.dbId, {
         totalAmount: total,
-        status: invoiceData.status,
+        status: "COMPLETED",
         items: invoiceData.items.map(item => ({
           description: item.description,
           quantity: Number(item.quantity) || 1,
@@ -167,7 +164,7 @@ export default function InvoicesPage() {
       res = await createSale({
         invoiceNo: invoiceData.number,
         totalAmount: total,
-        status: invoiceData.status,
+        status: "COMPLETED",
         companyId: session.user.companyId,
         items: invoiceData.items.map(item => ({
           description: item.description,
@@ -188,7 +185,7 @@ export default function InvoicesPage() {
         items: invoiceData.items,
         date: formattedDate,
         due: '-',
-        status: invoiceData.status,
+        status: "COMPLETED",
         amount: total
       };
       
@@ -200,29 +197,19 @@ export default function InvoicesPage() {
       } else {
         setInvoices([newInvoice, ...invoices]);
       }
+      await handleDownloadPDF();
       
-      setShowSuccess(true);
+      setIsCreating(false);
+      setIsViewing(false);
     } else {
       alert("Erreur lors de l'enregistrement");
     }
   };
 
-  const getStatusStyle = (status: string) => {
-    switch(status.toLowerCase()) {
-      case 'payée': return 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400';
-      case 'créée': return 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400';
-      case 'en retard': return 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400';
-      default: return 'bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-gray-300';
-    }
-  };
+
 
   // Filter invoices based on search and active filter
-  const filteredInvoices = invoices.filter(inv => {
-    const matchesFilter = activeFilter === 'Tous' || inv.status.toLowerCase() === activeFilter.toLowerCase();
-    const matchesSearch = inv.client.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          inv.id.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesFilter && matchesSearch;
-  });
+  const filteredInvoices = invoices;
 
   if (isCreating || isViewing) {
     const subtotal = calculateSubtotal();
@@ -230,45 +217,12 @@ export default function InvoicesPage() {
 
     return (
       <div className="w-full max-w-5xl mx-auto space-y-6 pb-20 relative">
-        {/* Success Modal */}
-        {showSuccess && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in">
-            <div className="bg-white dark:bg-[#162032] rounded-3xl w-full max-w-[400px] p-8 shadow-2xl relative text-center flex flex-col items-center">
-              <div className="w-16 h-16 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500 dark:text-emerald-400 flex items-center justify-center mb-6">
-                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Facture enregistrée</h3>
-              <p className="text-[15px] text-gray-500 dark:text-slate-400 mb-8 leading-relaxed px-2">
-                La facture a été créée et enregistrée avec succès.
-              </p>
-              <div className="flex flex-col w-full gap-3">
-                <button 
-                  onClick={handleDownloadPDF}
-                  disabled={isDownloading}
-                  className="w-full py-3.5 bg-[#2563EB] text-white rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-sm flex items-center justify-center disabled:opacity-70"
-                >
-                  <Download className="w-5 h-5 mr-2" />
-                  {isDownloading ? 'Génération...' : 'Télécharger la facture'}
-                </button>
-                <button 
-                  onClick={() => {
-                    setShowSuccess(false);
-                    setIsCreating(false);
-                    setIsViewing(false);
-                  }}
-                  className="w-full py-3.5 bg-gray-100 dark:bg-slate-800 text-gray-900 dark:text-white rounded-xl font-bold hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
-                >
-                  Retourner aux factures
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+
 
         {/* Header Actions */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <button 
-            onClick={() => { setIsCreating(false); setIsViewing(false); setStatusDropdownOpen(false); }}
+            onClick={() => { setIsCreating(false); setIsViewing(false); }}
             className="flex items-center text-gray-500 hover:text-gray-900 dark:text-slate-400 dark:hover:text-white transition-colors font-medium"
           >
             <ArrowLeft className="w-4 h-4 mr-2" /> Retour aux factures
@@ -277,38 +231,7 @@ export default function InvoicesPage() {
           <div className="flex items-center gap-3 w-full sm:w-auto">
             {isViewing ? (
               <>
-                <div className="relative">
-                  <button 
-                    onClick={() => setStatusDropdownOpen(!statusDropdownOpen)}
-                    className="flex items-center justify-center px-4 py-2 bg-white dark:bg-[#162032] border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-white rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors shadow-sm"
-                  >
-                    Changer de statut
-                  </button>
-                  {statusDropdownOpen && (
-                    <>
-                      <div className="fixed inset-0 z-40" onClick={() => setStatusDropdownOpen(false)} />
-                      <div className="absolute top-12 right-0 w-40 bg-white dark:bg-[#1e293b] border border-gray-100 dark:border-slate-700 rounded-xl shadow-lg py-2 z-50">
-                        {['BROUILLON', 'CRÉÉE', 'PAYÉE', 'EN RETARD'].map(s => (
-                          <button
-                            key={s}
-                            onClick={async () => {
-                              const newStatus = s === 'CRÉÉE' ? 'Créée' : s === 'PAYÉE' ? 'Payée' : s === 'EN RETARD' ? 'En retard' : 'Brouillon';
-                              setInvoiceData({...invoiceData, status: newStatus});
-                              setInvoices(invoices.map(i => i.id === invoiceData.number ? { ...i, status: newStatus } : i));
-                              setStatusDropdownOpen(false);
-                              if (invoiceData.dbId) {
-                                await updateSale(invoiceData.dbId, { status: newStatus });
-                              }
-                            }}
-                            className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-200 transition-colors"
-                          >
-                            {s}
-                          </button>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </div>
+
                 <button 
                   onClick={handleDownloadPDF}
                   disabled={isDownloading}
@@ -341,18 +264,15 @@ export default function InvoicesPage() {
             ) : (
               <>
                 <button 
-                  onClick={handleDownloadPDF}
+                  onClick={async () => {
+                    setIsDownloading(true);
+                    await handleSave();
+                  }}
                   disabled={isDownloading}
-                  className="flex items-center justify-center px-4 py-2 bg-gray-100 dark:bg-slate-800 text-gray-900 dark:text-white rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors shadow-sm disabled:opacity-70"
+                  className="flex items-center justify-center px-5 py-2.5 bg-[#2563EB] text-white rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-70"
                 >
                   <Download className="w-4 h-4 mr-2" />
-                  {isDownloading ? 'Génération...' : 'Télécharger PDF'}
-                </button>
-                <button 
-                  onClick={handleSave}
-                  className="flex-1 sm:flex-none flex items-center justify-center px-5 py-2.5 bg-[#2563EB] text-white rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-sm"
-                >
-                  <Save className="w-4 h-4 mr-2 text-white/80" /> Enregistrer
+                  {isDownloading ? 'Génération...' : 'Télécharger'}
                 </button>
               </>
             )}
@@ -360,51 +280,52 @@ export default function InvoicesPage() {
         </div>
 
         {/* Invoice Container - Professional & Elegant */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-x-auto border border-gray-100 dark:border-none mx-auto print:shadow-none print:border-none font-sans custom-scrollbar">
-          <div ref={invoiceRef} className="bg-white text-gray-900 flex flex-col relative shrink-0" style={{ minHeight: '1122px', width: '794px', margin: '0 auto' }}>
+        {/* Invoice Container - Responsive Editor */}
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700/50 mx-auto font-sans w-full overflow-hidden">
+          <div ref={invoiceRef} className="bg-white text-gray-900 flex flex-col relative w-full p-5 sm:p-8 md:p-12">
             {/* Top Accent Bar */}
-            <div className="h-3 bg-[#2563EB] w-full"></div>
+            <div className="h-2 sm:h-3 bg-[#2563EB] w-full absolute top-0 left-0 right-0"></div>
 
-            <div className="p-12 sm:p-14 flex flex-col flex-grow">
+            <div className="flex flex-col mt-4">
               
               {/* Header: Logo & Invoice Info */}
-              <div className="flex justify-between items-start mb-14">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
                 <div>
                   {settings?.logo ? (
-                    <img src={settings.logo} alt="Logo" crossOrigin="anonymous" className="h-14 object-contain mb-6" />
+                    <img src={settings.logo} alt="Logo" crossOrigin="anonymous" className="h-10 sm:h-14 object-contain mb-4 sm:mb-6" />
                   ) : (
-                    <h1 className="text-3xl font-black text-gray-900 mb-6">
+                    <h1 className="text-2xl sm:text-3xl font-black text-gray-900 mb-4 sm:mb-6">
                       <span className="text-[#2563EB]">GEST</span>ORA S.A.S
                     </h1>
                   )}
-                  <p className="text-gray-900 font-bold text-lg mb-1">{settings?.companyName || 'Gestora SARL'}</p>
-                  <p className="text-gray-500 text-sm mb-0.5">{settings?.address || '123 Avenue du Commerce, Dakar, SN'}</p>
-                  <p className="text-gray-500 text-sm mb-0.5">{settings?.email || 'contact@gestora.sn'}</p>
-                  <p className="text-gray-500 text-sm">{settings?.phone || '+221 77 123 45 67'}</p>
+                  <p className="text-gray-900 font-bold text-base sm:text-lg mb-1">{settings?.companyName || 'Gestora SARL'}</p>
+                  <p className="text-gray-500 text-xs sm:text-sm mb-0.5">{settings?.address || '123 Avenue du Commerce, Dakar, SN'}</p>
+                  <p className="text-gray-500 text-xs sm:text-sm mb-0.5">{settings?.email || 'contact@gestora.sn'}</p>
+                  <p className="text-gray-500 text-xs sm:text-sm">{settings?.phone || '+221 77 123 45 67'}</p>
                 </div>
 
-                <div className="text-right flex flex-col items-end">
-                  <h2 className="text-4xl font-black text-[#2563EB] tracking-widest uppercase mb-6">Facture</h2>
+                <div className="w-full md:w-auto text-left md:text-right flex flex-col items-start md:items-end">
+                  <h2 className="text-3xl sm:text-4xl font-black text-[#2563EB] tracking-widest uppercase mb-4 sm:mb-6">Facture</h2>
                   
-                  <div className="bg-gray-50/80 rounded-xl p-4 border border-gray-100 min-w-[200px]">
+                  <div className="bg-gray-50/80 rounded-xl p-4 border border-gray-100 w-full md:min-w-[200px]">
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Référence</span>
+                      <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mr-4">Référence</span>
                       <input 
                         type="text" 
                         value={invoiceData.number}
                         onChange={(e) => setInvoiceData({...invoiceData, number: e.target.value})}
                         disabled={isViewing}
-                        className="w-32 text-right border-b border-transparent hover:border-gray-300 focus:border-gray-300 focus:outline-none bg-transparent font-bold text-gray-900 disabled:opacity-100"
+                        className="w-full md:w-32 text-right border-b border-transparent hover:border-gray-300 focus:border-gray-300 focus:outline-none bg-transparent font-bold text-gray-900 disabled:opacity-100"
                       />
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Date</span>
+                      <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mr-4">Date</span>
                       <input 
                         type="date" 
                         value={invoiceData.date}
                         onChange={(e) => setInvoiceData({...invoiceData, date: e.target.value})}
                         disabled={isViewing}
-                        className="w-32 text-right border-b border-transparent hover:border-gray-300 focus:border-gray-300 focus:outline-none bg-transparent text-sm font-semibold text-gray-900 disabled:opacity-100"
+                        className="w-full md:w-32 text-right border-b border-transparent hover:border-gray-300 focus:border-gray-300 focus:outline-none bg-transparent text-sm font-semibold text-gray-900 disabled:opacity-100"
                       />
                     </div>
                   </div>
@@ -412,13 +333,13 @@ export default function InvoicesPage() {
               </div>
 
               {/* Client & Status Block */}
-              <div className="flex justify-between items-start mb-12">
-                <div className="w-1/2 pr-8">
+              <div className="mb-10">
+                <div className="w-full md:w-1/2">
                   <h3 className="text-xs font-bold text-[#2563EB] uppercase tracking-widest mb-3 flex items-center">
                     <div className="w-1.5 h-1.5 rounded-full bg-[#2563EB] mr-2"></div>
                     Facturé à
                   </h3>
-                  <div className="space-y-3">
+                  <div className="space-y-3 bg-gray-50/50 p-4 rounded-xl">
                     <div className="flex flex-col">
                       <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Nom du client</span>
                       <input 
@@ -428,7 +349,7 @@ export default function InvoicesPage() {
                         onChange={(e) => setInvoiceData({...invoiceData, clientName: e.target.value})}
                         autoComplete="off"
                         disabled={isViewing}
-                        className="w-full font-black text-gray-900 text-xl border-b border-transparent hover:border-gray-300 focus:border-gray-300 focus:outline-none bg-transparent placeholder-gray-300 disabled:opacity-100 pb-1"
+                        className="w-full font-black text-gray-900 text-lg sm:text-xl border-b border-transparent hover:border-gray-300 focus:border-gray-300 focus:outline-none bg-transparent placeholder-gray-300 disabled:opacity-100 pb-1"
                       />
                     </div>
                     <div className="flex flex-col">
@@ -469,91 +390,75 @@ export default function InvoicesPage() {
                     </div>
                   </div>
                 </div>
-
-                <div className="w-1/3 text-right">
-                  <span className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 block">Statut de la facture</span>
-                  <div className="flex justify-end" data-html2canvas-ignore="true">
-                    {isViewing ? (
-                      <span className={`px-4 py-2 text-sm font-bold rounded-xl border ${getStatusStyle(invoiceData.status)}`}>
-                        {invoiceData.status}
-                      </span>
-                    ) : (
-                      <select
-                        value={invoiceData.status.toUpperCase()}
-                        onChange={(e) => {
-                          const s = e.target.value;
-                          setInvoiceData({...invoiceData, status: s === 'CRÉÉE' ? 'Créée' : s === 'PAYÉE' ? 'Payée' : s === 'EN RETARD' ? 'En retard' : 'Brouillon'});
-                        }}
-                        className="bg-gray-50 border border-gray-200 text-gray-900 text-sm font-bold rounded-xl focus:ring-gray-300 focus:border-gray-300 block w-40 p-2.5 cursor-pointer hover:bg-gray-100 transition-colors shadow-sm ml-auto"
-                      >
-                        <option value="BROUILLON">Brouillon</option>
-                        <option value="CRÉÉE">Créée</option>
-                        <option value="PAYÉE">Payée</option>
-                        <option value="EN RETARD">En retard</option>
-                      </select>
-                    )}
-                  </div>
-                  <div className="hidden print:block mt-2 text-right" style={{ display: 'none' }}>
-                     <span className={`inline-block px-3 py-1 text-xs font-bold rounded-lg border ${getStatusStyle(invoiceData.status)}`}>
-                       {invoiceData.status}
-                     </span>
-                  </div>
-                </div>
               </div>
 
-              {/* Table */}
+              {/* Table (Responsive layout) */}
               <div className="flex-grow flex flex-col">
-                <div className="flex text-xs font-bold text-gray-500 uppercase tracking-wider border-b-2 border-gray-900 pb-3 mb-2 px-3">
+                {/* Desktop Header */}
+                <div className="hidden md:flex text-xs font-bold text-gray-500 uppercase tracking-wider border-b-2 border-gray-900 pb-3 mb-2 px-3">
                   <div className="w-1/2">Désignation</div>
                   <div className="w-1/6 text-center">Quantité</div>
                   <div className="w-1/6 text-right">Prix Unitaire</div>
                   <div className="w-1/6 text-right">Total</div>
                 </div>
 
-                <div className="space-y-0 relative">
+                <div className="space-y-4 md:space-y-0">
                   {invoiceData.items.map((item, index) => (
-                    <div key={item.id} className={`flex items-center p-3 border-b border-gray-100 group transition-colors relative ${index % 2 === 0 ? 'bg-transparent' : 'bg-gray-50/50'}`}>
-                      <div className="w-1/2 pr-4">
+                    <div key={item.id} className={`flex flex-col md:flex-row items-start md:items-center p-4 md:p-3 rounded-xl md:rounded-none border border-gray-100 md:border-x-0 md:border-t-0 md:border-b group transition-colors relative ${index % 2 === 0 ? 'bg-transparent' : 'bg-gray-50/50'}`}>
+                      
+                      <div className="w-full md:w-1/2 md:pr-4 mb-3 md:mb-0">
+                        <label className="md:hidden text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Désignation</label>
                         <input 
                           type="text" 
                           placeholder="Description de l'article ou service"
                           value={item.description}
                           onChange={(e) => handleItemChange(item.id, 'description', e.target.value)}
                           disabled={isViewing}
-                          className="w-full text-sm font-medium text-gray-900 border-none focus:ring-0 bg-transparent placeholder-gray-400 disabled:opacity-100"
+                          className="w-full text-sm font-bold md:font-medium text-gray-900 border-b md:border-none border-gray-200 focus:ring-0 bg-transparent placeholder-gray-400 disabled:opacity-100 pb-1 md:pb-0"
                         />
                       </div>
-                      <div className="w-1/6 px-2">
-                        <input 
-                          type="number" 
-                          min="1"
-                          value={item.quantity}
-                          onChange={(e) => handleItemChange(item.id, 'quantity', Number(e.target.value))}
-                          disabled={isViewing}
-                          className="w-full text-sm font-semibold text-center border-none focus:ring-0 bg-transparent text-gray-700 disabled:opacity-100"
-                        />
+                      
+                      <div className="w-full md:w-1/2 flex flex-row items-center justify-between md:justify-start">
+                        <div className="w-1/3 md:w-1/3 md:px-2">
+                          <label className="md:hidden text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Qté</label>
+                          <input 
+                            type="text" 
+                            value={item.quantity === '' ? '' : item.quantity}
+                            onChange={(e) => {
+                              const val = e.target.value.replace(/[^0-9]/g, '');
+                              handleItemChange(item.id, 'quantity', val === '' ? '' : parseInt(val, 10));
+                            }}
+                            disabled={isViewing}
+                            className="w-full text-sm font-semibold text-left md:text-center border-none focus:ring-0 bg-transparent text-gray-700 disabled:opacity-100 p-0"
+                          />
+                        </div>
+                        <div className="w-1/3 md:w-1/3 md:px-2 flex flex-col md:flex-row items-start md:items-center justify-start md:justify-end text-sm">
+                          <label className="md:hidden text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Prix U.</label>
+                          <input 
+                            type="text" 
+                            value={item.price === '' ? '' : Number(item.price).toLocaleString('fr-FR')}
+                            onChange={(e) => {
+                              const val = e.target.value.replace(/\s/g, '').replace(/[^0-9]/g, '');
+                              handleItemChange(item.id, 'price', val === '' ? '' : parseInt(val, 10));
+                            }}
+                            disabled={isViewing}
+                            className="w-full text-left md:text-right border-none focus:ring-0 bg-transparent font-semibold text-gray-700 disabled:opacity-100 p-0"
+                          />
+                        </div>
+                        <div className="w-1/3 md:w-1/3 text-right text-sm flex flex-col items-end">
+                          <label className="md:hidden text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Total</label>
+                          <span className="font-black text-[#2563EB] md:text-gray-900">
+                            {((Number(item.quantity) || 0) * (Number(item.price) || 0)).toLocaleString('fr-FR')}
+                          </span>
+                        </div>
                       </div>
-                      <div className="w-1/6 px-2 flex items-center justify-end text-sm">
-                        <input 
-                          type="number" 
-                          min="0"
-                          value={item.price}
-                          onChange={(e) => handleItemChange(item.id, 'price', Number(e.target.value))}
-                          disabled={isViewing}
-                          className="w-24 text-right border-none focus:ring-0 bg-transparent font-semibold text-gray-700 disabled:opacity-100"
-                        />
-                        <span className="text-gray-500 ml-1">FCFA</span>
-                      </div>
-                      <div className="w-1/6 text-right text-sm font-black text-gray-900">
-                        {(item.quantity * item.price).toLocaleString('fr-FR')} FCFA
-                      </div>
+
                       {!isViewing && (
-                        <div className="absolute -right-10 w-8">
+                        <div className="absolute top-2 right-2 md:top-auto md:relative md:w-8">
                           <button 
                             onClick={() => handleRemoveItem(item.id)}
-                            className="text-red-300 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity p-2"
+                            className="text-gray-300 hover:text-red-600 md:opacity-0 md:group-hover:opacity-100 transition-opacity p-2 bg-gray-50 md:bg-transparent rounded-lg"
                             title="Supprimer la ligne"
-                            data-html2canvas-ignore="true"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -566,40 +471,117 @@ export default function InvoicesPage() {
                 {!isViewing && (
                   <button 
                     onClick={handleAddItem}
-                    className="mt-6 flex items-center text-sm font-bold text-[#2563EB] hover:text-blue-800 transition-colors px-3 self-start"
-                    data-html2canvas-ignore="true"
+                    className="mt-6 flex items-center justify-center w-full md:w-auto text-sm font-bold text-[#2563EB] bg-blue-50 md:bg-transparent hover:bg-blue-100 md:hover:bg-transparent md:hover:text-blue-800 transition-colors py-3 md:py-0 px-3 rounded-xl md:rounded-none self-start"
                   >
                     <Plus className="w-4 h-4 mr-1.5" /> Ajouter une ligne
                   </button>
                 )}
               </div>
 
-              {/* Totals Section - Moved to Bottom */}
-              <div className="flex justify-end mt-16 mb-4">
+              {/* Totals Section */}
+              <div className="flex justify-end mt-12 mb-4">
                 <div className="w-full sm:w-1/2 lg:w-5/12">
                   <div className="flex justify-between items-center px-4 py-3 border-b border-gray-100">
                     <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">Sous-total</span>
-                    <span className="text-sm font-black text-gray-900">{subtotal.toLocaleString('fr-FR')} FCFA</span>
+                    <span className="text-sm font-black text-gray-900">{subtotal.toLocaleString('fr-FR')}</span>
                   </div>
 
-                  <div className="flex justify-between items-center bg-[#2563EB] rounded-lg p-3 mt-3 text-white shadow-sm">
+                  <div className="flex justify-between items-center bg-[#2563EB] rounded-xl p-4 mt-3 text-white shadow-sm">
                     <span className="text-sm font-bold uppercase tracking-wider">Total Payé</span>
                     <span className="text-xl font-black">{total.toLocaleString('fr-FR')} FCFA</span>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
+        </div>
 
-            {/* Footer */}
-            <div className="w-full bg-gray-50/80 px-12 py-6 border-t border-gray-200 mt-auto flex flex-col sm:flex-row justify-between items-center">
-              <p className="text-xs font-semibold text-gray-500 text-center sm:text-left">
-                {settings?.companyName || 'GESTORA S.A.S'}
-              </p>
-              <p className="text-xs font-medium text-gray-400 text-center sm:text-right mt-2 sm:mt-0">
-                {settings?.companyId || 'NINEA: 000000000 - RC: SN-DKR-2026-B-0000'}
-              </p>
+        {/* Hidden PDF Template (Fixed A4 Size) */}
+        <div className="fixed top-0 left-[200vw] z-[-100]">
+          <div ref={pdfRef} className="bg-white text-gray-900 flex flex-col relative shrink-0" style={{ minHeight: '1122px', width: '794px' }}>
+            <div className="h-3 bg-[#2563EB] w-full"></div>
+            <div className="p-14 flex flex-col flex-grow">
+              <div className="flex justify-between items-start mb-14">
+                <div>
+                  {settings?.logo ? (
+                    <img src={settings.logo} alt="Logo" crossOrigin="anonymous" className="h-14 object-contain mb-6" />
+                  ) : (
+                    <h1 className="text-3xl font-black text-gray-900 mb-6">
+                      <span className="text-[#2563EB]">GEST</span>ORA S.A.S
+                    </h1>
+                  )}
+                  <p className="text-gray-900 font-bold text-lg mb-1">{settings?.companyName || 'Gestora SARL'}</p>
+                  <p className="text-gray-500 text-sm mb-0.5">{settings?.address || '123 Avenue du Commerce, Dakar, SN'}</p>
+                  <p className="text-gray-500 text-sm mb-0.5">{settings?.email || 'contact@gestora.sn'}</p>
+                  <p className="text-gray-500 text-sm">{settings?.phone || '+221 77 123 45 67'}</p>
+                </div>
+                <div className="text-right flex flex-col items-end">
+                  <h2 className="text-4xl font-black text-[#2563EB] tracking-widest uppercase mb-6">Facture</h2>
+                  <div className="bg-gray-50/80 rounded-xl p-4 border border-gray-100 min-w-[200px]">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Référence</span>
+                      <span className="font-bold text-gray-900">{invoiceData.number}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Date</span>
+                      <span className="text-sm font-semibold text-gray-900">{invoiceData.date}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-between items-start mb-12">
+                <div className="w-full">
+                  <h3 className="text-xs font-bold text-[#2563EB] uppercase tracking-widest mb-3 flex items-center">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#2563EB] mr-2"></div>
+                    Facturé à
+                  </h3>
+                  <div className="space-y-1">
+                    <p className="font-black text-gray-900 text-xl">{invoiceData.clientName || '---'}</p>
+                    {invoiceData.clientAddress && <p className="text-sm font-medium text-gray-600">{invoiceData.clientAddress}</p>}
+                    {invoiceData.clientEmail && <p className="text-sm font-medium text-gray-600">{invoiceData.clientEmail}</p>}
+                    {invoiceData.clientPhone && <p className="text-sm font-medium text-gray-600">{invoiceData.clientPhone}</p>}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex-grow flex flex-col">
+                <div className="flex text-xs font-bold text-gray-500 uppercase tracking-wider border-b-2 border-gray-900 pb-3 mb-2 px-3">
+                  <div className="w-1/2">Désignation</div>
+                  <div className="w-1/6 text-center">Quantité</div>
+                  <div className="w-1/6 text-right">Prix Unitaire</div>
+                  <div className="w-1/6 text-right">Total</div>
+                </div>
+                <div className="space-y-0">
+                  {invoiceData.items.map((item, index) => (
+                    <div key={item.id} className={`flex items-center p-3 border-b border-gray-100 ${index % 2 === 0 ? 'bg-transparent' : 'bg-gray-50/50'}`}>
+                      <div className="w-1/2 pr-4 text-sm font-medium text-gray-900">{item.description}</div>
+                      <div className="w-1/6 px-2 text-sm font-semibold text-center text-gray-700">{item.quantity}</div>
+                      <div className="w-1/6 px-2 text-sm font-semibold text-right text-gray-700">{Number(item.price || 0).toLocaleString('fr-FR')}</div>
+                      <div className="w-1/6 text-right text-sm font-black text-gray-900">{((Number(item.quantity) || 0) * (Number(item.price) || 0)).toLocaleString('fr-FR')}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex justify-end mt-16 mb-4">
+                <div className="w-5/12">
+                  <div className="flex justify-between items-center px-4 py-3 border-b border-gray-100">
+                    <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">Sous-total</span>
+                    <span className="text-sm font-black text-gray-900">{subtotal.toLocaleString('fr-FR')}</span>
+                  </div>
+                  <div className="flex justify-between items-center bg-[#2563EB] rounded-lg p-3 mt-3 text-white">
+                    <span className="text-sm font-bold uppercase tracking-wider">Total</span>
+                    <span className="text-xl font-black">{total.toLocaleString('fr-FR')} FCFA</span>
+                  </div>
+                </div>
+              </div>
             </div>
-
+            
+            <div className="w-full bg-gray-50/80 px-12 py-6 border-t border-gray-200 mt-auto flex justify-between items-center">
+              <p className="text-xs font-semibold text-gray-500">{settings?.companyName || 'GESTORA S.A.S'}</p>
+              <p className="text-xs font-medium text-gray-400">{settings?.companyId || 'NINEA: 000000000 - RC: SN-DKR-2026-B-0000'}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -625,40 +607,13 @@ export default function InvoicesPage() {
         </button>
       </div>
 
-      {/* Toolbar: Search and Filters */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 py-2">
-        <div className="relative w-full md:w-96">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-4 w-4 text-gray-400" />
-          </div>
-          <input
-            type="text"
-            className="block w-full pl-10 pr-3 py-2 border border-gray-200 dark:border-slate-700 rounded-lg leading-5 bg-white dark:bg-[#162032] text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors"
-            placeholder="Rechercher par client ou n°..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        
-        <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 scrollbar-hide">
-          {filters.map(filter => (
-            <button
-              key={filter}
-              onClick={() => setActiveFilter(filter)}
-              className={`whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-medium transition-colors border ${
-                activeFilter === filter 
-                  ? 'bg-gray-900 border-gray-900 text-white dark:bg-white dark:border-white dark:text-gray-900' 
-                  : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 dark:bg-[#162032] dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'
-              }`}
-            >
-              {filter}
-            </button>
-          ))}
-        </div>
-      </div>
 
-      {/* Table (Desktop) */}
-      <div className="bg-white dark:bg-[#162032] rounded-2xl border border-gray-200 dark:border-slate-700/50 shadow-sm transition-colors duration-300">
+      {isLoading ? (
+        <SkeletonList count={5} />
+      ) : (
+        <>
+          {/* Table (Desktop) */}
+          <div className="bg-white dark:bg-[#162032] rounded-2xl border border-gray-200 dark:border-slate-700/50 shadow-sm transition-colors duration-300">
         <div className="hidden md:block overflow-x-auto pb-24 custom-scrollbar">
           <table className="w-full text-sm text-left whitespace-nowrap">
             <thead className="text-xs text-gray-500 uppercase bg-gray-50 dark:bg-slate-800/50 border-b border-gray-200 dark:border-slate-700/50">
@@ -666,15 +621,14 @@ export default function InvoicesPage() {
                 <th scope="col" className="px-6 py-4 font-semibold">N° Facture</th>
                 <th scope="col" className="px-6 py-4 font-semibold">Client</th>
                 <th scope="col" className="px-6 py-4 font-semibold">Date</th>
-                <th scope="col" className="px-6 py-4 font-semibold">Statut</th>
                 <th scope="col" className="px-6 py-4 font-semibold text-right">Montant</th>
                 <th scope="col" className="px-6 py-4"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-slate-800/60">
               {filteredInvoices.length > 0 ? (
-                filteredInvoices.map((inv) => (
-                  <tr key={inv.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/30 transition-colors group">
+                filteredInvoices.map((inv, index) => (
+                  <tr key={inv.dbId || `${inv.id}-${index}`} className="hover:bg-gray-50 dark:hover:bg-slate-800/30 transition-colors group">
                     <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
                       {inv.id}
                     </td>
@@ -684,11 +638,7 @@ export default function InvoicesPage() {
                     <td className="px-6 py-4 text-gray-500 dark:text-slate-400">
                       {inv.date}
                     </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusStyle(inv.status)}`}>
-                        {inv.status}
-                      </span>
-                    </td>
+
                     <td className="px-6 py-4 font-medium text-right text-gray-900 dark:text-white">
                       {inv.amount.toLocaleString('fr-FR')} FCFA
                     </td>
@@ -717,7 +667,6 @@ export default function InvoicesPage() {
                                   clientAddress: inv.clientAddress || '',
                                   clientEmail: inv.clientEmail || '',
                                   clientPhone: inv.clientPhone || '',
-                                  status: inv.status.toUpperCase(),
                                   items: inv.items && inv.items.length > 0 ? inv.items : [{ id: Date.now(), description: 'Prestation / Produit', quantity: 1, price: inv.amount }]
                                 });
                                 setIsViewing(true);
@@ -737,7 +686,6 @@ export default function InvoicesPage() {
                                   clientAddress: inv.clientAddress || '',
                                   clientEmail: inv.clientEmail || '',
                                   clientPhone: inv.clientPhone || '',
-                                  status: inv.status.toUpperCase(),
                                   items: inv.items && inv.items.length > 0 ? inv.items : [{ id: Date.now(), description: 'Prestation / Produit', quantity: 1, price: inv.amount }]
                                 });
                                 setIsCreating(true);
@@ -779,16 +727,14 @@ export default function InvoicesPage() {
         {/* Cards (Mobile) */}
         <div className="md:hidden flex flex-col divide-y divide-gray-100 dark:divide-slate-800/60 pb-10">
           {filteredInvoices.length > 0 ? (
-            filteredInvoices.map((inv) => (
-              <div key={inv.id} className="p-4 bg-white dark:bg-[#162032] flex flex-col gap-3">
+            filteredInvoices.map((inv, index) => (
+              <div key={inv.dbId || `${inv.id}-${index}`} className="p-4 bg-white dark:bg-[#162032] flex flex-col gap-3">
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="font-bold text-gray-900 dark:text-white text-sm">{inv.id}</h3>
                     <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">{inv.date}</p>
                   </div>
-                  <span className={`px-2 py-1 text-[10px] font-bold rounded-full uppercase tracking-wider ${getStatusStyle(inv.status)}`}>
-                    {inv.status}
-                  </span>
+
                 </div>
                 
                 <div className="flex justify-between items-center mt-1">
@@ -812,7 +758,6 @@ export default function InvoicesPage() {
                         clientAddress: inv.clientAddress || '',
                         clientEmail: inv.clientEmail || '',
                         clientPhone: inv.clientPhone || '',
-                        status: inv.status.toUpperCase(),
                         items: inv.items && inv.items.length > 0 ? inv.items : [{ id: Date.now(), description: 'Prestation / Produit', quantity: 1, price: inv.amount }]
                       });
                       setIsCreating(true);
@@ -842,6 +787,8 @@ export default function InvoicesPage() {
           )}
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 }
