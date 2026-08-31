@@ -638,6 +638,39 @@ export default function LandingPage() {
       {/* -------------------- PRICING SECTION -------------------- */}
       <PricingSection />
 
+      {/* -------------------- FAQ SECTION -------------------- */}
+      <section id="faq" className="py-24 bg-[#FAFBFF] dark:bg-[#050B14] transition-colors duration-300">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-4">
+              Foire aux questions
+            </h2>
+            <p className="text-lg text-gray-500 dark:text-gray-400 font-medium">
+              Tout ce que vous devez savoir sur GESTORA.
+            </p>
+          </div>
+          
+          <div className="space-y-4">
+            <FaqItem 
+              question="GESTORA est-il adapté à mon secteur d'activité ?" 
+              answer="Absolument. Que vous gériez une boutique de vêtements, une quincaillerie, un supermarché ou une pharmacie, GESTORA s'adapte à vos besoins avec des modules flexibles pour la gestion des stocks, ventes et employés." 
+            />
+            <FaqItem 
+              question="Mes données sont-elles en sécurité ?" 
+              answer="La sécurité est notre priorité absolue. Vos données sont hébergées sur des serveurs hautement sécurisés (AWS) avec un chiffrement de bout en bout et des sauvegardes automatiques régulières." 
+            />
+            <FaqItem 
+              question="Puis-je utiliser GESTORA sur mon téléphone ?" 
+              answer="Oui, GESTORA est 100% responsive. Vous pouvez y accéder depuis n'importe quel appareil (ordinateur, tablette, smartphone) avec une simple connexion internet." 
+            />
+            <FaqItem 
+              question="Que se passe-t-il après la période d'essai ?" 
+              answer="À la fin de vos 14 jours d'essai gratuit, vous pourrez choisir le plan qui correspond le mieux à la taille de votre entreprise pour continuer à profiter de toutes nos fonctionnalités." 
+            />
+          </div>
+        </div>
+      </section>
+
       {/* -------------------- FOOTER -------------------- */}
       <footer className="bg-gray-900 text-gray-400 py-12 border-t border-gray-800">
         <div className="max-w-[1400px] mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
