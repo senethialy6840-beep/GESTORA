@@ -6,13 +6,13 @@ import {
   MoreVertical, Edit, Trash2, CheckCircle2, X 
 } from 'lucide-react';
 import { InventoryModal } from '../../../components/InventoryModal';
-import { getInventoryMovements, createInventoryMovement, deleteInventoryMovement } from '../../actions/inventoryActions';
+import { getStockMovements, createStockMovement, deleteStockMovement } from '../../actions/inventoryActions';
 import { getProducts } from '../../actions/productActions';
 import { SkeletonList } from '../../../components/Skeletons';
 import { useSession } from 'next-auth/react';
 
 export default function InventoryPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [inventory, setInventory] = useState<any[]>([]);
@@ -27,7 +27,7 @@ export default function InventoryPage() {
       if (session?.user?.companyId) {
         setIsLoading(true);
         const [invRes, prodRes] = await Promise.all([
-          getInventoryMovements(session.user.companyId),
+          getStockMovements(session.user.companyId),
           getProducts(session.user.companyId)
         ]);
         
@@ -57,9 +57,9 @@ export default function InventoryPage() {
     };
     
     try {
-      const res = await createInventoryMovement(data);
+      const res = await createStockMovement(data);
       if (res.success && res.data) {
-        const invRes = await getInventoryMovements(session.user.companyId);
+        const invRes = await getStockMovements(session.user.companyId);
         if (invRes.success && invRes.data) {
           setInventory(invRes.data);
         }
@@ -75,7 +75,7 @@ export default function InventoryPage() {
   const handleDeleteInventory = async () => {
     if (itemToDelete) {
       setIsLoading(true);
-      const res = await deleteInventoryMovement(itemToDelete);
+      const res = await deleteStockMovement(itemToDelete);
       if (res.success) {
         setInventory(prev => prev.filter(p => p.id !== itemToDelete));
       }
@@ -106,7 +106,7 @@ export default function InventoryPage() {
           disabled={isLoading || products.length === 0}
           className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50"
         >
-          {isLoading ? <span className="animate-spin mr-2">⏳</span> : <Plus className="w-4 h-4 mr-2" />}
+          {(status === 'loading' || isLoading) ? <span className="animate-spin mr-2">⏳</span> : <Plus className="w-4 h-4 mr-2" />}
           Ajuster le stock
         </button>
       </div>

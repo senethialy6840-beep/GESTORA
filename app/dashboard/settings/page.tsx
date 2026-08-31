@@ -7,7 +7,7 @@ import { SkeletonForm } from '../../../components/Skeletons';
 import { useSession } from 'next-auth/react';
 
 export default function SettingsPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [activeTab, setActiveTab] = useState('profil');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
@@ -157,7 +157,7 @@ export default function SettingsPage() {
 
         {/* Content */}
         <div className="flex-1 space-y-6">
-          {isLoading ? (
+          {(status === 'loading' || isLoading) ? (
             <SkeletonForm />
           ) : (
             <>

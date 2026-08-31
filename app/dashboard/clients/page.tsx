@@ -16,7 +16,7 @@ const fmt = (num: number) => {
 };
 
 export default function ClientsPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [clients, setClients] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeMenu, setActiveMenu] = useState<number | null>(null);

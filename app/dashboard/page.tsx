@@ -6,12 +6,12 @@ import { useTheme } from "next-themes";
 import { useEffect, useState, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { getDashboardStats } from "../actions/dashboardActions";
-import { SkeletonKPICard, SkeletonChart } from "../../../components/Skeletons";
+import { SkeletonKPICard, SkeletonChart } from "../../components/Skeletons";
 
 const COLORS = ['#2563EB', '#06B6D4', '#F5A623'];
 
 export default function DashboardPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const { theme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [userName, setUserName] = useState("votre");
@@ -119,7 +119,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {isLoading ? (
+      {(status === 'loading' || isLoading) ? (
         <div className="w-full space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <SkeletonKPICard />

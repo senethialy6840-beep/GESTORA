@@ -11,7 +11,7 @@ import { Loader2 } from 'lucide-react';
 
 export default function ReportsPage() {
   const { theme } = useTheme();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [mounted, setMounted] = useState(false);
   const [timeRange, setTimeRange] = useState('Aujourd\'hui');
   const [sales, setSales] = useState<any[]>([]);
@@ -102,7 +102,7 @@ export default function ReportsPage() {
     depenses: chartDataMap[k].depenses
   }));
 
-  if (isLoading) {
+  if (status === 'loading' || isLoading) {
     return (
       <div className="w-full max-w-7xl mx-auto space-y-6 pt-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

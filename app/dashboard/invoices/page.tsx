@@ -11,7 +11,7 @@ import { SkeletonList, SkeletonForm } from "../../../components/Skeletons";
 
 
 export default function InvoicesPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [invoices, setInvoices] = useState<any[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const [isViewing, setIsViewing] = useState(false);
@@ -608,7 +608,7 @@ export default function InvoicesPage() {
       </div>
 
 
-      {isLoading ? (
+      {(status === 'loading' || isLoading) ? (
         <SkeletonList count={5} />
       ) : (
         <>

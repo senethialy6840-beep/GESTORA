@@ -9,7 +9,7 @@ import { useSession } from 'next-auth/react';
 import { SkeletonList } from '../../../components/Skeletons';
 
 export default function ProductsPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [productToDelete, setProductToDelete] = useState<string | null>(null);
@@ -73,7 +73,7 @@ export default function ProductsPage() {
     }
   };
 
-  if (!isLoaded) return <div className="w-full max-w-7xl mx-auto space-y-6 pt-6"><SkeletonList count={5} /></div>;
+  if (status === 'loading' || !isLoaded) return <div className="w-full max-w-7xl mx-auto space-y-6 pt-6"><SkeletonList count={5} /></div>;
 
 
   return (
