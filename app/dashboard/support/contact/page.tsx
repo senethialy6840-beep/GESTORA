@@ -47,6 +47,7 @@ export default function ContactPage() {
             <label className="block text-sm font-bold text-gray-900 dark:text-white mb-2">Sujet de la demande *</label>
             <select className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0A1226] text-gray-900 dark:text-white border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#2563EB] outline-none transition-all appearance-none" required>
               <option>Demande générale</option>
+              <option>Autre demande</option>
             </select>
           </div>
           <div>

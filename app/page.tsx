@@ -729,6 +729,7 @@ export default function LandingPage() {
                   <label className="block text-sm font-bold text-gray-900 dark:text-white mb-2">Sujet de la demande *</label>
                   <select className="w-full px-4 py-3 bg-white dark:bg-[#0A1226] text-gray-900 dark:text-white border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#2563EB] outline-none transition-all appearance-none" required>
                     <option>Demande générale</option>
+                    <option>Autre demande</option>
                   </select>
                 </div>
                 <div>
@@ -741,6 +742,124 @@ export default function LandingPage() {
               </form>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* -------------------- BANNIERE INSPIRATION -------------------- */}
+      <section className="relative bg-[#3B82F6] dark:bg-[#2563EB] py-24 overflow-hidden">
+        {/* Floating Card 1: Top Left (Products) */}
+        <div className="absolute top-10 left-10 hidden lg:block animate-bounce-slow">
+           <div className="bg-white dark:bg-[#162032] p-4 rounded-xl shadow-lg w-48 border border-gray-100 dark:border-slate-700">
+              <div className="flex justify-between items-center mb-4">
+                 <span className="text-xs font-bold text-gray-700 dark:text-gray-200">Produits</span>
+                 <span className="text-[10px] text-emerald-500 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-0.5 rounded-full font-bold">+20.5%</span>
+              </div>
+              <div className="w-16 h-16 rounded-full border-4 border-emerald-400 mx-auto mb-2 relative">
+                 <div className="absolute inset-0 border-4 border-transparent border-t-emerald-200 rounded-full transform -rotate-45"></div>
+              </div>
+              <p className="text-[9px] text-center text-gray-400 font-medium">Bénéfice supplémentaire ce mois</p>
+           </div>
+        </div>
+
+        {/* Floating Card 2: Bottom Left (Current Balance) */}
+        <div className="absolute bottom-10 left-20 hidden lg:block animate-bounce-slow" style={{ animationDelay: '1s' }}>
+           <div className="bg-[#A7F3D0] dark:bg-emerald-900 p-5 rounded-2xl shadow-xl w-64 text-gray-800 dark:text-white transform -rotate-3">
+              <div className="flex items-center gap-2 mb-3">
+                 <div className="w-7 h-7 bg-emerald-500 rounded-full flex items-center justify-center text-white text-xs"><DollarSign className="w-4 h-4"/></div>
+                 <span className="text-sm font-bold">Solde Actuel</span>
+              </div>
+              <div className="flex justify-between items-end">
+                 <div>
+                   <p className="text-3xl font-black">2 529k</p>
+                   <p className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-200 dark:bg-emerald-800/50 inline-block px-2 py-0.5 rounded mt-1">+42% ce mois</p>
+                 </div>
+                 <div className="w-12 h-12 rounded-full border-4 border-emerald-400 dark:border-emerald-500"></div>
+              </div>
+           </div>
+        </div>
+
+        {/* Floating Card 3: Top Right (Marketing Report) */}
+        <div className="absolute top-12 right-12 hidden lg:block animate-bounce-slow" style={{ animationDelay: '0.5s' }}>
+           <div className="bg-white dark:bg-[#162032] p-5 rounded-2xl shadow-lg w-64 border border-gray-100 dark:border-slate-700 transform rotate-2">
+              <p className="text-xs font-bold text-gray-700 dark:text-gray-200 mb-4">Rapport des ventes</p>
+              <div className="flex justify-between items-center">
+                 <div className="space-y-3">
+                   <div className="flex items-center gap-2">
+                     <div className="w-6 h-6 bg-blue-50 dark:bg-blue-900/30 rounded flex items-center justify-center"><LineChart className="w-3 h-3 text-blue-500"/></div>
+                     <div>
+                       <p className="text-[9px] text-gray-400 font-medium">Volume</p>
+                       <p className="text-sm font-bold text-gray-800 dark:text-white">+2.9k</p>
+                     </div>
+                   </div>
+                   <div className="flex items-center gap-2">
+                     <div className="w-6 h-6 bg-gray-50 dark:bg-slate-800 rounded flex items-center justify-center"><Box className="w-3 h-3 text-gray-500"/></div>
+                     <div>
+                       <p className="text-[9px] text-gray-400 font-medium">Ratio</p>
+                       <p className="text-sm font-bold text-gray-800 dark:text-white">1.22</p>
+                     </div>
+                   </div>
+                 </div>
+                 <div className="relative w-20 h-20">
+                    <svg viewBox="0 0 36 36" className="w-full h-full text-blue-500 dark:text-blue-400">
+                       <path strokeDasharray="60, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pt-1">
+                       <span className="text-sm font-black text-gray-800 dark:text-white">275</span>
+                    </div>
+                 </div>
+              </div>
+           </div>
+        </div>
+
+        {/* Floating Card 4: Middle Right (Followers/Clients) */}
+        <div className="absolute bottom-20 right-20 hidden lg:block animate-bounce-slow" style={{ animationDelay: '1.5s' }}>
+           <div className="bg-[#FECDD3] dark:bg-rose-900 p-5 rounded-2xl shadow-xl w-56 text-gray-800 dark:text-white transform -rotate-2">
+              <div className="flex items-center gap-2 mb-2">
+                 <div className="w-6 h-6 bg-rose-400 dark:bg-rose-500 rounded-full flex items-center justify-center text-white text-[10px]"><Users className="w-3 h-3"/></div>
+                 <span className="text-sm font-bold">Total Clients</span>
+              </div>
+              <div className="flex justify-between items-end mt-4">
+                 <div>
+                   <p className="text-2xl font-black">4,562</p>
+                   <p className="text-[9px] font-bold text-rose-600 dark:text-rose-300 mt-1">+12% ce mois</p>
+                 </div>
+                 {/* Fake bars */}
+                 <div className="flex items-end gap-1.5 h-10">
+                    <div className="w-1.5 h-[100%] bg-rose-400 dark:bg-rose-500 rounded-t-sm"></div>
+                    <div className="w-1.5 h-[60%] bg-rose-400 dark:bg-rose-500 rounded-t-sm"></div>
+                    <div className="w-1.5 h-[80%] bg-rose-400 dark:bg-rose-500 rounded-t-sm"></div>
+                    <div className="w-1.5 h-[40%] bg-rose-400 dark:bg-rose-500 rounded-t-sm"></div>
+                    <div className="w-1.5 h-[90%] bg-rose-400 dark:bg-rose-500 rounded-t-sm"></div>
+                 </div>
+              </div>
+           </div>
+        </div>
+
+        {/* Floating Card 5: Bottom Right (Total Income) */}
+        <div className="absolute -bottom-8 right-0 hidden lg:block animate-bounce-slow" style={{ animationDelay: '0.8s' }}>
+           <div className="bg-[#E9D5FF] dark:bg-purple-900 p-4 rounded-tl-2xl rounded-bl-2xl shadow-xl w-48 text-gray-800 dark:text-white">
+              <div className="flex items-center gap-2 mb-2">
+                 <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center text-white"><DollarSign className="w-3 h-3"/></div>
+                 <span className="text-xs font-bold">Revenu Total</span>
+              </div>
+              <div>
+                 <p className="text-xl font-black">$6,280</p>
+                 <p className="text-[9px] font-bold text-purple-600 dark:text-purple-300">+8% la semaine dernière</p>
+              </div>
+           </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="relative z-10 max-w-4xl mx-auto px-6 text-center text-white">
+          <div className="inline-block bg-white text-[#2563EB] px-6 py-2 rounded-xl font-black text-2xl tracking-tight mb-8 shadow-md">
+             GESTORA.
+          </div>
+          <h2 className="text-3xl md:text-5xl font-extrabold mb-8 leading-tight tracking-tight drop-shadow-sm">
+             Concentrez-vous sur ce qui compte vraiment, gérez vos stocks sans stress, boostez vos ventes.
+          </h2>
+          <p className="text-lg md:text-xl text-blue-100 font-medium leading-relaxed max-w-3xl mx-auto">
+             Libérez-vous des contraintes administratives et des tâches répétitives. Notre application centralise la gestion de vos produits, automatise les alertes de stock et facilite le suivi de vos ventes. Vous gagnez du temps, réduisez les erreurs et pouvez enfin vous consacrer à la croissance de votre activité.
+          </p>
         </div>
       </section>
 
