@@ -2,6 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import { CustomerSchema } from '@/lib/validations';
 
 // Type pour la création d'un client
 export type CreateCustomerData = {
@@ -17,6 +18,11 @@ export type CreateCustomerData = {
 // Ajouter un nouveau client
 export async function createCustomer(data: CreateCustomerData) {
   try {
+    const validated = CustomerSchema.safeParse(data);
+    if (!validated.success) {
+      return { success: false, error: "Données du client invalides." };
+    }
+    data = validated.data as CreateCustomerData;
     const customer = await prisma.customer.create({
       data: {
         name: data.name,
@@ -53,6 +59,11 @@ export async function getCustomers(companyId: string) {
 
 export async function updateCustomer(id: string, data: Partial<CreateCustomerData>) {
   try {
+    const validated = CustomerSchema.partial().safeParse(data);
+    if (!validated.success) {
+      return { success: false, error: "Données invalides." };
+    }
+    data = validated.data as Partial<CreateCustomerData>;
     const customer = await prisma.customer.update({
       where: { id },
       data,

@@ -2,6 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import { ProductSchema } from '@/lib/validations';
 
 export type CreateProductData = {
   name: string;
@@ -17,6 +18,11 @@ export type CreateProductData = {
 
 export async function createProduct(data: CreateProductData) {
   try {
+    const validated = ProductSchema.safeParse(data);
+    if (!validated.success) {
+      return { success: false, error: "Données du produit invalides." };
+    }
+    data = validated.data as CreateProductData;
     const product = await prisma.product.create({
       data: {
         name: data.name,
@@ -56,6 +62,11 @@ export async function getProducts(companyId: string) {
 
 export async function updateProduct(id: string, data: Partial<CreateProductData>) {
   try {
+    const validated = ProductSchema.partial().safeParse(data);
+    if (!validated.success) {
+      return { success: false, error: "Données invalides." };
+    }
+    data = validated.data as Partial<CreateProductData>;
     const product = await prisma.product.update({
       where: { id },
       data,
