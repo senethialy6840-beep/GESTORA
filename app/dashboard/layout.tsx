@@ -6,7 +6,7 @@ import { Suspense, useState, useEffect, useRef } from 'react';
 import { 
   LayoutDashboard, BarChart3, Sparkles, Monitor, ShoppingCart, 
   Users, Package, Box, Truck, Calculator, FileText, Users2, 
-  Building, Search, Menu, PanelLeftClose, PanelLeftOpen, Settings, User, LogOut, HelpCircle, X
+  Building, Search, Menu, PanelLeftClose, PanelLeftOpen, Settings, User, LogOut, HelpCircle, X, CreditCard
 } from 'lucide-react';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { useSession, signOut } from 'next-auth/react';
@@ -234,13 +234,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </Link>
               </li>
               {(session?.user as any)?.role !== 'SELLER' && (
-                <li>
-                  <Link href="/dashboard/settings" className={getLinkClass('/dashboard/settings')} title="Paramètres">
-                    {isActive('/dashboard/settings') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
-                    <Settings className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/settings') ? 'text-blue-400' : ''}`} />
-                    {!isSidebarCollapsed && <span className="truncate">Paramètres</span>}
-                  </Link>
-                </li>
+                <>
+                  <li>
+                    <Link href="/dashboard/subscription" className={getLinkClass('/dashboard/subscription')} title="Abonnement">
+                      {isActive('/dashboard/subscription') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
+                      <CreditCard className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/subscription') ? 'text-blue-400' : ''}`} />
+                      {!isSidebarCollapsed && <span className="truncate">Abonnement</span>}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/dashboard/settings" className={getLinkClass('/dashboard/settings')} title="Paramètres">
+                      {isActive('/dashboard/settings') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
+                      <Settings className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/settings') ? 'text-blue-400' : ''}`} />
+                      {!isSidebarCollapsed && <span className="truncate">Paramètres</span>}
+                    </Link>
+                  </li>
+                </>
               )}
               <li>
                 <Link href="/dashboard/support" className={getLinkClass('/dashboard/support')} title="Aide et assistance">
