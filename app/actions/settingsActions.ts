@@ -4,9 +4,9 @@ import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const getSupabase = () => createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder'
 );
 
 const defaultSettings = {
@@ -61,7 +61,7 @@ export async function saveSettings(companyId: string, data: any) {
           const buffer = Buffer.from(matches[2], 'base64');
           const filename = `${companyId}-${Date.now()}.${type}`;
           
-          const { data: uploadData, error } = await supabase
+          const { data: uploadData, error } = await getSupabase()
             .storage
             .from('logos')
             .upload(filename, buffer, {
@@ -72,7 +72,7 @@ export async function saveSettings(companyId: string, data: any) {
           if (error) {
             console.error("Supabase upload error:", error);
           } else {
-            const { data: publicUrlData } = supabase.storage.from('logos').getPublicUrl(filename);
+            const { data: publicUrlData } = getSupabase().storage.from('logos').getPublicUrl(filename);
             logoUrl = publicUrlData.publicUrl;
           }
         }
