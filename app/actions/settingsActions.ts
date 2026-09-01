@@ -53,7 +53,7 @@ export async function saveSettings(companyId: string, data: any) {
     
     const validated = SettingsSchema.safeParse(data);
     if (!validated.success) {
-      console.error("Validation failed", validated.error.errors);
+      console.error("Validation failed", validated.error.issues);
       return { success: false, error: "Données invalides." };
     }
     
