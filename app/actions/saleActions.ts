@@ -2,6 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import { SaleSchema } from '@/lib/validations';
 
 export type CreateSaleData = {
   invoiceNo: string;
@@ -14,6 +15,11 @@ export type CreateSaleData = {
 
 export async function createSale(data: CreateSaleData) {
   try {
+    const validated = SaleSchema.safeParse(data);
+    if (!validated.success) {
+      return { success: false, error: "Données de vente invalides." };
+    }
+    data = validated.data as CreateSaleData;
     const sale = await prisma.sale.create({
       data: {
         invoiceNo: data.invoiceNo,
@@ -57,6 +63,11 @@ export async function createSale(data: CreateSaleData) {
 
 export async function updateSale(id: string, data: Partial<CreateSaleData>) {
   try {
+    const validated = SaleSchema.partial().safeParse(data);
+    if (!validated.success) {
+      return { success: false, error: "Données de vente invalides." };
+    }
+    data = validated.data as Partial<CreateSaleData>;
     // If items are provided, delete existing and recreate (simplest way to handle updates for items)
     if (data.items) {
       await prisma.saleItem.deleteMany({ where: { saleId: id } });

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { Purchase, Supplier, PurchaseItem } from "@prisma/client";
+import { PurchaseSchema, SupplierSchema } from "@/lib/validations";
 
 // --- Suppliers ---
 
@@ -21,6 +22,11 @@ export async function getSuppliers(companyId: string) {
 
 export async function createSupplier(data: Omit<Supplier, "id" | "createdAt" | "updatedAt">) {
   try {
+    const validated = SupplierSchema.safeParse(data);
+    if (!validated.success) {
+      return { success: false, error: "Données fournisseur invalides." };
+    }
+    data = validated.data as any;
     const supplier = await prisma.supplier.create({
       data,
     });
@@ -34,6 +40,11 @@ export async function createSupplier(data: Omit<Supplier, "id" | "createdAt" | "
 
 export async function updateSupplier(id: string, data: Partial<Supplier>) {
   try {
+    const validated = SupplierSchema.partial().safeParse(data);
+    if (!validated.success) {
+      return { success: false, error: "Données fournisseur invalides." };
+    }
+    data = validated.data as Partial<Supplier>;
     const supplier = await prisma.supplier.update({
       where: { id },
       data,
@@ -83,6 +94,11 @@ export async function createPurchase(
   items: Omit<PurchaseItem, "id" | "purchaseId">[]
 ) {
   try {
+    const validated = PurchaseSchema.safeParse(data);
+    if (!validated.success) {
+      return { success: false, error: "Données d'achat invalides." };
+    }
+    data = validated.data as any;
     const purchase = await prisma.purchase.create({
       data: {
         ...data,

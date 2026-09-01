@@ -55,3 +55,42 @@ export const CustomerSchema = z.object({
   balance: z.coerce.number().optional().default(0),
   companyId: z.string().min(1, "Company ID requis."),
 });
+
+// --- Transactions (Factures, Achats, Ventes) ---
+
+export const SaleItemSchema = z.object({
+  description: z.string().min(1, "Description requise"),
+  quantity: z.coerce.number().min(1, "Quantité >= 1"),
+  price: z.coerce.number().min(0, "Prix invalide"),
+  productId: z.string().optional()
+});
+
+export const SaleSchema = z.object({
+  invoiceNo: z.string().min(1, "Numéro de facture requis"),
+  totalAmount: z.coerce.number().min(0, "Montant invalide"),
+  status: z.string().optional(),
+  customerId: z.string().optional(),
+  companyId: z.string().min(1, "Company ID requis"),
+  items: z.array(SaleItemSchema).optional()
+});
+
+export const SupplierSchema = z.object({
+  name: z.string().min(1, "Le nom du fournisseur est requis"),
+  email: z.union([z.literal(""), z.string().email()]).optional(),
+  phone: z.string().optional(),
+  address: z.string().optional(),
+  companyId: z.string().min(1, "Company ID requis")
+});
+
+export const PurchaseItemSchema = z.object({
+  description: z.string().min(1, "Description requise"),
+  quantity: z.coerce.number().min(1, "Quantité >= 1"),
+  price: z.coerce.number().min(0, "Prix invalide")
+});
+
+export const PurchaseSchema = z.object({
+  supplierId: z.string().min(1, "Fournisseur requis"),
+  totalAmount: z.coerce.number().min(0, "Montant invalide"),
+  status: z.string().optional(),
+  companyId: z.string().min(1, "Company ID requis")
+});

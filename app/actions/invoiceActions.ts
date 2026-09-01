@@ -2,6 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import { SaleSchema } from '@/lib/validations';
 
 // Type pour la création d'une facture
 export type CreateInvoiceData = {
@@ -15,6 +16,11 @@ export type CreateInvoiceData = {
 // Ajouter une nouvelle facture
 export async function createInvoice(data: CreateInvoiceData) {
   try {
+    const validated = SaleSchema.safeParse(data);
+    if (!validated.success) {
+      return { success: false, error: "Données de facture invalides." };
+    }
+    data = validated.data as CreateInvoiceData;
     const invoice = await prisma.sale.create({
       data: {
         invoiceNo: data.invoiceNo,
