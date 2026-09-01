@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
+import { SasPayButton } from './SasPayButton';
 
 interface InvoiceModalProps {
   isOpen: boolean;
@@ -139,20 +140,31 @@ export function InvoiceModal({ isOpen, onClose, onSave, initialData }: InvoiceMo
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-gray-200 dark:border-slate-700/50 bg-gray-50/50 dark:bg-[#1E293B]/50 flex justify-end space-x-3">
-          <button 
-            onClick={onClose}
-            className="px-5 py-2.5 rounded-xl font-bold text-gray-700 dark:text-slate-300 bg-white dark:bg-[#162032] border border-gray-200 dark:border-slate-700/50 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors shadow-sm"
-          >
-            Annuler
-          </button>
-          <button 
-            type="submit"
-            form="invoice-form"
-            className="px-5 py-2.5 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-all"
-          >
-            Enregistrer
-          </button>
+        <div className="px-6 py-4 border-t border-gray-200 dark:border-slate-700/50 bg-gray-50/50 dark:bg-[#1E293B]/50 flex justify-between items-center">
+          <div>
+            {initialData && formData.status !== 'PAID' && (
+              <SasPayButton 
+                amount={parseFloat(formData.totalAmount) || 0} 
+                reference={initialData.id || formData.invoiceNo}
+                description={`Paiement de la facture ${formData.invoiceNo} - ${formData.client}`}
+              />
+            )}
+          </div>
+          <div className="flex space-x-3">
+            <button 
+              onClick={onClose}
+              className="px-5 py-2.5 rounded-xl font-bold text-gray-700 dark:text-slate-300 bg-white dark:bg-[#162032] border border-gray-200 dark:border-slate-700/50 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors shadow-sm"
+            >
+              Annuler
+            </button>
+            <button 
+              type="submit"
+              form="invoice-form"
+              className="px-5 py-2.5 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-all"
+            >
+              Enregistrer
+            </button>
+          </div>
         </div>
 
       </div>
