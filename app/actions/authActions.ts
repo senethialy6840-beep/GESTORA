@@ -4,9 +4,15 @@ import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import nodemailer from "nodemailer";
+import { EmailSchema, ResetPasswordSchema, RegisterUserSchema } from "@/lib/validations";
 
 export async function forgotPassword(email: string) {
   try {
+    const validated = EmailSchema.safeParse({ email });
+    if (!validated.success) {
+      return { success: false, error: validated.error.errors[0].message };
+    }
+    email = validated.data.email;
     const user = await prisma.user.findUnique({
       where: { email }
     });
@@ -76,6 +82,12 @@ export async function forgotPassword(email: string) {
 
 export async function resetPassword(token: string, newPassword: string) {
   try {
+    const validated = ResetPasswordSchema.safeParse({ token, newPassword });
+    if (!validated.success) {
+      return { success: false, error: validated.error.errors[0].message };
+    }
+    token = validated.data.token;
+    newPassword = validated.data.newPassword;
     const resetRecord = await prisma.passwordResetToken.findUnique({
       where: { token }
     });
@@ -108,8 +120,13 @@ export async function resetPassword(token: string, newPassword: string) {
   }
 }
 
-export async function registerUser({ prenom, nom, entreprise, email, motDePasse }: { prenom: string, nom: string, entreprise: string, email: string, motDePasse: string }) {
+export async function registerUser(data: { prenom: string, nom: string, entreprise: string, email: string, motDePasse: string }) {
   try {
+    const validated = RegisterUserSchema.safeParse(data);
+    if (!validated.success) {
+      return { success: false, error: validated.error.errors[0].message };
+    }
+    const { prenom, nom, entreprise, email, motDePasse } = validated.data;
     const existingUser = await prisma.user.findUnique({
       where: { email }
     });

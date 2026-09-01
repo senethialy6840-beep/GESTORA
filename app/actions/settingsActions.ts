@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@supabase/supabase-js';
+import { SettingsSchema } from '@/lib/validations';
 
 const getSupabase = () => createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
@@ -50,6 +51,13 @@ export async function saveSettings(companyId: string, data: any) {
   try {
     if (!companyId) return { success: false };
     
+    const validated = SettingsSchema.safeParse(data);
+    if (!validated.success) {
+      console.error("Validation failed", validated.error.errors);
+      return { success: false, error: "Données invalides." };
+    }
+    
+    data = validated.data;
     let logoUrl = data.logo;
     
     // Check if the logo is a new base64 upload
