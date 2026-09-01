@@ -671,6 +671,79 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* -------------------- SUPPORT SECTION -------------------- */}
+      <section id="support" className="py-24 bg-white dark:bg-[#0A1226] transition-colors duration-300">
+        <div className="max-w-[1400px] mx-auto px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+            
+            {/* Left: Text and Map */}
+            <div>
+              <div className="mb-10">
+                <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-4">
+                  Contactez-nous
+                </h2>
+                <p className="text-lg text-gray-500 dark:text-gray-400 font-medium">
+                  Avez-vous des questions ou besoin d’aide ? Nous sommes juste à un message.
+                </p>
+              </div>
+
+              {/* Map embedded */}
+              <div className="rounded-3xl overflow-hidden shadow-lg border border-gray-100 dark:border-slate-800">
+                <iframe 
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d123616.71181862414!2d-17.545300096238686!3d14.73976527582236!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1121d5a73e6d2be1%3A0x6b6d51c367cefc73!2sDakar%2C%20S%C3%A9n%C3%A9gal!5e0!3m2!1sfr!2sfr!4v1714152562416!5m2!1sfr!2sfr" 
+                  width="100%" 
+                  height="450" 
+                  style={{ border: 0 }} 
+                  allowFullScreen={true} 
+                  loading="lazy" 
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Carte de Dakar, Sénégal"
+                ></iframe>
+              </div>
+            </div>
+
+            {/* Right: Form */}
+            <div className="bg-[#FAFBFF] dark:bg-[#162032] p-8 md:p-10 rounded-[2rem] border border-gray-100 dark:border-slate-700/50 shadow-sm">
+              <form className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-900 dark:text-white mb-2">Prénom *</label>
+                    <input type="text" className="w-full px-4 py-3 bg-white dark:bg-[#0A1226] text-gray-900 dark:text-white border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#2563EB] outline-none transition-all" placeholder="Votre prénom" required />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-900 dark:text-white mb-2">Nom *</label>
+                    <input type="text" className="w-full px-4 py-3 bg-white dark:bg-[#0A1226] text-gray-900 dark:text-white border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#2563EB] outline-none transition-all" placeholder="Votre nom" required />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-900 dark:text-white mb-2">Téléphone *</label>
+                    <input type="tel" className="w-full px-4 py-3 bg-white dark:bg-[#0A1226] text-gray-900 dark:text-white border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#2563EB] outline-none transition-all" placeholder="Votre numéro de téléphone" required />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-900 dark:text-white mb-2">Email *</label>
+                    <input type="email" className="w-full px-4 py-3 bg-white dark:bg-[#0A1226] text-gray-900 dark:text-white border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#2563EB] outline-none transition-all" placeholder="Adresse e-mail" required />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 dark:text-white mb-2">Sujet de la demande *</label>
+                  <select className="w-full px-4 py-3 bg-white dark:bg-[#0A1226] text-gray-900 dark:text-white border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#2563EB] outline-none transition-all appearance-none" required>
+                    <option>Demande générale</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 dark:text-white mb-2">Message</label>
+                  <textarea rows={6} className="w-full px-4 py-3 bg-white dark:bg-[#0A1226] text-gray-900 dark:text-white border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#2563EB] outline-none transition-all resize-none" placeholder="Votre message ici..." required></textarea>
+                </div>
+                <button type="submit" className="w-full py-4 bg-[#2563EB] hover:bg-blue-600 text-white font-bold rounded-xl transition-all shadow-md hover:shadow-lg hover:-translate-y-1">
+                  Envoyer le message
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* -------------------- FOOTER -------------------- */}
       <footer className="bg-gray-900 text-gray-400 py-12 border-t border-gray-800">
         <div className="max-w-[1400px] mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
