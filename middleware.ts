@@ -3,16 +3,20 @@ import { NextResponse } from "next/server";
 
 export default withAuth(
   function middleware(req) {
-    const role = req.nextauth.token?.role as string;
-    const path = req.nextUrl.pathname;
+    try {
+      const role = req.nextauth?.token?.role as string | undefined;
+      const path = req.nextUrl.pathname;
 
-    // Permissions strictes pour les Vendeurs
-    if (role === 'SELLER') {
-      const restrictedPaths = ['/dashboard/settings', '/dashboard/accounting', '/dashboard/hr', '/dashboard/purchases'];
-      
-      if (restrictedPaths.some(p => path.startsWith(p))) {
-        return NextResponse.redirect(new URL('/dashboard', req.url));
+      // Permissions strictes pour les Vendeurs
+      if (role === 'SELLER') {
+        const restrictedPaths = ['/dashboard/settings', '/dashboard/accounting', '/dashboard/hr', '/dashboard/purchases'];
+        
+        if (restrictedPaths.some(p => path.startsWith(p))) {
+          return NextResponse.redirect(new URL('/dashboard', req.url));
+        }
       }
+    } catch (e) {
+      console.error("Middleware error:", e);
     }
   },
   {
@@ -21,7 +25,8 @@ export default withAuth(
     },
     callbacks: {
       authorized: ({ token }) => !!token,
-    }
+    },
+    secret: process.env.NEXTAUTH_SECRET,
   }
 );
 
