@@ -183,13 +183,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   {!isSidebarCollapsed && <span className="truncate">Rapports & Analyses</span>}
                 </Link>
               </li>
-              <li>
-                <Link href="/dashboard/purchases" className={getLinkClass('/dashboard/purchases')} title="Achats & Fournisseurs">
-                  {isActive('/dashboard/purchases') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
-                  <Truck className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/purchases') ? 'text-blue-400' : ''}`} />
-                  {!isSidebarCollapsed && <span className="truncate">Achats & Fournisseurs</span>}
-                </Link>
-              </li>
+              {(session?.user as any)?.role !== 'SELLER' && (
+                <li>
+                  <Link href="/dashboard/purchases" className={getLinkClass('/dashboard/purchases')} title="Achats & Fournisseurs">
+                    {isActive('/dashboard/purchases') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
+                    <Truck className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/purchases') ? 'text-blue-400' : ''}`} />
+                    {!isSidebarCollapsed && <span className="truncate">Achats & Fournisseurs</span>}
+                  </Link>
+                </li>
+              )}
               {(session?.user as any)?.role === 'SUPER_ADMIN' && (
                 <li>
                   <Link href="/dashboard/clients" className={getLinkClass('/dashboard/clients')} title="Clients">
@@ -206,20 +208,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   {!isSidebarCollapsed && <span className="truncate">Factures & Devis</span>}
                 </Link>
               </li>
-              <li>
-                <Link href="/dashboard/accounting" className={getLinkClass('/dashboard/accounting')} title="Comptabilité">
-                  {isActive('/dashboard/accounting') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
-                  <Calculator className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/accounting') ? 'text-blue-400' : ''}`} />
-                  {!isSidebarCollapsed && <span className="truncate">Comptabilité</span>}
-                </Link>
-              </li>
-              <li>
-                <Link href="/dashboard/hr" className={getLinkClass('/dashboard/hr')} title="Ressources Humaines">
-                  {isActive('/dashboard/hr') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
-                  <Users2 className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/hr') ? 'text-blue-400' : ''}`} />
-                  {!isSidebarCollapsed && <span className="truncate">Ressources Humaines</span>}
-                </Link>
-              </li>
+              {(session?.user as any)?.role !== 'SELLER' && (
+                <>
+                  <li>
+                    <Link href="/dashboard/accounting" className={getLinkClass('/dashboard/accounting')} title="Comptabilité">
+                      {isActive('/dashboard/accounting') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
+                      <Calculator className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/accounting') ? 'text-blue-400' : ''}`} />
+                      {!isSidebarCollapsed && <span className="truncate">Comptabilité</span>}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/dashboard/hr" className={getLinkClass('/dashboard/hr')} title="Ressources Humaines">
+                      {isActive('/dashboard/hr') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
+                      <Users2 className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/hr') ? 'text-blue-400' : ''}`} />
+                      {!isSidebarCollapsed && <span className="truncate">Ressources Humaines</span>}
+                    </Link>
+                  </li>
+                </>
+              )}
               <li>
                 <Link href="/dashboard/ai" className={getLinkClass('/dashboard/ai')} title="Gestora AI">
                   {isActive('/dashboard/ai') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
@@ -227,13 +233,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   {!isSidebarCollapsed && <span className="truncate">Gestora AI</span>}
                 </Link>
               </li>
-              <li>
-                <Link href="/dashboard/settings" className={getLinkClass('/dashboard/settings')} title="Paramètres">
-                  {isActive('/dashboard/settings') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
-                  <Settings className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/settings') ? 'text-blue-400' : ''}`} />
-                  {!isSidebarCollapsed && <span className="truncate">Paramètres</span>}
-                </Link>
-              </li>
+              {(session?.user as any)?.role !== 'SELLER' && (
+                <li>
+                  <Link href="/dashboard/settings" className={getLinkClass('/dashboard/settings')} title="Paramètres">
+                    {isActive('/dashboard/settings') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
+                    <Settings className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/settings') ? 'text-blue-400' : ''}`} />
+                    {!isSidebarCollapsed && <span className="truncate">Paramètres</span>}
+                  </Link>
+                </li>
+              )}
               <li>
                 <Link href="/dashboard/support" className={getLinkClass('/dashboard/support')} title="Aide et assistance">
                   {isActive('/dashboard/support') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}

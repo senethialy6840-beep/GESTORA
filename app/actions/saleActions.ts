@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { SaleSchema } from '@/lib/validations';
 import { auth } from '@/auth';
+import { sendLowStockAlert } from '@/lib/mailer';
 
 export type CreateSaleData = {
   invoiceNo: string;
@@ -48,10 +49,17 @@ export async function createSale(data: CreateSaleData) {
     if (data.items) {
       for (const item of data.items) {
         if (item.productId) {
-          await prisma.product.update({
+          const updatedProduct = await prisma.product.update({
             where: { id: item.productId },
             data: { stock: { decrement: item.quantity } }
-          }).catch(err => console.error("Erreur lors de la décrémentation du stock:", err));
+          }).catch(err => {
+            console.error("Erreur lors de la décrémentation du stock:", err);
+            return null;
+          });
+          
+          if (updatedProduct && updatedProduct.stock <= 10) {
+            sendLowStockAlert(updatedProduct.name, updatedProduct.stock, data.companyId).catch(console.error);
+          }
         }
       }
     }

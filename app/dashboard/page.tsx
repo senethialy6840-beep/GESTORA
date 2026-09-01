@@ -139,7 +139,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             
             {/* KPI 1 */}
-            <div className="group bg-white dark:bg-[#162032] border border-gray-200 dark:border-slate-700/50 rounded-2xl p-5 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-1 cursor-default">
+            <div className="group glass-panel rounded-2xl p-5 transition-all duration-300 hover:shadow-md hover-scale cursor-default animate-fade-in" style={{ animationDelay: '0.1s' }}>
               <div className="flex justify-between items-start mb-4">
                 <h3 className="text-gray-500 dark:text-slate-400 text-sm font-medium">Chiffre d&apos;affaires</h3>
                 <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
@@ -153,7 +153,7 @@ export default function DashboardPage() {
             </div>
 
             {/* KPI 2 */}
-            <div className="group bg-white dark:bg-[#162032] border border-gray-200 dark:border-slate-700/50 rounded-2xl p-5 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-1 cursor-default">
+            <div className="group glass-panel rounded-2xl p-5 transition-all duration-300 hover:shadow-md hover-scale cursor-default animate-fade-in" style={{ animationDelay: '0.2s' }}>
               <div className="flex justify-between items-start mb-4">
                 <h3 className="text-gray-500 dark:text-slate-400 text-sm font-medium">Dépenses Totales</h3>
                 <div className="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400 flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3">
@@ -167,7 +167,7 @@ export default function DashboardPage() {
             </div>
 
             {/* KPI 3 */}
-            <div className="group bg-white dark:bg-[#162032] border border-gray-200 dark:border-slate-700/50 rounded-2xl p-5 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-1 cursor-default">
+            <div className="group glass-panel rounded-2xl p-5 transition-all duration-300 hover:shadow-md hover-scale cursor-default animate-fade-in" style={{ animationDelay: '0.3s' }}>
               <div className="flex justify-between items-start mb-4">
                 <h3 className="text-gray-500 dark:text-slate-400 text-sm font-medium">Bénéfice Net</h3>
                 <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
@@ -186,7 +186,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 gap-4 lg:h-[400px]">
             
             {/* AREA CHART */}
-            <div className="bg-white dark:bg-[#162032] border border-gray-200 dark:border-slate-700/50 rounded-2xl p-5 shadow-sm flex flex-col h-[300px] lg:h-auto transition-colors duration-300">
+            <div className="glass-panel rounded-2xl p-5 flex flex-col h-[300px] lg:h-auto transition-colors duration-300 animate-fade-in" style={{ animationDelay: '0.4s' }}>
               <div className="mb-4">
                 <h3 className="text-gray-900 dark:text-white font-bold mb-1">Évolution des ventes et bénéfices</h3>
                 <p className="text-gray-500 dark:text-slate-400 text-xs">Données des 7 derniers mois</p>
@@ -226,7 +226,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             
             {/* PRODUITS POPULAIRES */}
-            <div className="bg-white dark:bg-[#162032] border border-gray-200 dark:border-slate-700/50 rounded-2xl p-5 shadow-sm transition-colors duration-300 flex flex-col h-[300px]">
+            <div className="glass-panel rounded-2xl p-5 transition-colors duration-300 flex flex-col h-[300px] animate-fade-in" style={{ animationDelay: '0.5s' }}>
               <div className="mb-4">
                 <h3 className="text-gray-900 dark:text-white font-bold mb-1">Produits populaires</h3>
                 <p className="text-gray-500 dark:text-slate-400 text-xs">Unités vendues sur la période</p>
@@ -249,7 +249,7 @@ export default function DashboardPage() {
             </div>
 
             {/* STOCKS FAIBLES */}
-            <div className="bg-white dark:bg-[#162032] border border-gray-200 dark:border-slate-700/50 rounded-2xl p-5 shadow-sm transition-colors duration-300 flex flex-col h-[300px] overflow-hidden">
+            <div className="glass-panel rounded-2xl p-5 transition-colors duration-300 flex flex-col h-[300px] overflow-hidden animate-fade-in" style={{ animationDelay: '0.6s' }}>
               <div className="mb-4 shrink-0">
                 <h3 className="text-gray-900 dark:text-white font-bold mb-1 flex items-center">
                   <AlertTriangle className="w-4 h-4 mr-2 text-amber-500" />
@@ -278,8 +278,8 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* PRODUITS LES MIEUX VENDUS (Replaces MEILLEURS CLIENTS) */}
-            <div className="bg-white dark:bg-[#162032] border border-gray-200 dark:border-slate-700/50 rounded-2xl p-5 shadow-sm transition-colors duration-300 flex flex-col h-[300px] overflow-hidden">
+            {/* PRODUITS LES MIEUX VENDUS */}
+            <div className="glass-panel rounded-2xl p-5 transition-colors duration-300 flex flex-col h-[300px] overflow-hidden animate-fade-in" style={{ animationDelay: '0.7s' }}>
               <div className="mb-4 shrink-0">
                 <h3 className="text-gray-900 dark:text-white font-bold mb-1 flex items-center">
                   <Package className="w-4 h-4 mr-2 text-blue-500" />

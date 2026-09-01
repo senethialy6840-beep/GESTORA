@@ -1,10 +1,29 @@
 import { withAuth } from "next-auth/middleware";
+import { NextResponse } from "next/server";
 
-export default withAuth({
-  pages: {
-    signIn: "/login",
+export default withAuth(
+  function middleware(req) {
+    const role = req.nextauth.token?.role as string;
+    const path = req.nextUrl.pathname;
+
+    // Permissions strictes pour les Vendeurs
+    if (role === 'SELLER') {
+      const restrictedPaths = ['/dashboard/settings', '/dashboard/accounting', '/dashboard/hr', '/dashboard/purchases'];
+      
+      if (restrictedPaths.some(p => path.startsWith(p))) {
+        return NextResponse.redirect(new URL('/dashboard', req.url));
+      }
+    }
   },
-});
+  {
+    pages: {
+      signIn: "/login",
+    },
+    callbacks: {
+      authorized: ({ token }) => !!token,
+    }
+  }
+);
 
 export const config = {
   matcher: [

@@ -8,6 +8,7 @@ import { useSession } from 'next-auth/react';
 import { getSettings } from '../../actions/settingsActions';
 import { getSales, createSale, updateSale, deleteSale } from '@/app/actions/saleActions';
 import { SkeletonList, SkeletonForm } from "../../../components/Skeletons";
+import { generateInvoicePDF } from '@/lib/pdfGenerator';
 
 
 export default function InvoicesPage() {
@@ -675,6 +676,19 @@ export default function InvoicesPage() {
                               className="w-full px-4 py-2.5 text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 text-left font-medium transition-colors border-b border-gray-100 dark:border-slate-700/50"
                             >
                               Voir le détail
+                            </button>
+                            <button 
+                              onClick={() => {
+                                generateInvoicePDF(
+                                  { ...inv, invoiceNo: inv.id, totalAmount: inv.amount, createdAt: inv.isoDate || inv.date }, 
+                                  settings, 
+                                  { name: inv.client, address: inv.clientAddress, email: inv.clientEmail, phone: inv.clientPhone }
+                                );
+                                setOpenDropdownId(null);
+                              }}
+                              className="w-full px-4 py-2.5 text-sm text-[#2563EB] hover:bg-blue-50 dark:hover:bg-blue-500/10 text-left font-medium transition-colors border-b border-gray-100 dark:border-slate-700/50"
+                            >
+                              Télécharger PDF
                             </button>
                             <button 
                               onClick={() => {
