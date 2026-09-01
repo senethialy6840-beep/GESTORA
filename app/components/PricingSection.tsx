@@ -7,6 +7,7 @@ import Link from "next/link";
 const plans = [
   {
     name: "Starter",
+    planId: "STARTUP",
     price: "5 900 FCFA",
     period: "/ mois",
     description: "L'essentiel pour les petits commerces qui se lancent.",
@@ -24,6 +25,7 @@ const plans = [
   },
   {
     name: "Business",
+    planId: "BUSINESS",
     badge: "Le plus populaire",
     price: "14 900 FCFA",
     period: "/ mois",
@@ -44,6 +46,7 @@ const plans = [
   },
   {
     name: "Entreprise",
+    planId: "ENTERPRISE",
     price: "25 000 FCFA",
     period: "/ mois",
     description: "Pour les réseaux multi-sites et les besoins avancés.",
@@ -59,7 +62,6 @@ const plans = [
     isPopular: false,
   }
 ];
-
 
 export function PricingSection() {
   return (
@@ -122,7 +124,7 @@ export function PricingSection() {
                 </div>
                 
                 <Link 
-                  href="/register" 
+                  href={`/register?plan=${plan.planId}`}
                   className={`block w-full py-4 rounded-xl font-bold text-center transition-all duration-300 mb-10 ${
                     plan.isPopular
                       ? 'bg-[#2563EB] text-white hover:bg-blue-600 shadow-md hover:shadow-xl hover:-translate-y-1'

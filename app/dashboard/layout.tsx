@@ -112,6 +112,37 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       : `${baseClass} text-slate-400 hover:text-white hover:bg-slate-800/50`;
   };
 
+  // Block access if subscription is pending, unless already on the subscription page
+  if (session?.user && (session.user as any).subscriptionStatus === 'PENDING' && pathname !== '/dashboard/subscription') {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-[#0A1226] flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white dark:bg-[#162032] p-8 rounded-2xl shadow-xl text-center border border-gray-200 dark:border-slate-700/50">
+          <div className="w-16 h-16 bg-red-100 dark:bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Abonnement Requis</h2>
+          <p className="text-gray-500 dark:text-slate-400 mb-8">
+            Pour accéder à votre tableau de bord, vous devez d'abord activer votre abonnement.
+          </p>
+          <Link 
+            href="/dashboard/subscription"
+            className="block w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors"
+          >
+            Choisir mon forfait
+          </Link>
+          <button 
+            onClick={handleLogout}
+            className="mt-4 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-slate-300"
+          >
+            Me déconnecter
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#0A1226] flex font-sans text-gray-700 dark:text-slate-300 selection:bg-[#2563EB]/30 transition-colors duration-300">
       
@@ -234,22 +265,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </Link>
               </li>
               {(session?.user as any)?.role !== 'SELLER' && (
-                <>
-                  <li>
-                    <Link href="/dashboard/subscription" className={getLinkClass('/dashboard/subscription')} title="Abonnement">
-                      {isActive('/dashboard/subscription') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
-                      <CreditCard className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/subscription') ? 'text-blue-400' : ''}`} />
-                      {!isSidebarCollapsed && <span className="truncate">Abonnement</span>}
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/dashboard/settings" className={getLinkClass('/dashboard/settings')} title="Paramètres">
-                      {isActive('/dashboard/settings') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
-                      <Settings className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/settings') ? 'text-blue-400' : ''}`} />
-                      {!isSidebarCollapsed && <span className="truncate">Paramètres</span>}
-                    </Link>
-                  </li>
-                </>
+                <li>
+                  <Link href="/dashboard/settings" className={getLinkClass('/dashboard/settings')} title="Paramètres">
+                    {isActive('/dashboard/settings') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
+                    <Settings className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/settings') ? 'text-blue-400' : ''}`} />
+                    {!isSidebarCollapsed && <span className="truncate">Paramètres</span>}
+                  </Link>
+                </li>
               )}
               <li>
                 <Link href="/dashboard/support" className={getLinkClass('/dashboard/support')} title="Aide et assistance">

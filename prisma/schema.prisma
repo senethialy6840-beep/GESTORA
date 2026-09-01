@@ -23,7 +23,7 @@ model Company {
   updatedAt DateTime @updatedAt
   isActive  Boolean  @default(true)
   plan      String   @default("FREE") // FREE, STARTUP, BUSINESS, ENTERPRISE
-  subscriptionStatus String @default("ACTIVE") // ACTIVE, EXPIRED, CANCELLED
+  subscriptionStatus String @default("PENDING") // ACTIVE, PENDING, EXPIRED, CANCELLED
 
   users        User[]
   warehouses   Warehouse[]

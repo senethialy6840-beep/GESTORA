@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Box, LayoutDashboard, LineChart, ShoppingCart, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { registerUser } from '../actions/authActions';
 import { signIn } from 'next-auth/react';
 
-export default function RegisterPage() {
+function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [prenom, setPrenom] = useState('');
   const [nom, setNom] = useState('');
@@ -17,6 +17,8 @@ export default function RegisterPage() {
   const [errorMsg, setErrorMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const plan = searchParams.get('plan');
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,8 +45,17 @@ export default function RegisterPage() {
         setErrorMsg("Erreur de connexion automatique.");
         setIsLoading(false);
       } else {
-        router.push('/dashboard');
-        router.refresh(); // Refresh to update session state in layouts
+        // Redirection logique en fonction du plan
+        if (plan === 'STARTUP' && process.env.NEXT_PUBLIC_SASPAY_STARTUP_LINK) {
+          window.location.href = process.env.NEXT_PUBLIC_SASPAY_STARTUP_LINK;
+        } else if (plan === 'BUSINESS' && process.env.NEXT_PUBLIC_SASPAY_BUSINESS_LINK) {
+          window.location.href = process.env.NEXT_PUBLIC_SASPAY_BUSINESS_LINK;
+        } else if (plan === 'ENTERPRISE' && process.env.NEXT_PUBLIC_SASPAY_ENTERPRISE_LINK) {
+          window.location.href = process.env.NEXT_PUBLIC_SASPAY_ENTERPRISE_LINK;
+        } else {
+          router.push('/dashboard');
+          router.refresh();
+        }
       }
     } catch (err) {
       setErrorMsg("Une erreur inattendue est survenue.");
@@ -204,9 +215,15 @@ export default function RegisterPage() {
                  <p className="text-sm text-gray-400">Suivez la rentabilité de votre activité.</p>
                </div>
              </div>
-          </div>
-        </div>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white dark:bg-[#0A1226] flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-blue-600" /></div>}>
+      <RegisterForm />
+    </Suspense>
   );
 }
