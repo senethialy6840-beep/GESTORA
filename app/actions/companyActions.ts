@@ -3,9 +3,14 @@
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
+import { auth } from '@/auth';
 
-export async function getCompany(companyId: string) {
+export async function getCompany(_companyId?: string) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    const companyId = session.user.companyId as string;
+    
     const company = await prisma.company.findUnique({
       where: { id: companyId },
     });
@@ -34,8 +39,12 @@ const CompanyUpdateSchema = z.object({
   taxNumber: z.string().optional(),
 });
 
-export async function updateCompany(companyId: string, data: UpdateCompanyData) {
+export async function updateCompany(_requestedCompanyId: string, data: UpdateCompanyData) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    const companyId = session.user.companyId as string;
+    
     const validated = CompanyUpdateSchema.safeParse(data);
     if (!validated.success) {
       return { success: false, error: "Données de l'entreprise invalides." };

@@ -1,9 +1,14 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/auth";
 
-export async function analyzeQueryAction(query: string, companyId: string, userName: string) {
+export async function analyzeQueryAction(query: string, _companyId: string, userName: string) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) return "Non autorisé";
+    const companyId = session.user.companyId as string;
+    
     const q = query.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     const fmt = (num: number) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', maximumFractionDigits: 0 }).format(num);
 

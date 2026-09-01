@@ -1,9 +1,14 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/auth";
 
-export async function globalSearch(query: string, companyId: string) {
+export async function globalSearch(query: string, _companyId: string) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    const companyId = session.user.companyId as string;
+    
     const q = query.toLowerCase().trim();
     
     // We will do parallel queries for all major models that belong to the company

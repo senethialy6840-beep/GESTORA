@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { subDays, startOfMonth, subMonths, endOfDay, startOfDay, format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { auth } from '@/auth';
 
 export type DashboardStats = {
   revenue: number;
@@ -16,8 +17,12 @@ export type DashboardStats = {
   lowStockProducts: any[];
 };
 
-export async function getDashboardStats(companyId: string, startDate?: string, endDate?: string): Promise<{ success: boolean; data?: DashboardStats; error?: string }> {
+export async function getDashboardStats(_companyId: string, startDate?: string, endDate?: string): Promise<{ success: boolean; data?: DashboardStats; error?: string }> {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    const companyId = session.user.companyId as string;
+    
     const end = endDate ? endOfDay(new Date(endDate)) : endOfDay(new Date());
     let start = startDate ? startOfDay(new Date(startDate)) : startOfMonth(end);
     

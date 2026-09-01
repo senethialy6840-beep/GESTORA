@@ -4,11 +4,16 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { Purchase, Supplier, PurchaseItem } from "@prisma/client";
 import { PurchaseSchema, SupplierSchema } from "@/lib/validations";
+import { auth } from "@/auth";
 
 // --- Suppliers ---
 
-export async function getSuppliers(companyId: string) {
+export async function getSuppliers(_companyId?: string) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    const companyId = session.user.companyId as string;
+    
     const suppliers = await prisma.supplier.findMany({
       where: { companyId },
       orderBy: { name: "asc" },
@@ -22,6 +27,11 @@ export async function getSuppliers(companyId: string) {
 
 export async function createSupplier(data: Omit<Supplier, "id" | "createdAt" | "updatedAt">) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    
+    data.companyId = session.user.companyId as string;
+    
     const validated = SupplierSchema.safeParse(data);
     if (!validated.success) {
       return { success: false, error: "Données fournisseur invalides." };
@@ -40,6 +50,17 @@ export async function createSupplier(data: Omit<Supplier, "id" | "createdAt" | "
 
 export async function updateSupplier(id: string, data: Partial<Supplier>) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    
+    // Sécurité: Vérifier que le fournisseur appartient bien à l'entreprise
+    const existing = await prisma.supplier.findUnique({ where: { id } });
+    if (!existing || existing.companyId !== session.user.companyId) {
+      return { success: false, error: "Non autorisé" };
+    }
+
+    if (data.companyId) data.companyId = session.user.companyId as string;
+    
     const validated = SupplierSchema.partial().safeParse(data);
     if (!validated.success) {
       return { success: false, error: "Données fournisseur invalides." };
@@ -59,6 +80,15 @@ export async function updateSupplier(id: string, data: Partial<Supplier>) {
 
 export async function deleteSupplier(id: string) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    
+    // Sécurité: Vérifier que le fournisseur appartient bien à l'entreprise
+    const existing = await prisma.supplier.findUnique({ where: { id } });
+    if (!existing || existing.companyId !== session.user.companyId) {
+      return { success: false, error: "Non autorisé" };
+    }
+
     await prisma.supplier.delete({
       where: { id },
     });
@@ -72,8 +102,12 @@ export async function deleteSupplier(id: string) {
 
 // --- Purchases ---
 
-export async function getPurchases(companyId: string) {
+export async function getPurchases(_companyId?: string) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    const companyId = session.user.companyId as string;
+    
     const purchases = await prisma.purchase.findMany({
       where: { companyId },
       include: {
@@ -94,6 +128,11 @@ export async function createPurchase(
   items: Omit<PurchaseItem, "id" | "purchaseId">[]
 ) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    
+    data.companyId = session.user.companyId as string;
+    
     const validated = PurchaseSchema.safeParse(data);
     if (!validated.success) {
       return { success: false, error: "Données d'achat invalides." };
@@ -121,6 +160,15 @@ export async function createPurchase(
 
 export async function updatePurchaseStatus(id: string, status: string) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    
+    // Sécurité: Vérifier
+    const existing = await prisma.purchase.findUnique({ where: { id } });
+    if (!existing || existing.companyId !== session.user.companyId) {
+      return { success: false, error: "Non autorisé" };
+    }
+
     const purchase = await prisma.purchase.update({
       where: { id },
       data: { status },
@@ -135,6 +183,15 @@ export async function updatePurchaseStatus(id: string, status: string) {
 
 export async function deletePurchase(id: string) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    
+    // Sécurité: Vérifier
+    const existing = await prisma.purchase.findUnique({ where: { id } });
+    if (!existing || existing.companyId !== session.user.companyId) {
+      return { success: false, error: "Non autorisé" };
+    }
+
     await prisma.purchase.delete({
       where: { id },
     });

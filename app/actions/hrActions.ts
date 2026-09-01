@@ -4,9 +4,14 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { Employee } from "@prisma/client";
 import { EmployeeSchema } from "@/lib/validations";
+import { auth } from "@/auth";
 
-export async function getEmployees(companyId: string) {
+export async function getEmployees(_companyId?: string) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    const companyId = session.user.companyId as string;
+    
     const employees = await prisma.employee.findMany({
       where: { companyId },
       orderBy: { createdAt: "desc" },
@@ -20,6 +25,11 @@ export async function getEmployees(companyId: string) {
 
 export async function createEmployee(data: Omit<Employee, "id" | "createdAt" | "updatedAt">) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    
+    data.companyId = session.user.companyId as string;
+    
     const validated = EmployeeSchema.safeParse(data);
     if (!validated.success) {
       return { success: false, error: "Données de l'employé invalides." };
@@ -38,6 +48,17 @@ export async function createEmployee(data: Omit<Employee, "id" | "createdAt" | "
 
 export async function updateEmployee(id: string, data: Partial<Employee>) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    
+    // Sécurité: Vérifier que l'employé appartient bien à l'entreprise
+    const existing = await prisma.employee.findUnique({ where: { id } });
+    if (!existing || existing.companyId !== session.user.companyId) {
+      return { success: false, error: "Non autorisé" };
+    }
+
+    if (data.companyId) data.companyId = session.user.companyId as string;
+    
     const validated = EmployeeSchema.partial().safeParse(data);
     if (!validated.success) {
       return { success: false, error: "Données de l'employé invalides." };
@@ -57,6 +78,15 @@ export async function updateEmployee(id: string, data: Partial<Employee>) {
 
 export async function deleteEmployee(id: string) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    
+    // Sécurité: Vérifier que l'employé appartient bien à l'entreprise
+    const existing = await prisma.employee.findUnique({ where: { id } });
+    if (!existing || existing.companyId !== session.user.companyId) {
+      return { success: false, error: "Non autorisé" };
+    }
+
     await prisma.employee.delete({
       where: { id },
     });

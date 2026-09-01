@@ -4,9 +4,14 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { AccountingTransaction } from "@prisma/client";
 import { TransactionSchema } from "@/lib/validations";
+import { auth } from "@/auth";
 
-export async function getTransactions(companyId: string) {
+export async function getTransactions(_companyId?: string) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    const companyId = session.user.companyId as string;
+    
     const transactions = await prisma.accountingTransaction.findMany({
       where: { companyId },
       orderBy: { date: "desc" },
@@ -20,6 +25,11 @@ export async function getTransactions(companyId: string) {
 
 export async function createTransaction(data: Omit<AccountingTransaction, "id" | "createdAt" | "updatedAt">) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    
+    data.companyId = session.user.companyId as string;
+    
     const validated = TransactionSchema.safeParse(data);
     if (!validated.success) {
       return { success: false, error: "Données de transaction invalides." };
@@ -38,6 +48,17 @@ export async function createTransaction(data: Omit<AccountingTransaction, "id" |
 
 export async function updateTransaction(id: string, data: Partial<AccountingTransaction>) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    
+    // Sécurité: Vérifier que la transaction appartient bien à l'entreprise
+    const existing = await prisma.accountingTransaction.findUnique({ where: { id } });
+    if (!existing || existing.companyId !== session.user.companyId) {
+      return { success: false, error: "Non autorisé" };
+    }
+
+    if (data.companyId) data.companyId = session.user.companyId as string;
+    
     const validated = TransactionSchema.partial().safeParse(data);
     if (!validated.success) {
       return { success: false, error: "Données de transaction invalides." };
@@ -57,6 +78,15 @@ export async function updateTransaction(id: string, data: Partial<AccountingTran
 
 export async function deleteTransaction(id: string) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    
+    // Sécurité: Vérifier que la transaction appartient bien à l'entreprise
+    const existing = await prisma.accountingTransaction.findUnique({ where: { id } });
+    if (!existing || existing.companyId !== session.user.companyId) {
+      return { success: false, error: "Non autorisé" };
+    }
+
     await prisma.accountingTransaction.delete({
       where: { id },
     });

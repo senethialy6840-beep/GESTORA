@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { SaleSchema } from '@/lib/validations';
+import { auth } from '@/auth';
 
 // Type pour la création d'une facture
 export type CreateInvoiceData = {
@@ -16,6 +17,11 @@ export type CreateInvoiceData = {
 // Ajouter une nouvelle facture
 export async function createInvoice(data: CreateInvoiceData) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    
+    data.companyId = session.user.companyId as string;
+    
     const validated = SaleSchema.safeParse(data);
     if (!validated.success) {
       return { success: false, error: "Données de facture invalides." };
@@ -40,8 +46,12 @@ export async function createInvoice(data: CreateInvoiceData) {
 }
 
 // Récupérer toutes les factures d'une entreprise
-export async function getInvoices(companyId: string) {
+export async function getInvoices(_companyId?: string) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    const companyId = session.user.companyId as string;
+    
     const invoices = await prisma.sale.findMany({
       where: { companyId },
       include: {

@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { ProductSchema } from '@/lib/validations';
+import { auth } from '@/auth';
 
 export type CreateProductData = {
   name: string;
@@ -18,6 +19,11 @@ export type CreateProductData = {
 
 export async function createProduct(data: CreateProductData) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    
+    data.companyId = session.user.companyId as string;
+    
     const validated = ProductSchema.safeParse(data);
     if (!validated.success) {
       return { success: false, error: "Données du produit invalides." };
@@ -47,8 +53,12 @@ export async function createProduct(data: CreateProductData) {
   }
 }
 
-export async function getProducts(companyId: string) {
+export async function getProducts(_companyId?: string) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    const companyId = session.user.companyId as string;
+    
     const products = await prisma.product.findMany({
       where: { companyId },
       orderBy: { createdAt: 'desc' },
@@ -62,6 +72,17 @@ export async function getProducts(companyId: string) {
 
 export async function updateProduct(id: string, data: Partial<CreateProductData>) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    
+    // Sécurité: Vérifier que le produit appartient bien à l'entreprise
+    const existing = await prisma.product.findUnique({ where: { id } });
+    if (!existing || existing.companyId !== session.user.companyId) {
+      return { success: false, error: "Non autorisé" };
+    }
+
+    if (data.companyId) data.companyId = session.user.companyId as string;
+    
     const validated = ProductSchema.partial().safeParse(data);
     if (!validated.success) {
       return { success: false, error: "Données invalides." };
@@ -83,6 +104,15 @@ export async function updateProduct(id: string, data: Partial<CreateProductData>
 
 export async function deleteProduct(id: string) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    
+    // Sécurité: Vérifier que le produit appartient bien à l'entreprise
+    const existing = await prisma.product.findUnique({ where: { id } });
+    if (!existing || existing.companyId !== session.user.companyId) {
+      return { success: false, error: "Non autorisé" };
+    }
+
     await prisma.product.delete({
       where: { id },
     });

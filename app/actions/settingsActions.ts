@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@supabase/supabase-js';
 import { SettingsSchema } from '@/lib/validations';
+import { auth } from '@/auth';
 
 const getSupabase = () => createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
@@ -19,9 +20,13 @@ const defaultSettings = {
   logo: null
 };
 
-export async function getSettings(companyId?: string) {
+export async function getSettings(requestedCompanyId?: string) {
   try {
-    if (!companyId) return { success: false, settings: defaultSettings };
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, settings: defaultSettings };
+    
+    // FORCER l'utilisation du companyId de la session (IDOR Fix)
+    const companyId = session.user.companyId as string;
     
     const company = await prisma.company.findUnique({
       where: { id: companyId }
@@ -47,11 +52,18 @@ export async function getSettings(companyId?: string) {
   }
 }
 
-export async function saveSettings(companyId: string, data: any) {
+export async function saveSettings(requestedCompanyId: string, data: any) {
   try {
-    if (!companyId) return { success: false };
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé." };
     
-    const validated = SettingsSchema.safeParse(data);
+    // FORCER l'utilisation du companyId de la session (IDOR Fix)
+    const companyId = session.user.companyId as string;
+    
+    const validated = SettingsSchema.safeParse({
+      ...data,
+      companyId: companyId
+    });
     if (!validated.success) {
       console.error("Validation failed", validated.error.issues);
       return { success: false, error: "Données invalides." };
@@ -65,8 +77,17 @@ export async function saveSettings(companyId: string, data: any) {
       try {
         const matches = logoUrl.match(/^data:image\/([A-Za-z-+\/]+);base64,(.+)$/);
         if (matches && matches.length === 3) {
-          const type = matches[1];
           const buffer = Buffer.from(matches[2], 'base64');
+          
+          // Validation stricte des Magic Bytes (CWE-434 Fix)
+          const { fileTypeFromBuffer } = await import('file-type');
+          const typeInfo = await fileTypeFromBuffer(buffer);
+          
+          if (!typeInfo || !typeInfo.mime.startsWith('image/')) {
+            throw new Error("Fichier invalide ou corrompu.");
+          }
+          
+          const type = typeInfo.ext;
           const filename = `${companyId}-${Date.now()}.${type}`;
           
           const { data: uploadData, error } = await getSupabase()

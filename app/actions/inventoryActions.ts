@@ -3,9 +3,14 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { StockMovementSchema } from "@/lib/validations";
+import { auth } from "@/auth";
 
-export async function getStockMovements(companyId: string) {
+export async function getStockMovements(_companyId?: string) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    const companyId = session.user.companyId as string;
+    
     const movements = await prisma.stockMovement.findMany({
       where: { companyId },
       include: { product: true },
@@ -25,6 +30,11 @@ export async function createStockMovement(data: {
   companyId: string;
 }) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    
+    data.companyId = session.user.companyId as string;
+    
     const validated = StockMovementSchema.safeParse(data);
     if (!validated.success) {
       return { success: false, error: "Données de mouvement de stock invalides." };
@@ -63,6 +73,15 @@ export async function createStockMovement(data: {
 
 export async function deleteStockMovement(id: string) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    
+    // Sécurité: Vérifier que le mouvement appartient bien à l'entreprise
+    const existing = await prisma.stockMovement.findUnique({ where: { id } });
+    if (!existing || existing.companyId !== session.user.companyId) {
+      return { success: false, error: "Non autorisé" };
+    }
+
     const movement = await prisma.stockMovement.delete({
       where: { id }
     });

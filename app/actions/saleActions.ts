@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { SaleSchema } from '@/lib/validations';
+import { auth } from '@/auth';
 
 export type CreateSaleData = {
   invoiceNo: string;
@@ -15,6 +16,11 @@ export type CreateSaleData = {
 
 export async function createSale(data: CreateSaleData) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    
+    data.companyId = session.user.companyId as string;
+    
     const validated = SaleSchema.safeParse(data);
     if (!validated.success) {
       return { success: false, error: "Données de vente invalides." };
@@ -63,6 +69,17 @@ export async function createSale(data: CreateSaleData) {
 
 export async function updateSale(id: string, data: Partial<CreateSaleData>) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    
+    // Sécurité: Vérifier
+    const existing = await prisma.sale.findUnique({ where: { id } });
+    if (!existing || existing.companyId !== session.user.companyId) {
+      return { success: false, error: "Non autorisé" };
+    }
+
+    if (data.companyId) data.companyId = session.user.companyId as string;
+    
     const validated = SaleSchema.partial().safeParse(data);
     if (!validated.success) {
       return { success: false, error: "Données de vente invalides." };
@@ -97,8 +114,12 @@ export async function updateSale(id: string, data: Partial<CreateSaleData>) {
   }
 }
 
-export async function getSales(companyId: string) {
+export async function getSales(_companyId?: string) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    const companyId = session.user.companyId as string;
+    
     const sales = await prisma.sale.findMany({
       where: { companyId },
       include: {
@@ -116,6 +137,15 @@ export async function getSales(companyId: string) {
 
 export async function deleteSale(id: string) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    
+    // Sécurité: Vérifier
+    const existing = await prisma.sale.findUnique({ where: { id } });
+    if (!existing || existing.companyId !== session.user.companyId) {
+      return { success: false, error: "Non autorisé" };
+    }
+
     await prisma.sale.delete({
       where: { id },
     });
