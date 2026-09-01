@@ -94,3 +94,39 @@ export const PurchaseSchema = z.object({
   status: z.string().optional(),
   companyId: z.string().min(1, "Company ID requis")
 });
+
+// --- Ressources Humaines ---
+
+export const EmployeeSchema = z.object({
+  firstName: z.string().min(1, "Prénom requis"),
+  lastName: z.string().min(1, "Nom requis"),
+  email: z.union([z.literal(""), z.string().email()]).optional(),
+  phone: z.string().optional(),
+  role: z.string().min(1, "Rôle requis"),
+  department: z.string().optional(),
+  salary: z.coerce.number().min(0, "Salaire invalide").optional(),
+  status: z.string().optional(),
+  companyId: z.string().min(1, "Company ID requis")
+});
+
+// --- Comptabilité ---
+
+export const TransactionSchema = z.object({
+  date: z.coerce.date(),
+  description: z.string().min(1, "Description requise"),
+  type: z.string().min(1, "Type requis"),
+  category: z.string().min(1, "Catégorie requise"),
+  amount: z.coerce.number().min(0, "Montant invalide"),
+  status: z.string().optional(),
+  companyId: z.string().min(1, "Company ID requis")
+});
+
+// --- Inventaire (Stock) ---
+
+export const StockMovementSchema = z.object({
+  type: z.string().min(1, "Type de mouvement requis (IN/OUT)"),
+  quantity: z.coerce.number().min(1, "La quantité doit être >= 1"),
+  reason: z.string().optional(),
+  productId: z.string().min(1, "Produit requis"),
+  companyId: z.string().min(1, "Company ID requis")
+});

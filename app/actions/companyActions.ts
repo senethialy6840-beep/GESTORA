@@ -2,6 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
 
 export async function getCompany(companyId: string) {
   try {
@@ -24,17 +25,31 @@ export type UpdateCompanyData = {
   taxNumber?: string;
 };
 
+const CompanyUpdateSchema = z.object({
+  name: z.string().min(1, "Le nom est requis"),
+  domain: z.string().optional(),
+  address: z.string().optional(),
+  phone: z.string().optional(),
+  email: z.union([z.literal(""), z.string().email()]).optional(),
+  taxNumber: z.string().optional(),
+});
+
 export async function updateCompany(companyId: string, data: UpdateCompanyData) {
   try {
+    const validated = CompanyUpdateSchema.safeParse(data);
+    if (!validated.success) {
+      return { success: false, error: "Données de l'entreprise invalides." };
+    }
+    const safeData = validated.data;
     const company = await prisma.company.update({
       where: { id: companyId },
       data: {
-        name: data.name,
-        domain: data.domain,
-        address: data.address,
-        phone: data.phone,
-        email: data.email,
-        taxNumber: data.taxNumber,
+        name: safeData.name,
+        domain: safeData.domain,
+        address: safeData.address,
+        phone: safeData.phone,
+        email: safeData.email,
+        taxNumber: safeData.taxNumber,
       },
     });
 

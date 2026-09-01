@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { StockMovementSchema } from "@/lib/validations";
 
 export async function getStockMovements(companyId: string) {
   try {
@@ -24,6 +25,11 @@ export async function createStockMovement(data: {
   companyId: string;
 }) {
   try {
+    const validated = StockMovementSchema.safeParse(data);
+    if (!validated.success) {
+      return { success: false, error: "Données de mouvement de stock invalides." };
+    }
+    data = validated.data as any;
     const movement = await prisma.stockMovement.create({
       data: {
         type: data.type,

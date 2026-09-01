@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { Employee } from "@prisma/client";
+import { EmployeeSchema } from "@/lib/validations";
 
 export async function getEmployees(companyId: string) {
   try {
@@ -19,6 +20,11 @@ export async function getEmployees(companyId: string) {
 
 export async function createEmployee(data: Omit<Employee, "id" | "createdAt" | "updatedAt">) {
   try {
+    const validated = EmployeeSchema.safeParse(data);
+    if (!validated.success) {
+      return { success: false, error: "Données de l'employé invalides." };
+    }
+    data = validated.data as any;
     const employee = await prisma.employee.create({
       data,
     });
@@ -32,6 +38,11 @@ export async function createEmployee(data: Omit<Employee, "id" | "createdAt" | "
 
 export async function updateEmployee(id: string, data: Partial<Employee>) {
   try {
+    const validated = EmployeeSchema.partial().safeParse(data);
+    if (!validated.success) {
+      return { success: false, error: "Données de l'employé invalides." };
+    }
+    data = validated.data as Partial<Employee>;
     const employee = await prisma.employee.update({
       where: { id },
       data,

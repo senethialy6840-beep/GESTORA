@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { AccountingTransaction } from "@prisma/client";
+import { TransactionSchema } from "@/lib/validations";
 
 export async function getTransactions(companyId: string) {
   try {
@@ -19,6 +20,11 @@ export async function getTransactions(companyId: string) {
 
 export async function createTransaction(data: Omit<AccountingTransaction, "id" | "createdAt" | "updatedAt">) {
   try {
+    const validated = TransactionSchema.safeParse(data);
+    if (!validated.success) {
+      return { success: false, error: "Données de transaction invalides." };
+    }
+    data = validated.data as any;
     const transaction = await prisma.accountingTransaction.create({
       data,
     });
@@ -32,6 +38,11 @@ export async function createTransaction(data: Omit<AccountingTransaction, "id" |
 
 export async function updateTransaction(id: string, data: Partial<AccountingTransaction>) {
   try {
+    const validated = TransactionSchema.partial().safeParse(data);
+    if (!validated.success) {
+      return { success: false, error: "Données de transaction invalides." };
+    }
+    data = validated.data as Partial<AccountingTransaction>;
     const transaction = await prisma.accountingTransaction.update({
       where: { id },
       data,
