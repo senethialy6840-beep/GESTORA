@@ -45,13 +45,27 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        let currentStatus = user.company?.subscriptionStatus || "ACTIVE";
+
+        if (user.company?.subscriptionExpiresAt) {
+          const expiresAt = new Date(user.company.subscriptionExpiresAt);
+          if (new Date() > expiresAt && currentStatus === "ACTIVE") {
+            currentStatus = "EXPIRED";
+            // Update the DB so it persists
+            prisma.company.update({
+              where: { id: user.companyId },
+              data: { subscriptionStatus: "EXPIRED", isActive: false }
+            }).catch(console.error);
+          }
+        }
+
         return {
           id: user.id,
           email: user.email,
           name: `${user.firstName} ${user.lastName}`,
           companyId: user.companyId,
           role: user.role,
-          subscriptionStatus: user.company?.subscriptionStatus || "ACTIVE",
+          subscriptionStatus: currentStatus,
           plan: user.company?.plan || "FREE"
         } as any;
       },

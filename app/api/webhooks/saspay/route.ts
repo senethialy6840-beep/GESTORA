@@ -102,6 +102,7 @@ export async function POST(req: Request) {
           plan,
           subscriptionStatus: "ACTIVE",
           isActive: true,
+          subscriptionExpiresAt,
         },
       });
 

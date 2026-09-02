@@ -180,8 +180,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
   // --- FIN PROTECTION STRICTE ---
 
-  // Block access if subscription is pending
-  if (session?.user && (session.user as any).subscriptionStatus === 'PENDING' && !isPlatformOwner) {
+  // Block access if subscription is pending or expired
+  const subStatus = (session?.user as any)?.subscriptionStatus;
+  const isSubscriptionBlocked = subStatus === 'PENDING' || subStatus === 'EXPIRED';
+
+  if (session?.user && isSubscriptionBlocked && !isPlatformOwner) {
     // S'ils sont sur la page d'abonnement, on affiche UNIQUEMENT le contenu de la page (sans le menu latéral)
     if (pathname === '/dashboard/subscription') {
       return (
@@ -202,7 +205,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Abonnement Requis</h2>
           <p className="text-gray-500 dark:text-slate-400 mb-8">
-            Pour accéder à votre tableau de bord, vous devez d'abord activer votre abonnement.
+            {subStatus === 'EXPIRED' 
+              ? "Votre abonnement a expiré. Veuillez renouveler votre forfait pour continuer." 
+              : "Pour accéder à votre tableau de bord, vous devez d'abord activer votre abonnement."}
           </p>
           <a 
             href="/dashboard/subscription"
