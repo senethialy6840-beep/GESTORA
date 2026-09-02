@@ -114,8 +114,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const userRole = (session?.user as any)?.role || 'USER';
   const userPlan = (session?.user as any)?.plan || 'FREE';
+  const userEmail = (session?.user as any)?.email || '';
+
+  const isPlatformOwner = userEmail === 'gestorame112@gmail.com';
 
   const hasAccess = (requiredPlan: string) => {
+    // Le PROPRIETAIRE a toujours accès à tout
+    if (isPlatformOwner) return true;
+
     // SUPER_ADMIN a toujours accès à tout
     if (userRole === 'SUPER_ADMIN') return true;
     
@@ -145,7 +151,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     requiredPlanForCurrentRoute = 'BUSINESS';
   }
 
-  const isPlanRestricted = requiredPlanForCurrentRoute && !hasAccess(requiredPlanForCurrentRoute);
+  const isPlanRestricted = !isPlatformOwner && requiredPlanForCurrentRoute && !hasAccess(requiredPlanForCurrentRoute);
 
   if (session?.user && (isSellerRestricted || isPlanRestricted)) {
     return (
@@ -175,7 +181,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // --- FIN PROTECTION STRICTE ---
 
   // Block access if subscription is pending
-  if (session?.user && (session.user as any).subscriptionStatus === 'PENDING') {
+  if (session?.user && (session.user as any).subscriptionStatus === 'PENDING' && !isPlatformOwner) {
     // S'ils sont sur la page d'abonnement, on affiche UNIQUEMENT le contenu de la page (sans le menu latéral)
     if (pathname === '/dashboard/subscription') {
       return (
