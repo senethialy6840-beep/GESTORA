@@ -65,11 +65,11 @@ export default function LandingPage() {
             </div>
 
             {/* Right Content - Mockup Floating Cards */}
-            <div className="relative z-10 lg:h-[600px] w-full flex items-center justify-center">
-              <div className="relative w-full max-w-[600px] aspect-square">
+            <div className="relative z-10 w-full flex items-center justify-center mt-12 lg:mt-0">
+              <div className="relative w-full max-w-[600px]">
                 
                 {/* Background Card */}
-                <div className="absolute inset-0 bg-white dark:bg-[#162032] rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-gray-200 dark:border-slate-700/50 p-6 overflow-x-auto scrollbar-hide transition-colors duration-300">
+                <div className="w-full bg-white dark:bg-[#162032] rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-gray-200 dark:border-slate-700/50 p-6 overflow-hidden transition-colors duration-300">
                    <div className="w-full">
                    
                    {/* Top filters */}
