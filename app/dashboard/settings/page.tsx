@@ -5,6 +5,8 @@ import { Settings, Save, Building2, Globe, FileText, Users, UploadCloud, Image a
 import { getSettings, saveSettings } from '../../actions/settingsActions';
 import { SkeletonForm } from '../../../components/Skeletons';
 import { useSession } from 'next-auth/react';
+import { EmployeeModal } from '../../../components/EmployeeModal';
+import { getEmployees, createEmployee, updateEmployee } from '@/app/actions/hrActions';
 
 export default function SettingsPage() {
   const { data: session, status } = useSession();
@@ -25,6 +27,10 @@ export default function SettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
+  const [employees, setEmployees] = useState<any[]>([]);
+  const [isEmployeeModalOpen, setIsEmployeeModalOpen] = useState(false);
+  const [editingEmployee, setEditingEmployee] = useState<any>(null);
+
   useEffect(() => {
     async function load() {
       if (session?.user?.companyId) {
@@ -42,11 +48,52 @@ export default function SettingsPage() {
           setFormData(fetchedSettings);
           if (fetchedSettings.logo) setLogoPreview(fetchedSettings.logo);
         }
+        
+        const empRes = await getEmployees(session.user.companyId);
+        if (empRes.success && empRes.data) {
+          setEmployees(empRes.data);
+        }
       }
       setIsLoading(false);
     }
     load();
   }, [session?.user?.companyId]);
+
+  const handleSaveEmployee = async (newItem: any) => {
+    if (!session?.user?.companyId) return;
+
+    if (editingEmployee && editingEmployee.id) {
+      const res = await updateEmployee(editingEmployee.id, {
+        firstName: newItem.firstName,
+        lastName: newItem.lastName,
+        email: newItem.email,
+        phone: newItem.phone,
+        role: newItem.role,
+        status: newItem.status,
+        department: newItem.department,
+        salary: Number(newItem.salary),
+      });
+      if (res.success && res.data) {
+        setEmployees(prev => prev.map(p => p.id === editingEmployee.id ? res.data : p));
+      }
+    } else {
+      const res = await createEmployee({
+        firstName: newItem.firstName,
+        lastName: newItem.lastName,
+        email: newItem.email,
+        phone: newItem.phone,
+        role: newItem.role,
+        status: newItem.status,
+        department: newItem.department || "Général",
+        salary: Number(newItem.salary) || 0,
+        companyId: session.user.companyId,
+        joinDate: new Date(),
+      });
+      if (res.success && res.data) {
+        setEmployees(prev => [res.data, ...prev]);
+      }
+    }
+  };
 
   const tabs = [
     { id: 'profil', label: 'Profil de l\'entreprise', icon: Building2 },
@@ -403,7 +450,13 @@ export default function SettingsPage() {
                       <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Gérez les membres qui ont accès à votre espace.</p>
                     </div>
                   </div>
-                  <button className="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors shadow-sm">
+                  <button 
+                    onClick={() => {
+                      setEditingEmployee(null);
+                      setIsEmployeeModalOpen(true);
+                    }}
+                    className="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors shadow-sm"
+                  >
                     + Inviter
                   </button>
                 </div>
@@ -428,12 +481,39 @@ export default function SettingsPage() {
                           <span className="px-2.5 py-1 bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400 rounded-full text-xs font-medium">Actif</span>
                         </td>
                       </tr>
+                      {employees.map(emp => (
+                        <tr key={emp.id} className="bg-white dark:bg-[#162032] hover:bg-gray-50 dark:hover:bg-slate-800/30 cursor-pointer" onClick={() => { setEditingEmployee(emp); setIsEmployeeModalOpen(true); }}>
+                          <td className="px-4 py-3">
+                            <div className="font-medium text-gray-900 dark:text-white">{emp.firstName} {emp.lastName}</div>
+                            <div className="text-xs text-gray-500">{emp.email}</div>
+                          </td>
+                          <td className="px-4 py-3 text-gray-600 dark:text-slate-300">
+                            {emp.role === 'ADMIN' ? 'Administrateur' : emp.role === 'MANAGER' ? 'Manager' : emp.role === 'SALES' ? 'Commercial' : 'Caissier(e)'}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${emp.status === 'ACTIVE' ? 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400'}`}>
+                              {emp.status === 'ACTIVE' ? 'Actif' : 'Inactif'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
               </div>
             </div>
           )}
+
+          {/* Employee Modal */}
+          <EmployeeModal 
+            isOpen={isEmployeeModalOpen} 
+            onClose={() => {
+              setIsEmployeeModalOpen(false);
+              setEditingEmployee(null);
+            }} 
+            onSave={handleSaveEmployee} 
+            initialData={editingEmployee}
+          />
 
           {/* Action Footer */}
           <div className="pt-6 mt-6 border-t border-gray-200 dark:border-slate-700/50 flex justify-end">

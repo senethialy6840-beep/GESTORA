@@ -91,6 +91,10 @@ export default function DashboardPage() {
   
   const formatMoney = (val: number) => new Intl.NumberFormat('fr-FR').format(val) + ' F';
 
+  const userRole = (session?.user as any)?.role || 'CASHIER';
+  const isOwner = session?.user?.email === 'gestorame112@gmail.com';
+  const canViewStats = isOwner || userRole === 'ADMIN' || userRole === 'SUPER_ADMIN';
+
   return (
     <div className="w-full max-w-7xl mx-auto space-y-6">
       
@@ -135,7 +139,19 @@ export default function DashboardPage() {
         </div>
       ) : (
         <>
-          {/* KPI CARDS */}
+          {!canViewStats ? (
+            <div className="bg-white dark:bg-[#162032] rounded-2xl border border-gray-200 dark:border-slate-700/50 p-12 text-center shadow-sm">
+              <div className="w-20 h-20 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center mx-auto mb-6">
+                <TrendingUp className="w-10 h-10" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Bienvenue sur votre espace</h2>
+              <p className="text-gray-500 dark:text-slate-400 max-w-lg mx-auto">
+                Vous êtes connecté à l'espace de travail de l'entreprise. Utilisez le menu latéral pour accéder aux outils qui vous ont été assignés. Les statistiques financières sont réservées aux administrateurs.
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* KPI CARDS */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             
             {/* KPI 1 */}
@@ -310,6 +326,8 @@ export default function DashboardPage() {
             </div>
 
           </div>
+            </>
+          )}
         </>
       )}
     </div>
