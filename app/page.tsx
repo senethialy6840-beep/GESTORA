@@ -922,9 +922,9 @@ function FeatureCard({ icon, title, description }: { icon: React.ReactNode, titl
 function FaqItem({ question, answer }: { question: string, answer: string }) {
   return (
     <details className="group bg-white dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-2xl open:shadow-md transition-all">
-      <summary className="flex items-center justify-between cursor-pointer p-6 font-bold text-gray-900 dark:text-white">
-        {question}
-        <ChevronDown className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" />
+      <summary className="flex items-center justify-between gap-4 cursor-pointer p-6 font-bold text-gray-900 dark:text-white">
+        <span className="flex-1 text-left">{question}</span>
+        <ChevronDown className="w-5 h-5 shrink-0 text-gray-400 group-open:rotate-180 transition-transform" />
       </summary>
       <div className="px-6 pb-6 text-gray-500 dark:text-gray-400 font-medium leading-relaxed">
         {answer}
