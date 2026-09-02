@@ -65,11 +65,11 @@ export default function LandingPage() {
             </div>
 
             {/* Right Content - Mockup Floating Cards */}
-            <div className="relative z-10 w-full flex items-center justify-center mt-12 lg:mt-0">
-              <div className="relative w-full max-w-[600px]">
+            <div className="relative z-10 lg:h-[600px] w-full flex items-center justify-center">
+              <div className="relative w-full max-w-[600px] aspect-square">
                 
                 {/* Background Card */}
-                <div className="w-full bg-white dark:bg-[#162032] rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-gray-200 dark:border-slate-700/50 p-6 overflow-hidden transition-colors duration-300">
+                <div className="absolute inset-0 bg-white dark:bg-[#162032] rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-gray-200 dark:border-slate-700/50 p-6 overflow-x-auto scrollbar-hide transition-colors duration-300">
                    <div className="w-full">
                    
                    {/* Top filters */}
@@ -120,6 +120,30 @@ export default function LandingPage() {
                            <p className="text-[9px] text-gray-500 dark:text-gray-400">Revenus</p>
                         </div>
                       </div>
+                   </div>
+
+                   <div className="hidden md:flex flex-wrap gap-4">
+                     {/* Graph card */}
+                     <div className="flex-[1_1_100%] md:flex-[1_1_200px] bg-white dark:bg-[#162032] border border-gray-200 dark:border-slate-700/50 rounded-2xl p-5 shadow-sm">
+                        <h4 className="text-sm font-bold text-gray-800 dark:text-white mb-4">Graphique des ventes</h4>
+                        {/* Fake graph lines */}
+                        <div className="w-full h-32 border-b border-l border-gray-100 dark:border-slate-800/60 relative">
+                           <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">
+                             <polyline points="0,90 20,70 40,80 60,30 80,40 100,10" fill="none" stroke="#2563EB" strokeWidth="2" />
+                           </svg>
+                        </div>
+                     </div>
+                     {/* Bar chart card */}
+                     <div className="flex-[1_1_100%] md:flex-[1_1_200px] bg-white dark:bg-[#162032] border border-gray-200 dark:border-slate-700/50 rounded-2xl p-5 shadow-sm">
+                        <h4 className="text-sm font-bold text-gray-800 dark:text-white mb-4">Produits en ...</h4>
+                        <div className="flex items-end justify-between h-32">
+                           <div className="w-8 h-[80%] bg-[#2563EB] rounded-t-sm"></div>
+                           <div className="w-8 h-[60%] bg-[#2563EB] rounded-t-sm"></div>
+                           <div className="w-8 h-[90%] bg-[#2563EB] rounded-t-sm"></div>
+                           <div className="w-8 h-[40%] bg-[#2563EB] rounded-t-sm"></div>
+                           <div className="w-8 h-[70%] bg-[#2563EB] rounded-t-sm"></div>
+                        </div>
+                     </div>
                    </div>
 
                 </div>
@@ -309,13 +333,13 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Right Image */}
-            <div className="order-1 lg:order-2">
-              <div className="bg-white dark:bg-[#162032] p-2 sm:p-4 rounded-3xl shadow-xl border border-gray-200 dark:border-slate-700/50 transform hover:-translate-y-2 transition-all duration-500">
+            {/* Right Image (CSS Cropped) */}
+            <div className="order-1 lg:order-2 h-full flex items-center">
+              <div className="relative w-full rounded-3xl overflow-hidden aspect-[4/3] shadow-2xl ring-1 ring-black/5 dark:ring-white/10">
                 <img 
                   src="/images/gestion_stocks_full.jpg" 
                   alt="Gestion intelligente des stocks Dashboard" 
-                  className="w-full h-auto rounded-2xl"
+                  className="absolute inset-0 w-full h-full object-cover lg:max-w-[200%] lg:w-[190%] lg:object-right lg:-ml-[90%] top-0"
                 />
               </div>
             </div>
@@ -922,9 +946,9 @@ function FeatureCard({ icon, title, description }: { icon: React.ReactNode, titl
 function FaqItem({ question, answer }: { question: string, answer: string }) {
   return (
     <details className="group bg-white dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-2xl open:shadow-md transition-all">
-      <summary className="flex items-center justify-between gap-4 cursor-pointer p-6 font-bold text-gray-900 dark:text-white">
-        <span className="flex-1 text-left">{question}</span>
-        <ChevronDown className="w-5 h-5 shrink-0 text-gray-400 group-open:rotate-180 transition-transform" />
+      <summary className="flex items-center justify-between cursor-pointer p-6 font-bold text-gray-900 dark:text-white">
+        {question}
+        <ChevronDown className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" />
       </summary>
       <div className="px-6 pb-6 text-gray-500 dark:text-gray-400 font-medium leading-relaxed">
         {answer}

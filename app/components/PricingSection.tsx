@@ -118,9 +118,9 @@ export function PricingSection() {
                   <p className="text-gray-500 dark:text-gray-400 text-sm font-medium h-12">{plan.description}</p>
                 </div>
                 
-                <div className="mb-8 flex flex-wrap items-baseline gap-2">
+                <div className="mb-8 flex items-baseline whitespace-nowrap">
                   <span className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">{plan.price}</span>
-                  {plan.period && <span className="text-base text-gray-500 dark:text-gray-400 font-medium">{plan.period}</span>}
+                  {plan.period && <span className="text-base text-gray-500 dark:text-gray-400 font-medium ml-2">{plan.period}</span>}
                 </div>
                 
                 <Link 
