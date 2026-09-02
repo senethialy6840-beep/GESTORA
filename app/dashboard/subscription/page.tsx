@@ -25,7 +25,7 @@ export default function SubscriptionPage() {
         'Gestion des Clients',
         'Tableau de bord basique'
       ],
-      link: process.env.NEXT_PUBLIC_SASPAY_STARTUP_LINK || '#',
+      link: "https://link.saspay.me/dzhdwsevbca",
       color: 'blue'
     },
     {
@@ -46,7 +46,7 @@ export default function SubscriptionPage() {
         'Rapports',
         'Analyses détaillées'
       ],
-      link: process.env.NEXT_PUBLIC_SASPAY_BUSINESS_LINK || '#',
+      link: "https://link.saspay.me/x9qdadsktnm",
       color: 'emerald',
       popular: true
     },
@@ -65,7 +65,7 @@ export default function SubscriptionPage() {
         'Assistant Intelligent (IA)',
         'Support technique dédié 7j/7'
       ],
-      link: process.env.NEXT_PUBLIC_SASPAY_ENTERPRISE_LINK || '#',
+      link: "https://link.saspay.me/dveyilduqy0",
       color: 'purple'
     }
   ];
