@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { auth } from '@/auth';
 
 interface SasPayPaymentRequest {
   amount: number;
@@ -8,6 +9,7 @@ interface SasPayPaymentRequest {
   description: string;
   reference: string;
   customer_email?: string;
+  plan?: string;
 }
 
 export async function generateSasPayLink(data: SasPayPaymentRequest) {
@@ -20,7 +22,12 @@ export async function generateSasPayLink(data: SasPayPaymentRequest) {
     }
 
     // Prepare payload based on typical SasPay requirements
-    const payload = {
+    // Attach the current user's companyId as client_reference so the webhook
+    // can identify and activate the company automatically after payment.
+    const session = await auth();
+    const companyId = session?.user?.companyId as string | undefined;
+
+    const payload: any = {
       amount: data.amount,
       currency: data.currency || "XOF",
       description: data.description,
@@ -30,6 +37,14 @@ export async function generateSasPayLink(data: SasPayPaymentRequest) {
       cancel_url: `${APP_URL}/dashboard/sales`,
       webhook_url: `${APP_URL}/api/webhooks/saspay`,
     };
+
+    if (companyId) {
+      payload.client_reference = companyId;
+      payload.metadata = {
+        companyId,
+      };
+      if (data.plan) payload.metadata.plan = data.plan;
+    }
 
     const response = await fetch("https://api.saspay.me/api/v1/payments", {
       method: "POST",
