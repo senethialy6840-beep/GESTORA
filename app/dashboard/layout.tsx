@@ -174,8 +174,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
   // --- FIN PROTECTION STRICTE ---
 
-  // Block access if subscription is pending, unless already on the subscription page
-  if (session?.user && (session.user as any).subscriptionStatus === 'PENDING' && pathname !== '/dashboard/subscription') {
+  // Block access if subscription is pending
+  if (session?.user && (session.user as any).subscriptionStatus === 'PENDING') {
+    // S'ils sont sur la page d'abonnement, on affiche UNIQUEMENT le contenu de la page (sans le menu latéral)
+    if (pathname === '/dashboard/subscription') {
+      return (
+        <div className="min-h-screen bg-gray-50 dark:bg-[#0A1226] font-sans text-gray-700 dark:text-slate-300 selection:bg-[#2563EB]/30 transition-colors duration-300 relative">
+          {children}
+        </div>
+      );
+    }
+
+    // Sinon, on affiche l'écran de blocage
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-[#0A1226] flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white dark:bg-[#162032] p-8 rounded-2xl shadow-xl text-center border border-gray-200 dark:border-slate-700/50">
