@@ -122,30 +122,6 @@ export default function LandingPage() {
                       </div>
                    </div>
 
-                   <div className="flex flex-wrap gap-4">
-                     {/* Graph card */}
-                     <div className="flex-[1_1_100%] md:flex-[1_1_200px] bg-white dark:bg-[#162032] border border-gray-200 dark:border-slate-700/50 rounded-2xl p-5 shadow-sm">
-                        <h4 className="text-sm font-bold text-gray-800 dark:text-white mb-4">Graphique des ventes</h4>
-                        {/* Fake graph lines */}
-                        <div className="w-full h-32 border-b border-l border-gray-100 dark:border-slate-800/60 relative">
-                           <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">
-                             <polyline points="0,90 20,70 40,80 60,30 80,40 100,10" fill="none" stroke="#2563EB" strokeWidth="2" />
-                           </svg>
-                        </div>
-                     </div>
-                     {/* Bar chart card */}
-                     <div className="flex-[1_1_100%] md:flex-[1_1_200px] bg-white dark:bg-[#162032] border border-gray-200 dark:border-slate-700/50 rounded-2xl p-5 shadow-sm">
-                        <h4 className="text-sm font-bold text-gray-800 dark:text-white mb-4">Produits en ...</h4>
-                        <div className="flex items-end justify-between h-32">
-                           <div className="w-8 h-[80%] bg-[#2563EB] rounded-t-sm"></div>
-                           <div className="w-8 h-[60%] bg-[#2563EB] rounded-t-sm"></div>
-                           <div className="w-8 h-[90%] bg-[#2563EB] rounded-t-sm"></div>
-                           <div className="w-8 h-[40%] bg-[#2563EB] rounded-t-sm"></div>
-                           <div className="w-8 h-[70%] bg-[#2563EB] rounded-t-sm"></div>
-                        </div>
-                     </div>
-                   </div>
-
                 </div>
                 </div>
 
