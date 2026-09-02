@@ -643,29 +643,73 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-4">
-              Foire aux questions
+              Une question ? Nous avons la réponse.
             </h2>
             <p className="text-lg text-gray-500 dark:text-gray-400 font-medium">
-              Tout ce que vous devez savoir sur GESTORA.
+              Tout ce que vous devez savoir sur les offres et fonctionnalités de GESTORA avant de commencer.
             </p>
           </div>
           
           <div className="space-y-4">
             <FaqItem 
-              question="GESTORA est-il adapté à mon secteur d'activité ?" 
-              answer="Absolument. Que vous gériez une boutique de vêtements, une quincaillerie, un supermarché ou une pharmacie, GESTORA s'adapte à vos besoins avec des modules flexibles pour la gestion des stocks, ventes et employés." 
+              question="1. Qu'est-ce que GESTORA ?" 
+              answer="GESTORA est une plateforme ERP qui permet de gérer vos ventes, stocks, produits, clients, achats et autres opérations depuis un seul endroit." 
             />
             <FaqItem 
-              question="Mes données sont-elles en sécurité ?" 
-              answer="La sécurité est notre priorité absolue. Vos données sont hébergées sur des serveurs hautement sécurisés (AWS) avec un chiffrement de bout en bout et des sauvegardes automatiques régulières." 
+              question="2. À qui s'adresse GESTORA ?" 
+              answer="GESTORA est conçu pour les petits commerces, boutiques, PME et entreprises ayant plusieurs points de vente." 
             />
             <FaqItem 
-              question="Puis-je utiliser GESTORA sur mon téléphone ?" 
-              answer="Oui, GESTORA est 100% responsive. Vous pouvez y accéder depuis n'importe quel appareil (ordinateur, tablette, smartphone) avec une simple connexion internet." 
+              question="3. Puis-je essayer GESTORA avant de m'abonner ?" 
+              answer="Oui, vous pouvez créer un compte et découvrir la plateforme avant de choisir l'offre adaptée à votre entreprise." 
             />
             <FaqItem 
-              question="Que se passe-t-il après la période d'essai ?" 
-              answer="À la fin de vos 14 jours d'essai gratuit, vous pourrez choisir le plan qui correspond le mieux à la taille de votre entreprise pour continuer à profiter de toutes nos fonctionnalités." 
+              question="4. Puis-je changer d'offre à tout moment ?" 
+              answer="Oui. Vous pouvez passer à une offre supérieure ou modifier votre abonnement selon l'évolution de vos besoins." 
+            />
+            <FaqItem 
+              question="5. Puis-je gérer plusieurs boutiques ?" 
+              answer="Oui. L'offre Starter permet de gérer 1 boutique, Business jusqu'à 3 boutiques et Entreprise un nombre illimité de boutiques." 
+            />
+            <FaqItem 
+              question="6. Combien d'utilisateurs puis-je ajouter ?" 
+              answer="Cela dépend de votre offre : Starter (1 utilisateur), Business (jusqu'à 5 utilisateurs), Entreprise (utilisateurs illimités)." 
+            />
+            <FaqItem 
+              question="7. Mes données sont-elles sécurisées ?" 
+              answer="GESTORA met en place des mesures de sécurité pour protéger les données de votre entreprise et contrôler les accès des utilisateurs." 
+            />
+            <FaqItem 
+              question="8. Puis-je accéder à GESTORA depuis mon téléphone ?" 
+              answer="Oui. GESTORA est conçu pour fonctionner sur ordinateur, tablette et smartphone." 
+            />
+            <FaqItem 
+              question="9. Que se passe-t-il si je dépasse les limites de mon offre ?" 
+              answer="Vous serez invité à passer à une offre supérieure afin de continuer à utiliser les fonctionnalités ou capacités supplémentaires." 
+            />
+            <FaqItem 
+              question="10. Puis-je résilier mon abonnement ?" 
+              answer="Oui. Vous pouvez demander l'arrêt ou la modification de votre abonnement selon les conditions applicables à votre formule." 
+            />
+            <FaqItem 
+              question="11. Quels moyens de paiement sont acceptés ?" 
+              answer="Les moyens de paiement disponibles sont affichés au moment du paiement et peuvent varier selon votre pays et votre mode d'abonnement." 
+            />
+            <FaqItem 
+              question="12. L'intelligence artificielle est-elle disponible pour toutes les offres ?" 
+              answer="L'assistant intelligent YEYA AI est inclus dans l'offre Entreprise." 
+            />
+            <FaqItem 
+              question="13. Puis-je obtenir de l'aide en cas de problème ?" 
+              answer="Oui. GESTORA propose une assistance pour accompagner les utilisateurs dans l'utilisation de la plateforme." 
+            />
+            <FaqItem 
+              question="14. Que se passe-t-il avec mes données si je change d'offre ?" 
+              answer="Vos données restent associées à votre entreprise. Le changement d'offre modifie principalement les fonctionnalités et limites disponibles." 
+            />
+            <FaqItem 
+              question="15. Comment commencer avec GESTORA ?" 
+              answer="Créez votre compte, configurez votre entreprise et choisissez l'offre adaptée à vos besoins pour commencer à gérer votre activité." 
             />
           </div>
         </div>
