@@ -114,9 +114,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const userRole = (session?.user as any)?.role || 'USER';
   const userPlan = (session?.user as any)?.plan || 'FREE';
-  const userEmail = (session?.user as any)?.email || '';
+  const sessionEmail = (session?.user as any)?.email || '';
 
-  const isPlatformOwner = userEmail === 'gestorame112@gmail.com';
+  const isPlatformOwner = sessionEmail === 'gestorame112@gmail.com';
 
   const hasAccess = (requiredPlan: string) => {
     // Le PROPRIETAIRE a toujours accès à tout
