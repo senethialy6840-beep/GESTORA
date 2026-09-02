@@ -57,10 +57,10 @@ export default function POSPage() {
     
     // Enregistrer la vente dans la base de données
     const saleData = {
-      invoiceNo: `FAC-${Date.now()}`,
+      invoiceNo: `VTE-${Date.now()}`,
       totalAmount: total,
       companyId: session.user.companyId,
-      items: cart.map(item => ({ description: item.name, quantity: item.qty, price: item.price, productId: item.id }))
+      items: cart.map(item => ({ description: item.name, quantity: item.qty, price: item.price }))
     };
     await createSale(saleData);
 

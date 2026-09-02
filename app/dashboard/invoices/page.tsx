@@ -37,7 +37,15 @@ export default function InvoicesPage() {
       if (session?.user?.companyId) {
         const res = await getSales(session.user.companyId);
         if (res.success && res.data) {
-          const formatted = res.data.map((sale: any) => ({
+          // Filtrer les ventes POS (qui commencent par VTE- ou qui sont de l'ancien format POS FAC-13chiffres)
+          const invoiceOnly = res.data.filter((sale: any) => {
+            const no = sale.invoiceNo || '';
+            if (no.startsWith('VTE-')) return false;
+            if (no.match(/^FAC-\d{13}$/)) return false;
+            return true;
+          });
+
+          const formatted = invoiceOnly.map((sale: any) => ({
             dbId: sale.id,
             id: sale.invoiceNo,
             isoDate: new Date(sale.createdAt).toISOString().split('T')[0],
