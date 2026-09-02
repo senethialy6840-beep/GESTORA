@@ -11,16 +11,19 @@ export default function SubscriptionPage() {
   const plans = [
     {
       id: 'STARTUP',
-      name: 'Startup',
+      name: 'Starter',
       icon: <Rocket className="w-6 h-6 text-blue-600 dark:text-blue-400" />,
-      price: '15 000 FCFA',
+      price: '5 900 FCFA',
       period: '/mois',
-      description: 'Idéal pour les petites équipes et les jeunes entreprises.',
+      description: 'L\'essentiel pour les petits commerces qui se lancent.',
       features: [
-        'Jusqu\'à 5 utilisateurs',
-        'Gestion des ventes et factures',
-        'Suivi de base des stocks',
-        'Support par email'
+        '1 boutique',
+        '1 utilisateur',
+        'Caisse (POS)',
+        'Ventes',
+        'Catalogue de Produits',
+        'Gestion des Clients',
+        'Tableau de bord basique'
       ],
       link: process.env.NEXT_PUBLIC_SASPAY_STARTUP_LINK || '#',
       color: 'blue'
@@ -29,15 +32,19 @@ export default function SubscriptionPage() {
       id: 'BUSINESS',
       name: 'Business',
       icon: <Briefcase className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />,
-      price: '35 000 FCFA',
+      price: '14 900 FCFA',
       period: '/mois',
-      description: 'Pour les PME en pleine croissance nécessitant plus d\'outils.',
+      description: 'La solution complète pour les PME en croissance.',
       features: [
-        'Jusqu\'à 15 utilisateurs',
-        'Toutes les fonctionnalités Startup',
-        'Gestion multi-entrepôts',
-        'Rapports analytiques avancés',
-        'Support prioritaire'
+        '3 boutiques',
+        '5 utilisateurs',
+        'Facturation',
+        'Devis',
+        'Achats',
+        'Fournisseurs',
+        'Gestion de stock avancée',
+        'Rapports',
+        'Analyses détaillées'
       ],
       link: process.env.NEXT_PUBLIC_SASPAY_BUSINESS_LINK || '#',
       color: 'emerald',
@@ -47,15 +54,16 @@ export default function SubscriptionPage() {
       id: 'ENTERPRISE',
       name: 'Entreprise',
       icon: <Building2 className="w-6 h-6 text-purple-600 dark:text-purple-400" />,
-      price: 'Sur devis',
-      period: '',
-      description: 'Une solution complète pour les grandes structures.',
+      price: '25 000 FCFA',
+      period: '/mois',
+      description: 'Pour les réseaux multi-sites et les besoins avancés.',
       features: [
+        'Boutiques illimitées',
         'Utilisateurs illimités',
-        'Toutes les fonctionnalités Business',
-        'API & Intégrations personnalisées',
-        'Account manager dédié',
-        'Formation sur site'
+        'Module de Comptabilité',
+        'Ressources Humaines (RH)',
+        'Assistant Intelligent (IA)',
+        'Support technique dédié 7j/7'
       ],
       link: process.env.NEXT_PUBLIC_SASPAY_ENTERPRISE_LINK || '#',
       color: 'purple'
