@@ -126,12 +126,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <p className="text-gray-500 dark:text-slate-400 mb-8">
             Pour accéder à votre tableau de bord, vous devez d'abord activer votre abonnement.
           </p>
-          <Link 
+          <a 
             href="/dashboard/subscription"
-            className="block w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors"
+            className="block w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-center rounded-xl transition-colors"
           >
             Choisir mon forfait
-          </Link>
+          </a>
           <button 
             onClick={handleLogout}
             className="mt-4 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-slate-300"
