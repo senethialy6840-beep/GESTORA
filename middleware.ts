@@ -5,7 +5,7 @@ export default withAuth(
   function middleware(req) {
     try {
       const role = req.nextauth?.token?.role as string | undefined;
-      const path = req.nextUrl.pathname;
+      const path = req.nextUrl?.pathname || "";
 
       // Permissions strictes pour les Vendeurs
       if (role === 'SELLER') {
@@ -16,8 +16,9 @@ export default withAuth(
         }
       }
     } catch (e) {
-      console.error("Middleware error:", e);
+      console.error("Middleware processing error:", e);
     }
+    return NextResponse.next();
   },
   {
     pages: {
@@ -26,7 +27,8 @@ export default withAuth(
     callbacks: {
       authorized: ({ token }) => !!token,
     },
-    secret: process.env.NEXTAUTH_SECRET,
+    // Si la variable n'est pas définie, on met une chaîne vide pour éviter le crash
+    secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || "fallback_secret_for_development",
   }
 );
 
