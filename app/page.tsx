@@ -79,9 +79,9 @@ export default function LandingPage() {
                       <div className="px-4 py-1.5 bg-[#2563EB] rounded-full text-xs font-semibold text-white">Filtrer</div>
                    </div>
 
-                   <div className="flex flex-col md:flex-row gap-4 mb-6">
+                   <div className="flex flex-wrap gap-4 mb-6">
                       {/* Main blue card */}
-                      <div className="flex-1 bg-gradient-to-r from-blue-400 to-blue-300 rounded-2xl p-5 text-white relative overflow-hidden">
+                      <div className="flex-[1_1_100%] md:flex-[1_1_250px] bg-gradient-to-r from-blue-400 to-blue-300 rounded-2xl p-5 text-white relative overflow-hidden">
                         <h3 className="font-bold text-lg mb-1">Bienvenue Franck</h3>
                         <p className="text-xs text-blue-100 mb-4">Voici les statiques du mois actuel</p>
                         <div className="flex flex-wrap gap-4 sm:gap-6">
@@ -98,33 +98,33 @@ export default function LandingPage() {
                         <div className="absolute bottom-0 right-0 w-24 h-24 bg-white/20 rounded-tl-full blur-xl"></div>
                       </div>
 
-                      <div className="grid grid-cols-3 md:flex md:flex-row gap-4">
+                      <div className="flex-[1_1_100%] md:flex-[1_1_200px] grid grid-cols-3 gap-3">
                         {/* Small pink card */}
-                        <div className="w-full md:w-24 bg-pink-100 dark:bg-pink-900/30 rounded-2xl p-3 sm:p-4 flex flex-col justify-center">
+                        <div className="bg-pink-100 dark:bg-pink-900/30 rounded-2xl p-3 flex flex-col justify-center">
                            <div className="w-8 h-8 rounded-full bg-pink-200 dark:bg-pink-900/60 text-pink-500 dark:text-pink-400 flex items-center justify-center mb-2"><LineChart className="w-4 h-4" /></div>
                            <p className="font-bold text-sm text-gray-800 dark:text-white">0 / 7 <span className="text-[10px] text-pink-500 dark:text-pink-400">-100%</span></p>
-                           <p className="text-[8px] sm:text-[10px] text-gray-500 dark:text-gray-400">Ventes</p>
+                           <p className="text-[9px] text-gray-500 dark:text-gray-400">Ventes</p>
                         </div>
 
                         {/* Small blue card */}
-                        <div className="w-full md:w-24 bg-blue-100 dark:bg-blue-900/30 rounded-2xl p-3 sm:p-4 flex flex-col justify-center">
+                        <div className="bg-blue-100 dark:bg-blue-900/30 rounded-2xl p-3 flex flex-col justify-center">
                            <div className="w-8 h-8 rounded-full bg-blue-200 dark:bg-blue-900/60 text-blue-500 dark:text-blue-400 flex items-center justify-center mb-2"><ShoppingCart className="w-4 h-4" /></div>
                            <p className="font-bold text-sm text-gray-800 dark:text-white">0 / 0 <span className="text-[10px] text-gray-500 dark:text-gray-400">%</span></p>
-                           <p className="text-[8px] sm:text-[10px] text-gray-500 dark:text-gray-400">Remboursements</p>
+                           <p className="text-[9px] text-gray-500 dark:text-gray-400 break-words leading-tight mt-0.5">Rembours.</p>
                         </div>
                         
                         {/* Small green card */}
-                        <div className="w-full md:w-24 bg-green-100 dark:bg-emerald-900/30 rounded-2xl p-3 sm:p-4 flex flex-col justify-center">
+                        <div className="bg-green-100 dark:bg-emerald-900/30 rounded-2xl p-3 flex flex-col justify-center">
                            <div className="w-8 h-8 rounded-full bg-green-200 dark:bg-emerald-900/60 text-green-500 dark:text-emerald-400 flex items-center justify-center mb-2"><DollarSign className="w-4 h-4" /></div>
                            <p className="font-bold text-sm text-gray-800 dark:text-white">0 FCFA <span className="text-[10px] text-gray-500 dark:text-gray-400">-100%</span></p>
-                           <p className="text-[8px] sm:text-[10px] text-gray-500 dark:text-gray-400">Revenus</p>
+                           <p className="text-[9px] text-gray-500 dark:text-gray-400">Revenus</p>
                         </div>
                       </div>
                    </div>
 
-                   <div className="flex flex-col sm:flex-row gap-4">
+                   <div className="flex flex-wrap gap-4">
                      {/* Graph card */}
-                     <div className="flex-1 bg-white dark:bg-[#162032] border border-gray-200 dark:border-slate-700/50 rounded-2xl p-5 shadow-sm">
+                     <div className="flex-[1_1_100%] md:flex-[1_1_200px] bg-white dark:bg-[#162032] border border-gray-200 dark:border-slate-700/50 rounded-2xl p-5 shadow-sm">
                         <h4 className="text-sm font-bold text-gray-800 dark:text-white mb-4">Graphique des ventes</h4>
                         {/* Fake graph lines */}
                         <div className="w-full h-32 border-b border-l border-gray-100 dark:border-slate-800/60 relative">
@@ -134,7 +134,7 @@ export default function LandingPage() {
                         </div>
                      </div>
                      {/* Bar chart card */}
-                     <div className="flex-1 bg-white dark:bg-[#162032] border border-gray-200 dark:border-slate-700/50 rounded-2xl p-5 shadow-sm">
+                     <div className="flex-[1_1_100%] md:flex-[1_1_200px] bg-white dark:bg-[#162032] border border-gray-200 dark:border-slate-700/50 rounded-2xl p-5 shadow-sm">
                         <h4 className="text-sm font-bold text-gray-800 dark:text-white mb-4">Produits en ...</h4>
                         <div className="flex items-end justify-between h-32">
                            <div className="w-8 h-[80%] bg-[#2563EB] rounded-t-sm"></div>
