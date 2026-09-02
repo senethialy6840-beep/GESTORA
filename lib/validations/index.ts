@@ -89,7 +89,8 @@ export const PurchaseItemSchema = z.object({
 });
 
 export const PurchaseSchema = z.object({
-  supplierId: z.string().min(1, "Fournisseur requis"),
+  orderNo: z.string().min(1, "Numéro de commande requis"),
+  supplierId: z.string().optional().nullable(),
   totalAmount: z.coerce.number().min(0, "Montant invalide"),
   status: z.string().optional(),
   companyId: z.string().min(1, "Company ID requis")
