@@ -309,13 +309,13 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Right Image (CSS Cropped) */}
-            <div className="order-1 lg:order-2 h-full flex items-center">
-              <div className="relative w-full rounded-3xl overflow-hidden shadow-2xl ring-1 ring-black/5 dark:ring-white/10 lg:aspect-[4/3]">
+            {/* Right Image */}
+            <div className="order-1 lg:order-2">
+              <div className="bg-white dark:bg-[#162032] p-2 sm:p-4 rounded-3xl shadow-xl border border-gray-200 dark:border-slate-700/50 transform hover:-translate-y-2 transition-all duration-500">
                 <img 
                   src="/images/gestion_stocks_full.jpg" 
                   alt="Gestion intelligente des stocks Dashboard" 
-                  className="w-full h-auto lg:absolute lg:inset-0 lg:h-full lg:object-cover lg:max-w-[200%] lg:w-[190%] lg:object-right lg:-ml-[90%] lg:top-0 object-contain"
+                  className="w-full h-auto rounded-2xl"
                 />
               </div>
             </div>
