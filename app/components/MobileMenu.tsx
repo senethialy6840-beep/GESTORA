@@ -18,26 +18,43 @@ export function MobileMenu() {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 w-full bg-white border-b border-gray-100 shadow-xl py-6 px-6 flex flex-col space-y-6 z-50">
+        <div className="absolute top-full left-0 w-full bg-white dark:bg-[#0A1226] border-b border-gray-100 dark:border-slate-800/60 shadow-xl py-6 px-6 flex flex-col space-y-6 z-50">
           <Link 
             href="#fonctionnalites" 
             onClick={() => setIsOpen(false)} 
-            className="text-lg font-bold text-gray-800 hover:text-[#2563EB] transition-colors"
+            className="text-lg font-bold text-gray-800 dark:text-gray-200 hover:text-[#2563EB] dark:hover:text-[#3b82f6] transition-colors"
           >
             Fonctionnalités
           </Link>
-          <hr className="border-gray-100" />
+          <hr className="border-gray-100 dark:border-slate-800" />
+          <Link 
+            href="#tarification" 
+            onClick={() => setIsOpen(false)} 
+            className="text-lg font-bold text-gray-800 dark:text-gray-200 hover:text-[#2563EB] dark:hover:text-[#3b82f6] transition-colors"
+          >
+            Tarification
+          </Link>
+          <hr className="border-gray-100 dark:border-slate-800" />
+          <Link 
+            href="#faq" 
+            onClick={() => setIsOpen(false)} 
+            className="text-lg font-bold text-gray-800 dark:text-gray-200 hover:text-[#2563EB] dark:hover:text-[#3b82f6] transition-colors"
+          >
+            FAQ
+          </Link>
+          <hr className="border-gray-100 dark:border-slate-800" />
           <Link 
             href="#support" 
             onClick={() => setIsOpen(false)} 
-            className="text-lg font-bold text-gray-800 hover:text-[#2563EB] transition-colors"
+            className="text-lg font-bold text-gray-800 dark:text-gray-200 hover:text-[#2563EB] dark:hover:text-[#3b82f6] transition-colors"
           >
             Contactez-nous
           </Link>
+          
           <Link 
             href="/login" 
             onClick={() => setIsOpen(false)} 
-            className="px-6 py-3 bg-[#0A1226] text-white rounded-full font-bold text-center hover:bg-slate-800 transition-colors shadow-md mt-4"
+            className="px-6 py-3 bg-[#0A1226] dark:bg-[#2563EB] text-white rounded-full font-bold text-center hover:bg-slate-800 dark:hover:bg-blue-600 transition-colors shadow-md mt-4"
           >
             Se connecter
           </Link>
