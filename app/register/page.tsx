@@ -215,6 +215,8 @@ function RegisterForm() {
                  <p className="text-sm text-gray-400">Suivez la rentabilité de votre activité.</p>
                </div>
              </div>
+          </div>
+        </div>
       </div>
     </div>
   );
