@@ -34,9 +34,7 @@ export default withAuth(
 
 export const config = {
   matcher: [
-    // Protéger toutes les pages du dashboard
-    "/dashboard/:path*",
-    // Protéger toutes les routes API (sauf celles d'authentification)
-    "/api/((?!auth|webhooks).*)"
+    // Protéger uniquement les pages du dashboard via le middleware
+    "/dashboard/:path*"
   ],
 };
