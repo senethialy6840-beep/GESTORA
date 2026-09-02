@@ -89,11 +89,26 @@ export async function POST(req: Request) {
       payload.plan ||
       (order_id?.startsWith("sub_") ? order_id.split("_")[1] : null);
 
-    const plan = rawPlan ? (PLAN_MAP[rawPlan] ?? "STARTUP") : "STARTUP";
+    const plan = rawPlan ? (PLAN_MAP[String(rawPlan).toUpperCase()] ?? "STARTUP") : "STARTUP";
 
     if (companyId) {
-      // Calculer la date d'expiration (30 jours à partir de maintenant)
-      const subscriptionExpiresAt = new Date();
+      const company = await prisma.company.findUnique({ where: { id: companyId } });
+
+      if (!company) {
+        console.warn(`[SasPay Webhook] ⚠️ Entreprise introuvable pour l'ID: ${companyId}. Webhook ignoré.`);
+        return NextResponse.json({ success: true, message: "Company introuvable, webhook ignoré." });
+      }
+
+      // Calculer la date d'expiration (30 jours)
+      // On prolonge l'abonnement à partir de la date d'expiration actuelle si elle est dans le futur
+      const now = new Date();
+      let currentExpiry = company.subscriptionExpiresAt;
+
+      if (!currentExpiry || currentExpiry < now) {
+        currentExpiry = now;
+      }
+
+      const subscriptionExpiresAt = new Date(currentExpiry);
       subscriptionExpiresAt.setDate(subscriptionExpiresAt.getDate() + 30);
 
       await prisma.company.update({
