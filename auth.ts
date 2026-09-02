@@ -51,7 +51,8 @@ export const authOptions: NextAuthOptions = {
           name: `${user.firstName} ${user.lastName}`,
           companyId: user.companyId,
           role: user.role,
-          subscriptionStatus: user.company?.subscriptionStatus || "ACTIVE"
+          subscriptionStatus: user.company?.subscriptionStatus || "ACTIVE",
+          plan: user.company?.plan || "FREE"
         } as any;
       },
     }),
@@ -63,6 +64,7 @@ export const authOptions: NextAuthOptions = {
         token.companyId = (user as any).companyId;
         token.role = (user as any).role;
         token.subscriptionStatus = (user as any).subscriptionStatus;
+        token.plan = (user as any).plan;
       }
       return token;
     },
@@ -72,6 +74,7 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).companyId = token.companyId as string;
         (session.user as any).role = token.role as string;
         (session.user as any).subscriptionStatus = token.subscriptionStatus as string;
+        (session.user as any).plan = token.plan as string;
       }
       return session;
     },

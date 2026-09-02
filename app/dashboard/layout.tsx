@@ -112,6 +112,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       : `${baseClass} text-slate-400 hover:text-white hover:bg-slate-800/50`;
   };
 
+  const userRole = (session?.user as any)?.role || 'USER';
+  const userPlan = (session?.user as any)?.plan || 'FREE';
+
+  const hasAccess = (requiredPlan: string) => {
+    // SUPER_ADMIN a toujours accès à tout
+    if (userRole === 'SUPER_ADMIN') return true;
+    
+    // ENTERPRISE a toujours accès à tout
+    if (userPlan === 'ENTERPRISE') return true;
+    
+    // BUSINESS a accès aux siens et à ceux de STARTUP
+    if (userPlan === 'BUSINESS' && ['STARTUP', 'BUSINESS'].includes(requiredPlan)) return true;
+    
+    // STARTUP a uniquement accès à STARTUP
+    if (userPlan === 'STARTUP' && requiredPlan === 'STARTUP') return true;
+    
+    return false;
+  };
+
   // Block access if subscription is pending, unless already on the subscription page
   if (session?.user && (session.user as any).subscriptionStatus === 'PENDING' && pathname !== '/dashboard/subscription') {
     return (
@@ -179,42 +198,52 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </Link>
               </li>
 
-              <li>
-                <Link href="/dashboard/pos" className={getLinkClass('/dashboard/pos')} title="Caisse (POS)">
-                  {isActive('/dashboard/pos') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
-                  <Monitor className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/pos') ? 'text-blue-400' : ''}`} />
-                  {!isSidebarCollapsed && <span className="truncate">Caisse (POS)</span>}
-                </Link>
-              </li>
-              <li>
-                <Link href="/dashboard/products" className={getLinkClass('/dashboard/products')} title="Catalogue Produits">
-                  {isActive('/dashboard/products') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
-                  <Package className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/products') ? 'text-blue-400' : ''}`} />
-                  {!isSidebarCollapsed && <span className="truncate">Catalogue Produits</span>}
-                </Link>
-              </li>
-              <li>
-                <Link href="/dashboard/inventory" className={getLinkClass('/dashboard/inventory')} title="Stock Avancé">
-                  {isActive('/dashboard/inventory') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
-                  <Box className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/inventory') ? 'text-blue-400' : ''}`} />
-                  {!isSidebarCollapsed && <span className="truncate">Stock Avancé</span>}
-                </Link>
-              </li>
-              <li>
-                <Link href="/dashboard/sales" className={getLinkClass('/dashboard/sales')} title="Ventes">
-                  {isActive('/dashboard/sales') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
-                  <ShoppingCart className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/sales') ? 'text-blue-400' : ''}`} />
-                  {!isSidebarCollapsed && <span className="truncate">Ventes</span>}
-                </Link>
-              </li>
-              <li>
-                <Link href="/dashboard/reports" className={getLinkClass('/dashboard/reports')} title="Rapports & Analyses">
-                  {isActive('/dashboard/reports') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
-                  <BarChart3 className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/reports') ? 'text-blue-400' : ''}`} />
-                  {!isSidebarCollapsed && <span className="truncate">Rapports & Analyses</span>}
-                </Link>
-              </li>
-              {(session?.user as any)?.role !== 'SELLER' && (
+              {hasAccess('STARTUP') && (
+                <>
+                  <li>
+                    <Link href="/dashboard/pos" className={getLinkClass('/dashboard/pos')} title="Caisse (POS)">
+                      {isActive('/dashboard/pos') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
+                      <Monitor className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/pos') ? 'text-blue-400' : ''}`} />
+                      {!isSidebarCollapsed && <span className="truncate">Caisse (POS)</span>}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/dashboard/products" className={getLinkClass('/dashboard/products')} title="Catalogue Produits">
+                      {isActive('/dashboard/products') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
+                      <Package className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/products') ? 'text-blue-400' : ''}`} />
+                      {!isSidebarCollapsed && <span className="truncate">Catalogue Produits</span>}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/dashboard/sales" className={getLinkClass('/dashboard/sales')} title="Ventes">
+                      {isActive('/dashboard/sales') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
+                      <ShoppingCart className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/sales') ? 'text-blue-400' : ''}`} />
+                      {!isSidebarCollapsed && <span className="truncate">Ventes</span>}
+                    </Link>
+                  </li>
+                </>
+              )}
+
+              {hasAccess('BUSINESS') && (
+                <>
+                  <li>
+                    <Link href="/dashboard/inventory" className={getLinkClass('/dashboard/inventory')} title="Stock Avancé">
+                      {isActive('/dashboard/inventory') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
+                      <Box className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/inventory') ? 'text-blue-400' : ''}`} />
+                      {!isSidebarCollapsed && <span className="truncate">Stock Avancé</span>}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/dashboard/reports" className={getLinkClass('/dashboard/reports')} title="Rapports & Analyses">
+                      {isActive('/dashboard/reports') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
+                      <BarChart3 className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/reports') ? 'text-blue-400' : ''}`} />
+                      {!isSidebarCollapsed && <span className="truncate">Rapports & Analyses</span>}
+                    </Link>
+                  </li>
+                </>
+              )}
+
+              {hasAccess('BUSINESS') && (session?.user as any)?.role !== 'SELLER' && (
                 <li>
                   <Link href="/dashboard/purchases" className={getLinkClass('/dashboard/purchases')} title="Achats & Fournisseurs">
                     {isActive('/dashboard/purchases') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
@@ -223,7 +252,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   </Link>
                 </li>
               )}
-              {(session?.user as any)?.role === 'SUPER_ADMIN' && (
+
+              {(session?.user as any)?.role === 'SUPER_ADMIN' || (hasAccess('STARTUP') && (session?.user as any)?.role !== 'SELLER') ? (
                 <li>
                   <Link href="/dashboard/clients" className={getLinkClass('/dashboard/clients')} title="Clients">
                     {isActive('/dashboard/clients') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
@@ -231,15 +261,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     {!isSidebarCollapsed && <span className="truncate">Clients & Abonnés</span>}
                   </Link>
                 </li>
+              ) : null}
+
+              {hasAccess('BUSINESS') && (
+                <li>
+                  <Link href="/dashboard/invoices" className={getLinkClass('/dashboard/invoices')} title="Factures & Devis">
+                    {isActive('/dashboard/invoices') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
+                    <FileText className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/invoices') ? 'text-blue-400' : ''}`} />
+                    {!isSidebarCollapsed && <span className="truncate">Factures & Devis</span>}
+                  </Link>
+                </li>
               )}
-              <li>
-                <Link href="/dashboard/invoices" className={getLinkClass('/dashboard/invoices')} title="Factures & Devis">
-                  {isActive('/dashboard/invoices') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
-                  <FileText className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/invoices') ? 'text-blue-400' : ''}`} />
-                  {!isSidebarCollapsed && <span className="truncate">Factures & Devis</span>}
-                </Link>
-              </li>
-              {(session?.user as any)?.role !== 'SELLER' && (
+
+              {hasAccess('ENTERPRISE') && (session?.user as any)?.role !== 'SELLER' && (
                 <>
                   <li>
                     <Link href="/dashboard/accounting" className={getLinkClass('/dashboard/accounting')} title="Comptabilité">
@@ -257,13 +291,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   </li>
                 </>
               )}
-              <li>
-                <Link href="/dashboard/ai" className={getLinkClass('/dashboard/ai')} title="Gestora AI">
-                  {isActive('/dashboard/ai') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
-                  <Sparkles className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/ai') ? 'text-blue-400' : ''}`} />
-                  {!isSidebarCollapsed && <span className="truncate">Gestora AI</span>}
-                </Link>
-              </li>
+
+              {hasAccess('ENTERPRISE') && (
+                <li>
+                  <Link href="/dashboard/ai" className={getLinkClass('/dashboard/ai')} title="Gestora AI">
+                    {isActive('/dashboard/ai') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
+                    <Sparkles className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/ai') ? 'text-blue-400' : ''}`} />
+                    {!isSidebarCollapsed && <span className="truncate">Gestora AI</span>}
+                  </Link>
+                </li>
+              )}
               {(session?.user as any)?.role !== 'SELLER' && (
                 <li>
                   <Link href="/dashboard/settings" className={getLinkClass('/dashboard/settings')} title="Paramètres">
