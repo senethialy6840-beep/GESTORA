@@ -13,8 +13,27 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "GESTORA - Le logiciel de gestion de stock simple et efficace",
-  description: "Plateforme de gestion de caisse et de stocks",
+  title: "GESTORA | Logiciel de gestion de caisse et de stocks",
+  description: "GESTORA est la solution de gestion de stock et de caisse intuitive pour propulser votre entreprise. Suivez vos ventes, gérez votre équipe et pilotez votre activité en temps réel.",
+  keywords: ["gestion de stock", "logiciel de caisse", "point de vente", "ERP", "Sénégal", "Afrique", "GESTORA", "PME", "commerce"],
+  authors: [{ name: "GESTORA" }],
+  openGraph: {
+    title: "GESTORA | Logiciel de gestion complet",
+    description: "La solution ultime pour gérer votre boutique, suivre vos ventes et développer votre entreprise sereinement.",
+    url: "https://gestora.sn",
+    siteName: "GESTORA",
+    locale: "fr_FR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "GESTORA | Logiciel de gestion",
+    description: "Prenez le contrôle de votre boutique avec GESTORA.",
+  },
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/favicon.ico",
+  }
 };
 
 import { ThemeProvider } from "./components/ThemeProvider";

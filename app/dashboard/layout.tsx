@@ -6,7 +6,7 @@ import { Suspense, useState, useEffect, useRef } from 'react';
 import { 
   LayoutDashboard, BarChart3, Sparkles, Monitor, ShoppingCart, 
   Users, Package, Box, Truck, Calculator, FileText, Users2, 
-  Building, Search, Menu, PanelLeftClose, PanelLeftOpen, Settings, User, LogOut, HelpCircle, X, CreditCard
+  Building, Search, Menu, PanelLeftClose, PanelLeftOpen, Settings, User, LogOut, HelpCircle, X, CreditCard, Shield
 } from 'lucide-react';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { useSession, signOut } from 'next-auth/react';
@@ -368,6 +368,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   {!isSidebarCollapsed && <span className="truncate">Aide et assistance</span>}
                 </Link>
               </li>
+              {isPlatformOwner && (
+                <li>
+                  <Link href="/dashboard/super-admin" className={getLinkClass('/dashboard/super-admin')} title="Super Admin">
+                    {isActive('/dashboard/super-admin') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-purple-500 rounded-r-full"></div>}
+                    <Shield className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/super-admin') ? 'text-purple-400' : 'text-purple-400/70'}`} />
+                    {!isSidebarCollapsed && <span className="truncate text-purple-400">Super Admin</span>}
+                  </Link>
+                </li>
+              )}
             </ul>
           </div>
 
