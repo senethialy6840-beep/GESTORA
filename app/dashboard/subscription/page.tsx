@@ -78,12 +78,25 @@ export default function SubscriptionPage() {
     
     setLoadingPlan(planId);
     
-    // Si on veut passer l'ID de l'entreprise au lien SasPay :
-    // const companyId = session?.user?.companyId;
-    // const finalLink = companyId ? `${link}?client_reference=${companyId}` : link;
+    // On passe l'identifiant de l'entreprise et le plan choisi à SasPay
+    // via le paramètre client_reference (standard SasPay)
+    // Ainsi, quand le paiement est confirmé, SasPay appelle notre webhook
+    // avec ces informations et on peut activer le compte automatiquement.
+    const companyId = (session?.user as any)?.companyId;
+    let finalLink = link;
+
+    if (companyId) {
+      // SasPay renvoie le client_reference dans le webhook payload
+      // Format: https://link.saspay.me/xxx?client_reference=COMPANY_ID&metadata[plan]=STARTUP
+      const url = new URL(link);
+      url.searchParams.set('client_reference', companyId);
+      url.searchParams.set('metadata[plan]', planId);
+      url.searchParams.set('metadata[companyId]', companyId);
+      finalLink = url.toString();
+    }
     
-    // Redirection
-    window.location.href = link;
+    // Redirection vers la page de paiement SasPay
+    window.location.href = finalLink;
   };
 
   return (
