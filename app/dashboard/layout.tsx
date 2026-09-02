@@ -131,6 +131,49 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return false;
   };
 
+  // --- PROTECTION STRICTE PAR URL ---
+  let requiredPlanForCurrentRoute: string | null = null;
+  
+  // 1. Restriction Vendeur (SELLER) - on bloque ces URLs pour eux
+  const sellerRestrictedPaths = ['/dashboard/settings', '/dashboard/accounting', '/dashboard/hr', '/dashboard/purchases', '/dashboard/clients'];
+  const isSellerRestricted = userRole === 'SELLER' && sellerRestrictedPaths.some(p => pathname.startsWith(p));
+
+  // 2. Restriction par Forfait (PLAN)
+  if (pathname.startsWith('/dashboard/accounting') || pathname.startsWith('/dashboard/hr') || pathname.startsWith('/dashboard/ai')) {
+    requiredPlanForCurrentRoute = 'ENTERPRISE';
+  } else if (pathname.startsWith('/dashboard/inventory') || pathname.startsWith('/dashboard/reports') || pathname.startsWith('/dashboard/purchases') || pathname.startsWith('/dashboard/invoices')) {
+    requiredPlanForCurrentRoute = 'BUSINESS';
+  }
+
+  const isPlanRestricted = requiredPlanForCurrentRoute && !hasAccess(requiredPlanForCurrentRoute);
+
+  if (session?.user && (isSellerRestricted || isPlanRestricted)) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-[#0A1226] flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white dark:bg-[#162032] p-8 rounded-2xl shadow-xl text-center border border-gray-200 dark:border-slate-700/50">
+          <div className="w-16 h-16 bg-orange-100 dark:bg-orange-500/10 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Accès Refusé</h2>
+          <p className="text-gray-500 dark:text-slate-400 mb-8">
+            {isSellerRestricted 
+              ? "Vous n'avez pas les permissions nécessaires pour accéder à cette page." 
+              : "Cette fonctionnalité n'est pas incluse dans votre forfait actuel."}
+          </p>
+          <Link 
+            href={isSellerRestricted ? "/dashboard" : "/dashboard/subscription"}
+            className="block w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-center rounded-xl transition-colors"
+          >
+            {isSellerRestricted ? "Retour au tableau de bord" : "Voir les forfaits"}
+          </Link>
+        </div>
+      </div>
+    );
+  }
+  // --- FIN PROTECTION STRICTE ---
+
   // Block access if subscription is pending, unless already on the subscription page
   if (session?.user && (session.user as any).subscriptionStatus === 'PENDING' && pathname !== '/dashboard/subscription') {
     return (
