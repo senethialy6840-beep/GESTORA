@@ -66,7 +66,7 @@ const plans = [
 export function PricingSection() {
   return (
     <section id="tarification" className="py-32 bg-white dark:bg-[#0A1226] transition-colors duration-300">
-      <div className="max-w-[1400px] mx-auto px-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* SECTION TITLE & SUBTITLE */}
         <div className="text-center max-w-4xl mx-auto mb-20">

@@ -99,6 +99,20 @@ export async function POST(req: Request) {
         return NextResponse.json({ success: true, message: "Company introuvable, webhook ignoré." });
       }
 
+      // ─── Idempotence : éviter la double activation pour le même order_id ─────
+      if (order_id) {
+        // Si l'abonnement est déjà actif ET a été mis à jour récemment (< 5 min), on ignore
+        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+        if (
+          company.subscriptionStatus === "ACTIVE" &&
+          company.updatedAt > fiveMinutesAgo &&
+          company.plan === plan
+        ) {
+          console.log(`[SasPay Webhook] ⏩ Webhook déjà traité récemment pour Company ${companyId}. Ignoré.`);
+          return NextResponse.json({ success: true, message: "Webhook déjà traité (idempotence)." });
+        }
+      }
+
       // Calculer la date d'expiration (30 jours)
       // On prolonge l'abonnement à partir de la date d'expiration actuelle si elle est dans le futur
       const now = new Date();

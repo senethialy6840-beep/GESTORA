@@ -9,7 +9,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-white dark:bg-[#0A1226] text-gray-900 dark:text-gray-100 font-sans selection:bg-brand/20 selection:text-brand transition-colors duration-300">
       {/* -------------------- NAVBAR -------------------- */}
       <header className="fixed top-0 w-full bg-white/90 dark:bg-[#0A1226]/90 backdrop-blur-md border-b border-gray-100 dark:border-slate-800/60 z-50 transition-all duration-300">
-        <div className="max-w-[1400px] mx-auto px-6 h-20 lg:h-24 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 lg:h-24 flex items-center justify-between">
           <a href="/" className="flex items-center hover:opacity-80 transition-opacity">
             <span className="text-3xl font-display font-black tracking-tight text-[#2563EB]">GEST</span>
             <span className="text-3xl font-display font-black tracking-tight text-gray-900 dark:text-white">ORA.</span>
@@ -32,7 +32,7 @@ export default function LandingPage() {
 
       {/* -------------------- HERO SECTION -------------------- */}
       <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-32 overflow-hidden bg-[#FAFBFF] dark:bg-[#050B14] transition-colors duration-300">
-        <div className="max-w-[1400px] mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             
             {/* Left Content */}
@@ -65,7 +65,7 @@ export default function LandingPage() {
             </div>
 
             {/* Right Content - Mockup Floating Cards */}
-            <div className="relative z-10 lg:h-[600px] w-full flex items-center justify-center">
+            <div className="relative z-10 lg:h-auto w-full flex items-center justify-center">
               <div className="relative w-full max-w-[600px] aspect-square">
                 
                 {/* Background Card */}
@@ -187,7 +187,7 @@ export default function LandingPage() {
 
       {/* -------------------- PROBLEMES & DEFIS SECTION -------------------- */}
       <section className="py-24 bg-white dark:bg-[#0A1226] border-t border-gray-100 dark:border-slate-800 relative overflow-hidden transition-colors duration-300">
-        <div className="max-w-[1400px] mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white mb-6 tracking-tight">
               Les petites erreurs d'aujourd'hui peuvent <span className="text-red-500">coûter cher</span> demain.
@@ -265,7 +265,7 @@ export default function LandingPage() {
 
       {/* -------------------- GESTION INTELLIGENTE SECTION -------------------- */}
       <section className="py-24 bg-white dark:bg-[#0A1226] relative overflow-hidden transition-colors duration-300">
-        <div className="max-w-[1400px] mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             
             {/* Left Content */}
@@ -350,7 +350,7 @@ export default function LandingPage() {
 
       {/* -------------------- ANALYSE AVANCEE SECTION -------------------- */}
       <section className="py-24 bg-[#FAFBFF] dark:bg-[#050B14] relative overflow-hidden transition-colors duration-300">
-        <div className="max-w-[1400px] mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             
             {/* Left Image */}
@@ -497,7 +497,7 @@ export default function LandingPage() {
 
       {/* -------------------- FEATURES SECTION -------------------- */}
       <section id="fonctionnalites" className="py-24 bg-white dark:bg-[#0A1226] border-t border-gray-100 dark:border-slate-800 transition-colors duration-300">
-        <div className="max-w-[1400px] mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white mb-4">Gérer votre entreprise n'a jamais été aussi facile</h2>
             <p className="text-lg text-gray-500 dark:text-gray-400 font-medium">Découvrez tous les outils intégrés pour automatiser et développer votre activité.</p>
@@ -540,7 +540,7 @@ export default function LandingPage() {
 
       {/* -------------------- TESTIMONIALS SECTION -------------------- */}
       <section className="py-24 bg-[#FAFBFF] dark:bg-[#050B14] border-t border-gray-100 dark:border-slate-800 transition-colors duration-300">
-        <div className="max-w-[1400px] mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-3xl md:text-4xl font-extrabold text-[#1A1F2C] dark:text-white mb-4">Ils développent leur entreprise avec GESTORA</h2>
             <p className="text-lg text-gray-500 dark:text-gray-400 font-medium">Des commerçants, PME et entreprises font confiance à GESTORA pour gérer leurs ventes, leurs stocks, leurs achats et leurs finances à partir d'une plateforme unique.</p>
@@ -622,7 +622,7 @@ export default function LandingPage() {
 
       {/* -------------------- CTA BANNER -------------------- */}
       <section className="bg-white dark:bg-[#0A1226] border-t border-gray-100 dark:border-slate-800 py-24 relative overflow-hidden transition-colors duration-300">
-        <div className="max-w-[1400px] mx-auto px-6 text-center relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <h3 className="text-3xl md:text-5xl font-extrabold text-gray-900 dark:text-white leading-tight mb-8">
             Gérez votre entreprise en toute confiance, depuis une seule plateforme.
           </h3>
@@ -719,7 +719,7 @@ export default function LandingPage() {
 
       {/* -------------------- SUPPORT SECTION -------------------- */}
       <section id="support" className="py-24 bg-white dark:bg-[#0A1226] transition-colors duration-300">
-        <div className="max-w-[1400px] mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
             
             {/* Left: Text and Map */}
@@ -911,7 +911,7 @@ export default function LandingPage() {
 
       {/* -------------------- FOOTER -------------------- */}
       <footer className="bg-gray-900 text-gray-400 py-12 border-t border-gray-800">
-        <div className="max-w-[1400px] mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center mb-4 md:mb-0">
             <a href="https://wa.me/221777042509?text=Bonjour%2C%20je%20souhaite%20en%20savoir%20plus%20sur%20GESTORA" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2 bg-[#2563EB] hover:bg-blue-600 text-white px-6 py-2.5 rounded-full font-bold transition-all shadow-md hover:shadow-lg hover:-translate-y-1">
               <Phone className="w-4 h-4" />

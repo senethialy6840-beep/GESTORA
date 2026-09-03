@@ -132,9 +132,9 @@ export default function DashboardPage() {
           </div>
           <SkeletonChart />
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <SkeletonChart className="h-[300px]" />
-            <SkeletonChart className="h-[300px]" />
-            <SkeletonChart className="h-[300px]" />
+            <SkeletonChart />
+            <SkeletonChart />
+            <SkeletonChart />
           </div>
         </div>
       ) : (
@@ -199,10 +199,10 @@ export default function DashboardPage() {
           </div>
 
           {/* CHARTS */}
-          <div className="grid grid-cols-1 gap-4 lg:h-[400px]">
+          <div className="grid grid-cols-1 gap-4 lg:h-auto">
             
             {/* AREA CHART */}
-            <div className="glass-panel rounded-2xl p-5 flex flex-col h-[300px] lg:h-auto transition-colors duration-300 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+            <div className="glass-panel rounded-2xl p-5 flex flex-col h-64 lg:h-auto transition-colors duration-300 animate-fade-in" style={{ animationDelay: '0.4s' }}>
               <div className="mb-4">
                 <h3 className="text-gray-900 dark:text-white font-bold mb-1">Évolution des ventes et bénéfices</h3>
                 <p className="text-gray-500 dark:text-slate-400 text-xs">Données des 7 derniers mois</p>
@@ -242,7 +242,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             
             {/* PRODUITS POPULAIRES */}
-            <div className="glass-panel rounded-2xl p-5 transition-colors duration-300 flex flex-col h-[300px] animate-fade-in" style={{ animationDelay: '0.5s' }}>
+            <div className="glass-panel rounded-2xl p-5 transition-colors duration-300 flex flex-col h-64 lg:h-auto animate-fade-in" style={{ animationDelay: '0.5s' }}>
               <div className="mb-4">
                 <h3 className="text-gray-900 dark:text-white font-bold mb-1">Produits populaires</h3>
                 <p className="text-gray-500 dark:text-slate-400 text-xs">Unités vendues sur la période</p>
@@ -265,7 +265,7 @@ export default function DashboardPage() {
             </div>
 
             {/* STOCKS FAIBLES */}
-            <div className="glass-panel rounded-2xl p-5 transition-colors duration-300 flex flex-col h-[300px] overflow-hidden animate-fade-in" style={{ animationDelay: '0.6s' }}>
+            <div className="glass-panel rounded-2xl p-5 transition-colors duration-300 flex flex-col h-64 lg:h-auto overflow-hidden animate-fade-in" style={{ animationDelay: '0.6s' }}>
               <div className="mb-4 shrink-0">
                 <h3 className="text-gray-900 dark:text-white font-bold mb-1 flex items-center">
                   <AlertTriangle className="w-4 h-4 mr-2 text-amber-500" />
@@ -295,7 +295,7 @@ export default function DashboardPage() {
             </div>
 
             {/* PRODUITS LES MIEUX VENDUS */}
-            <div className="glass-panel rounded-2xl p-5 transition-colors duration-300 flex flex-col h-[300px] overflow-hidden animate-fade-in" style={{ animationDelay: '0.7s' }}>
+            <div className="glass-panel rounded-2xl p-5 transition-colors duration-300 flex flex-col h-64 lg:h-auto overflow-hidden animate-fade-in" style={{ animationDelay: '0.7s' }}>
               <div className="mb-4 shrink-0">
                 <h3 className="text-gray-900 dark:text-white font-bold mb-1 flex items-center">
                   <Package className="w-4 h-4 mr-2 text-blue-500" />

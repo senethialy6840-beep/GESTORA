@@ -29,8 +29,12 @@ export default function POSPage() {
     setCart(prev => {
       const existing = prev.find(item => item.id === product.id);
       if (existing) {
-        return prev.map(item => item.id === product.id ? { ...item, qty: item.qty + 1 } : item);
+        // Vérifier que la quantité demandée ne dépasse pas le stock disponible
+        const newQty = existing.qty + 1;
+        if (newQty > product.stock) return prev; // stock insuffisant
+        return prev.map(item => item.id === product.id ? { ...item, qty: newQty } : item);
       }
+      if (product.stock <= 0) return prev; // rupture de stock
       return [...prev, { ...product, qty: 1 }];
     });
   };
@@ -39,7 +43,11 @@ export default function POSPage() {
     setCart(prev => prev.map(item => {
       if (item.id === id) {
         const newQty = item.qty + delta;
-        return newQty > 0 ? { ...item, qty: newQty } : item;
+        if (newQty <= 0) return item;
+        // Ne pas dépasser le stock disponible
+        const product = products.find((p: any) => p.id === id);
+        if (product && newQty > product.stock) return item;
+        return { ...item, qty: newQty };
       }
       return item;
     }));
@@ -56,11 +64,17 @@ export default function POSPage() {
     if (cart.length === 0 || !session?.user?.companyId) return;
     
     // Enregistrer la vente dans la base de données
+    // IMPORTANT: on passe le productId pour que le stock soit décrémenté
     const saleData = {
       invoiceNo: `VTE-${Date.now()}`,
       totalAmount: total,
       companyId: session.user.companyId,
-      items: cart.map(item => ({ description: item.name, quantity: item.qty, price: item.price }))
+      items: cart.map(item => ({ 
+        description: item.name, 
+        quantity: item.qty, 
+        price: item.price,
+        productId: item.id  // ← Crucial pour la décrémentation du stock
+      }))
     };
     await createSale(saleData);
 

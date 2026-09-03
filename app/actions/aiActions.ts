@@ -41,7 +41,19 @@ export async function analyzeQueryAction(query: string, _companyId: string, user
     const netMargin = totalRevenue - totalExpenses;
     
     const lowStock = products.filter(p => p.stock <= (p.stockAlert || 0));
-    const topProducts = [...products].sort((a, b) => b.price - a.price).slice(0, 3); // simplistic top product logic for now
+    
+    // Calcul du CA réel par produit en croisant les items de vente
+    const productRevenue: Record<string, number> = {};
+    salesItems.forEach(item => {
+      // On cherche quel produit correspond via le nom dans la description
+      const matchedProduct = products.find(p => p.name === item.description);
+      if (matchedProduct) {
+        productRevenue[matchedProduct.id] = (productRevenue[matchedProduct.id] || 0) + (item.quantity * item.price);
+      }
+    });
+    const topProducts = [...products]
+      .sort((a, b) => (productRevenue[b.id] || 0) - (productRevenue[a.id] || 0))
+      .slice(0, 3);
     const totalSalesCount = salesItems.reduce((acc, item) => acc + item.quantity, 0);
 
     // 1. ANALYSE GLOBALE

@@ -57,7 +57,7 @@ export async function createSale(data: CreateSaleData) {
             return null;
           });
           
-          if (updatedProduct && updatedProduct.stock <= 10) {
+          if (updatedProduct && updatedProduct.stock <= (updatedProduct.stockAlert || 10)) {
             sendLowStockAlert(updatedProduct.name, updatedProduct.stock, data.companyId).catch(console.error);
           }
         }

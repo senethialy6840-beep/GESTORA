@@ -110,7 +110,7 @@ export default function ReportsPage() {
           <SkeletonKPICard />
           <SkeletonKPICard />
         </div>
-        <SkeletonChart className="h-[400px]" />
+        <SkeletonChart />
       </div>
     );
   }
@@ -167,9 +167,9 @@ export default function ReportsPage() {
         <h3 className="text-gray-900 dark:text-white font-bold mb-6">Revenus vs dépenses</h3>
         
         {chartData.length === 0 ? (
-           <div className="h-[400px] flex items-center justify-center text-gray-500">Aucune donnée pour cette période.</div>
+           <div className="h-72 md:h-96 lg:h-[400px] flex items-center justify-center text-gray-500">Aucune donnée pour cette période.</div>
         ) : (
-          <div className="w-full h-[400px]">
+          <div className="w-full h-72 md:h-96 lg:h-[400px]">
             {mounted && (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} margin={{ top: 20, right: 0, left: -20, bottom: 0 }}>

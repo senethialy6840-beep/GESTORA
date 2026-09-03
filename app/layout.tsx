@@ -50,6 +50,9 @@ export default function RootLayout({
       className={`${jakarta.variable} ${spaceGrotesk.variable} font-sans h-full antialiased`}
       suppressHydrationWarning
     >
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </head>
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <NextAuthSessionProvider>

@@ -23,7 +23,7 @@ export function SkeletonKPICard() {
 /**
  * Skeleton pour les grands graphiques ou blocs similaires
  */
-export function SkeletonChart({ className = "h-[300px]" }: { className?: string }) {
+export function SkeletonChart({ className = "h-64 md:h-72 lg:h-80" }: { className?: string }) {
   return (
     <div className={`bg-white dark:bg-[#162032] border border-gray-200 dark:border-slate-700/50 rounded-2xl p-5 shadow-sm flex flex-col ${className}`}>
       <div className="mb-6">
