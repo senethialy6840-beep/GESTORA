@@ -40,7 +40,9 @@ export default function ProductsPage() {
   }, [session?.user?.companyId]);
 
   const handleSaveProduct = async (newProduct: any) => {
-    if (!session?.user?.companyId) return;
+    if (!session?.user?.companyId) {
+      return { success: false, error: 'Session expirée. Veuillez vous reconnecter.' };
+    }
     const productWithCompany = { ...newProduct, companyId: session.user.companyId };
 
     if (editingProduct) {
@@ -48,18 +50,21 @@ export default function ProductsPage() {
       if (res.success && res.data) {
         setProducts(prev => prev.map(p => p.id === res.data.id ? res.data : p));
         setToastMessage("Produit modifié avec succès !");
-      } else {
-        setToastMessage(res.error || "Erreur lors de la modification");
+        return res;
       }
-    } else {
-      const res = await createProduct(productWithCompany);
-      if (res.success && res.data) {
-        setProducts(prev => [res.data, ...prev]);
-        setToastMessage("Produit enregistré avec succès !");
-      } else {
-        setToastMessage(res.error || "Erreur lors de la création");
-      }
+      setToastMessage(res.error || "Erreur lors de la modification");
+      return res;
     }
+
+    const res = await createProduct(productWithCompany);
+    if (res.success && res.data) {
+      setProducts(prev => [res.data, ...prev]);
+      setToastMessage("Produit enregistré avec succès !");
+      return res;
+    }
+
+    setToastMessage(res.error || "Erreur lors de la création");
+    return res;
   };
 
   const confirmDelete = async () => {

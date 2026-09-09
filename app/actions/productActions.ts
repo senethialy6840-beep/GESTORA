@@ -26,7 +26,8 @@ export async function createProduct(data: CreateProductData) {
     
     const validated = ProductSchema.safeParse(data);
     if (!validated.success) {
-      return { success: false, error: "Données du produit invalides." };
+      const errorMsg = validated.error.errors[0]?.message || "Données du produit invalides.";
+      return { success: false, error: errorMsg };
     }
     data = validated.data as CreateProductData;
     const product = await prisma.product.create({
@@ -47,9 +48,9 @@ export async function createProduct(data: CreateProductData) {
     revalidatePath('/dashboard/pos');
     revalidatePath('/dashboard/sales');
     return { success: true, data: product };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Erreur lors de la création du produit:', error);
-    return { success: false, error: 'Impossible de créer le produit.' };
+    return { success: false, error: error.message || 'Impossible de créer le produit.' };
   }
 }
 

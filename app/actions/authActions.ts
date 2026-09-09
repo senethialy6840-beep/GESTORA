@@ -157,7 +157,7 @@ export async function registerUser(data: { prenom: string, nom: string, entrepri
     return { success: true };
   } catch (error: any) {
     console.error("Register user error", error);
-    return { success: false, error: "Une erreur est survenue lors de l'inscription." };
+    return { success: false, error: error.message || "Une erreur est survenue lors de l'inscription." };
   }
 }
 

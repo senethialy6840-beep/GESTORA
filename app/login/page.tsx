@@ -33,8 +33,8 @@ export default function LoginPage() {
         router.push('/dashboard');
         router.refresh();
       }
-    } catch (err) {
-      setErrorMsg("Une erreur est survenue.");
+    } catch (err: any) {
+      setErrorMsg(err.message || "Une erreur est survenue.");
       setIsLoading(false);
     }
   };

@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 
+type SaveProductResult =
+  | { success?: boolean; error?: string; data?: any }
+  | void;
+
 interface ProductModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (product: any) => void;
+  onSave: (product: any) => Promise<SaveProductResult> | SaveProductResult;
   initialData?: any;
 }
 
@@ -16,10 +20,14 @@ export function ProductModal({ isOpen, onClose, onSave, initialData }: ProductMo
     cost: '',
     stockAlert: ''
   });
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Reset form when opened
   useEffect(() => {
     if (isOpen) {
+      setError('');
+      setIsSubmitting(false);
       if (initialData) {
         setFormData({
           name: initialData.name || '',
@@ -42,17 +50,70 @@ export function ProductModal({ isOpen, onClose, onSave, initialData }: ProductMo
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const parseNumber = (value: string) => {
+    const cleaned = value.replace(/\s+/g, '').replace(',', '.');
+    const number = Number(cleaned);
+    return Number.isFinite(number) ? number : 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({
-      id: initialData?.id || Date.now().toString(),
-      ...formData,
-      stock: parseInt(formData.stock) || 0,
-      price: parseFloat(formData.price.replace(/\s/g, '')) || 0,
-      cost: parseFloat(formData.cost.replace(/\s/g, '')) || 0,
-      stockAlert: parseInt(formData.stockAlert) || 0,
-    });
-    onClose();
+
+    const name = formData.name.trim();
+    const stock = Number(formData.stock);
+    const price = parseNumber(formData.price);
+    const cost = parseNumber(formData.cost);
+    const stockAlert = Number(formData.stockAlert || 0);
+
+    if (!name) {
+      setError('Le nom du produit est requis.');
+      return;
+    }
+
+    if (!Number.isFinite(stock) || stock < 0) {
+      setError('Le stock est invalide.');
+      return;
+    }
+
+    if (!Number.isFinite(price) || price < 0) {
+      setError('Le prix de vente est invalide.');
+      return;
+    }
+
+    if (!Number.isFinite(cost) || cost < 0) {
+      setError('Le coût d\'achat est invalide.');
+      return;
+    }
+
+    if (!Number.isFinite(stockAlert) || stockAlert < 0) {
+      setError('L\'alerte de stock est invalide.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError('');
+
+    try {
+      const result = await Promise.resolve(onSave({
+        id: initialData?.id || Date.now().toString(),
+        name,
+        stock,
+        price,
+        cost,
+        stockAlert,
+      }));
+
+      if (result && typeof result === 'object' && result.success === false) {
+        setError(result.error || 'Impossible d\'enregistrer ce produit.');
+        return;
+      }
+
+      onClose();
+    } catch (error) {
+      setError('Une erreur est survenue lors de l\'enregistrement.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -91,6 +152,11 @@ export function ProductModal({ isOpen, onClose, onSave, initialData }: ProductMo
         {/* Form body */}
         <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
           <form id="product-form" onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
+                {error}
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Nom du produit *</label>
@@ -173,9 +239,10 @@ export function ProductModal({ isOpen, onClose, onSave, initialData }: ProductMo
           <button
             type="submit"
             form="product-form"
-            className="px-5 py-2.5 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-all"
+            disabled={isSubmitting}
+            className="px-5 py-2.5 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-all disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Enregistrer
+            {isSubmitting ? 'Enregistrement...' : 'Enregistrer'}
           </button>
         </div>
 
