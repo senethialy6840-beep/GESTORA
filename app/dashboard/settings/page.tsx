@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Settings, Save, Building2, Globe, FileText, Users, UploadCloud, Image as ImageIcon, Loader2, Check, X, Phone, Mail, MapPin } from 'lucide-react';
+import { Settings, Save, Building2, Globe, FileText, Users, UploadCloud, Image as ImageIcon, Loader2, Check, X, Phone, Mail, MapPin, Trash2 } from 'lucide-react';
 import { getSettings, saveSettings } from '../../actions/settingsActions';
 import { SkeletonForm } from '../../../components/Skeletons';
 import { useSession } from 'next-auth/react';
 import { EmployeeModal } from '../../../components/EmployeeModal';
-import { getEmployees, createEmployee, updateEmployee } from '@/app/actions/hrActions';
+import { getEmployees, createEmployee, updateEmployee, deleteEmployee } from '@/app/actions/hrActions';
 
 export default function SettingsPage() {
   const { data: session, status } = useSession();
@@ -20,7 +20,12 @@ export default function SettingsPage() {
     address: '',
     email: '',
     phone: '',
-    logo: null as string | null
+    logo: null as string | null,
+    currency: 'XOF',
+    timezone: 'GMT',
+    dateFormat: 'DD/MM/YYYY',
+    invoicePrefix: 'FAC-',
+    invoiceFooter: ''
   });
   
   const [isLoading, setIsLoading] = useState(true);
@@ -91,6 +96,18 @@ export default function SettingsPage() {
       });
       if (res.success && res.data) {
         setEmployees(prev => [res.data, ...prev]);
+      }
+    }
+  };
+
+  const handleDeleteEmployee = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    if(confirm('Voulez-vous vraiment supprimer ce collaborateur ?')) {
+      const res = await deleteEmployee(id);
+      if (res.success) {
+        setEmployees(prev => prev.filter(emp => emp.id !== id));
+      } else {
+        alert("Erreur lors de la suppression.");
       }
     }
   };
@@ -374,7 +391,7 @@ export default function SettingsPage() {
                 <div className="space-y-5">
                   <div className="space-y-1.5">
                     <label className="text-sm font-semibold text-gray-700 dark:text-slate-300">Devise principale</label>
-                    <select className="w-full bg-gray-50 dark:bg-[#0A1226] border border-gray-200 dark:border-slate-700/50 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50">
+                    <select name="currency" value={formData.currency} onChange={handleInputChange as any} className="w-full bg-gray-50 dark:bg-[#0A1226] border border-gray-200 dark:border-slate-700/50 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50">
                       <option value="XOF">Franc CFA (XOF)</option>
                       <option value="EUR">Euro (€)</option>
                       <option value="USD">Dollar US ($)</option>
@@ -383,14 +400,14 @@ export default function SettingsPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="space-y-1.5">
                       <label className="text-sm font-semibold text-gray-700 dark:text-slate-300">Fuseau horaire</label>
-                      <select className="w-full bg-gray-50 dark:bg-[#0A1226] border border-gray-200 dark:border-slate-700/50 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50">
+                      <select name="timezone" value={formData.timezone} onChange={handleInputChange as any} className="w-full bg-gray-50 dark:bg-[#0A1226] border border-gray-200 dark:border-slate-700/50 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50">
                         <option value="GMT">GMT (Dakar)</option>
                         <option value="CET">CET (Paris)</option>
                       </select>
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-sm font-semibold text-gray-700 dark:text-slate-300">Format de date</label>
-                      <select className="w-full bg-gray-50 dark:bg-[#0A1226] border border-gray-200 dark:border-slate-700/50 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50">
+                      <select name="dateFormat" value={formData.dateFormat} onChange={handleInputChange as any} className="w-full bg-gray-50 dark:bg-[#0A1226] border border-gray-200 dark:border-slate-700/50 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50">
                         <option value="DD/MM/YYYY">JJ/MM/AAAA (31/12/2026)</option>
                         <option value="MM/DD/YYYY">MM/JJ/AAAA (12/31/2026)</option>
                       </select>
@@ -418,8 +435,10 @@ export default function SettingsPage() {
                   <div className="space-y-1.5">
                     <label className="text-sm font-semibold text-gray-700 dark:text-slate-300">Préfixe de numérotation</label>
                     <input 
-                      type="text" 
-                      defaultValue="FAC-"
+                      type="text"
+                      name="invoicePrefix" 
+                      value={formData.invoicePrefix}
+                      onChange={handleInputChange}
                       className="w-full bg-gray-50 dark:bg-[#0A1226] border border-gray-200 dark:border-slate-700/50 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                     />
                     <p className="text-xs text-gray-500 mt-1">Les factures seront générées sous la forme: FAC-2026-001</p>
@@ -428,7 +447,9 @@ export default function SettingsPage() {
                     <label className="text-sm font-semibold text-gray-700 dark:text-slate-300">Notes de pied de page par défaut</label>
                     <textarea 
                       rows={3}
-                      defaultValue="Merci de votre confiance. Le paiement est attendu sous 30 jours."
+                      name="invoiceFooter"
+                      value={formData.invoiceFooter}
+                      onChange={handleInputChange as any}
                       className="w-full bg-gray-50 dark:bg-[#0A1226] border border-gray-200 dark:border-slate-700/50 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                     />
                   </div>
@@ -468,6 +489,7 @@ export default function SettingsPage() {
                         <th className="px-4 py-3 font-medium">Membre</th>
                         <th className="px-4 py-3 font-medium">Rôle</th>
                         <th className="px-4 py-3 font-medium text-right">Statut</th>
+                        <th className="px-4 py-3 font-medium text-right w-16"></th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100 dark:divide-slate-800/60">
@@ -480,6 +502,7 @@ export default function SettingsPage() {
                         <td className="px-4 py-3 text-right">
                           <span className="px-2.5 py-1 bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400 rounded-full text-xs font-medium">Actif</span>
                         </td>
+                        <td className="px-4 py-3 text-right"></td>
                       </tr>
                       {employees.map(emp => (
                         <tr key={emp.id} className="bg-white dark:bg-[#162032] hover:bg-gray-50 dark:hover:bg-slate-800/30 cursor-pointer" onClick={() => { setEditingEmployee(emp); setIsEmployeeModalOpen(true); }}>
@@ -494,6 +517,15 @@ export default function SettingsPage() {
                             <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${emp.status === 'ACTIVE' ? 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400'}`}>
                               {emp.status === 'ACTIVE' ? 'Actif' : 'Inactif'}
                             </span>
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <button 
+                              onClick={(e) => handleDeleteEmployee(e, emp.id)}
+                              className="p-1.5 text-gray-400 hover:text-red-600 bg-gray-50 hover:bg-red-50 dark:bg-slate-800 dark:hover:bg-red-500/10 rounded-md transition-colors"
+                              title="Supprimer ce collaborateur"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
                           </td>
                         </tr>
                       ))}

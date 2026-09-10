@@ -17,7 +17,12 @@ const defaultSettings = {
   address: "",
   email: "",
   phone: "",
-  logo: null
+  logo: null,
+  currency: "XOF",
+  timezone: "GMT",
+  dateFormat: "DD/MM/YYYY",
+  invoicePrefix: "FAC-",
+  invoiceFooter: ""
 };
 
 export async function getSettings(requestedCompanyId?: string) {
@@ -41,7 +46,12 @@ export async function getSettings(requestedCompanyId?: string) {
           address: company.address || defaultSettings.address,
           email: company.email || defaultSettings.email,
           phone: company.phone || defaultSettings.phone,
-          logo: company.logoUrl || defaultSettings.logo
+          logo: company.logoUrl || defaultSettings.logo,
+          currency: company.currency || defaultSettings.currency,
+          timezone: company.timezone || defaultSettings.timezone,
+          dateFormat: company.dateFormat || defaultSettings.dateFormat,
+          invoicePrefix: company.invoicePrefix || defaultSettings.invoicePrefix,
+          invoiceFooter: company.invoiceFooter || defaultSettings.invoiceFooter
         } 
       };
     }
@@ -118,7 +128,12 @@ export async function saveSettings(requestedCompanyId: string, data: any) {
         address: data.address,
         email: data.email,
         phone: data.phone,
-        logoUrl: logoUrl
+        logoUrl: logoUrl,
+        currency: data.currency,
+        timezone: data.timezone,
+        dateFormat: data.dateFormat,
+        invoicePrefix: data.invoicePrefix,
+        invoiceFooter: data.invoiceFooter
       }
     });
     
@@ -129,7 +144,12 @@ export async function saveSettings(requestedCompanyId: string, data: any) {
         address: company.address,
         email: company.email,
         phone: company.phone,
-        logo: company.logoUrl
+        logo: company.logoUrl,
+        currency: company.currency,
+        timezone: company.timezone,
+        dateFormat: company.dateFormat,
+        invoicePrefix: company.invoicePrefix,
+        invoiceFooter: company.invoiceFooter
     }};
   } catch (error) {
     console.error("Error saving settings:", error);

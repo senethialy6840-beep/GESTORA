@@ -27,7 +27,12 @@ export const SettingsSchema = z.object({
   address: z.string().optional(),
   email: z.union([z.literal(""), z.string().email("Email invalide.")]).optional(),
   phone: z.string().optional(),
-  logo: z.any().optional(), // On ne peut pas facilement valider un fichier/base64 de façon basique sans check complexe
+  logo: z.any().optional(),
+  currency: z.string().optional(),
+  timezone: z.string().optional(),
+  dateFormat: z.string().optional(),
+  invoicePrefix: z.string().optional(),
+  invoiceFooter: z.string().optional(),
 });
 
 // --- Produits ---

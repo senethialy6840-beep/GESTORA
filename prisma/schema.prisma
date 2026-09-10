@@ -26,6 +26,13 @@ model Company {
   subscriptionStatus String @default("PENDING") // ACTIVE, PENDING, EXPIRED, CANCELLED
   subscriptionExpiresAt DateTime?
 
+  // Settings Régionaux et Facturation
+  currency       String?  @default("XOF")
+  timezone       String?  @default("GMT")
+  dateFormat     String?  @default("DD/MM/YYYY")
+  invoicePrefix  String?  @default("FAC-")
+  invoiceFooter  String?
+
   users        User[]
   warehouses   Warehouse[]
   products     Product[]

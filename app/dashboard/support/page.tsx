@@ -12,15 +12,15 @@ export default function SupportPage() {
     {
       name: "Support Technique",
       role: "Problèmes techniques & Bugs",
-      email: "tech@gestora.sn",
-      phone: "+221 77 000 00 01",
+      email: "gestorame112@gmail.com",
+      phone: "+221 77 704 25 09",
       avatar: "T"
     },
     {
       name: "Service Client",
       role: "Questions générales & Facturation",
-      email: "contact@gestora.sn",
-      phone: "+221 77 000 00 02",
+      email: "gestorame112@gmail.com",
+      phone: "+221 77 704 25 09",
       avatar: "C"
     }
   ];

@@ -65,7 +65,8 @@ export const generateInvoicePDF = (invoice: any, companyInfo: any, customerInfo:
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(150, 150, 150);
-  doc.text("Merci pour votre confiance !", 105, 280, { align: "center" });
+  const footerText = companyInfo?.invoiceFooter || "Merci pour votre confiance ! Le paiement est attendu sous 30 jours.";
+  doc.text(footerText, 105, 280, { align: "center" });
 
   // Sauvegarder
   doc.save(`Facture_${invoice.invoiceNo}.pdf`);

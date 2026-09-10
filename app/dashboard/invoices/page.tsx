@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { FileText, Plus, Download, Save, ArrowLeft, Trash2, Search, MoreHorizontal } from 'lucide-react';
+import { FileText, Plus, Download, Save, ArrowLeft, Trash2, Search, MoreHorizontal, Eye, Pencil } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import * as htmlToImage from 'html-to-image';
 import { useSession } from 'next-auth/react';
@@ -304,13 +304,13 @@ export default function InvoicesPage() {
                     <img src={settings.logo} alt="Logo" crossOrigin="anonymous" className="h-10 sm:h-14 object-contain mb-4 sm:mb-6" />
                   ) : (
                     <h1 className="text-2xl sm:text-3xl font-black text-gray-900 mb-4 sm:mb-6">
-                      <span className="text-[#2563EB]">GEST</span>ORA S.A.S
+                      <span className="text-[#2563EB]">{settings?.companyName ? settings.companyName.substring(0, 4).toUpperCase() : 'GEST'}</span>{settings?.companyName ? settings.companyName.substring(4) : 'ORA'}
                     </h1>
                   )}
-                  <p className="text-gray-900 font-bold text-base sm:text-lg mb-1">{settings?.companyName || 'Gestora SARL'}</p>
-                  <p className="text-gray-500 text-xs sm:text-sm mb-0.5">{settings?.address || '123 Avenue du Commerce, Dakar, SN'}</p>
-                  <p className="text-gray-500 text-xs sm:text-sm mb-0.5">{settings?.email || 'contact@gestora.sn'}</p>
-                  <p className="text-gray-500 text-xs sm:text-sm">{settings?.phone || '+221 77 123 45 67'}</p>
+                  {settings?.companyName && <p className="text-gray-900 font-bold text-base sm:text-lg mb-1">{settings.companyName}</p>}
+                  {settings?.address && <p className="text-gray-500 text-xs sm:text-sm mb-0.5">{settings.address}</p>}
+                  {settings?.email && <p className="text-gray-500 text-xs sm:text-sm mb-0.5">{settings.email}</p>}
+                  {settings?.phone && <p className="text-gray-500 text-xs sm:text-sm">{settings.phone}</p>}
                 </div>
 
                 <div className="w-full md:w-auto text-left md:text-right flex flex-col items-start md:items-end">
@@ -516,13 +516,13 @@ export default function InvoicesPage() {
                     <img src={settings.logo} alt="Logo" crossOrigin="anonymous" className="h-14 object-contain mb-6" />
                   ) : (
                     <h1 className="text-3xl font-black text-gray-900 mb-6">
-                      <span className="text-[#2563EB]">GEST</span>ORA S.A.S
+                      <span className="text-[#2563EB]">{settings?.companyName ? settings.companyName.substring(0, 4).toUpperCase() : 'GEST'}</span>{settings?.companyName ? settings.companyName.substring(4) : 'ORA'}
                     </h1>
                   )}
-                  <p className="text-gray-900 font-bold text-lg mb-1">{settings?.companyName || 'Gestora SARL'}</p>
-                  <p className="text-gray-500 text-sm mb-0.5">{settings?.address || '123 Avenue du Commerce, Dakar, SN'}</p>
-                  <p className="text-gray-500 text-sm mb-0.5">{settings?.email || 'contact@gestora.sn'}</p>
-                  <p className="text-gray-500 text-sm">{settings?.phone || '+221 77 123 45 67'}</p>
+                  {settings?.companyName && <p className="text-gray-900 font-bold text-lg mb-1">{settings.companyName}</p>}
+                  {settings?.address && <p className="text-gray-500 text-sm mb-0.5">{settings.address}</p>}
+                  {settings?.email && <p className="text-gray-500 text-sm mb-0.5">{settings.email}</p>}
+                  {settings?.phone && <p className="text-gray-500 text-sm">{settings.phone}</p>}
                 </div>
                 <div className="text-right flex flex-col items-end">
                   <h2 className="text-4xl font-black text-[#2563EB] tracking-widest uppercase mb-6">Facture</h2>
@@ -587,9 +587,14 @@ export default function InvoicesPage() {
               </div>
             </div>
             
-            <div className="w-full bg-gray-50/80 px-12 py-6 border-t border-gray-200 mt-auto flex justify-between items-center">
-              <p className="text-xs font-semibold text-gray-500">{settings?.companyName || 'GESTORA S.A.S'}</p>
-              <p className="text-xs font-medium text-gray-400">{settings?.companyId || 'NINEA: 000000000 - RC: SN-DKR-2026-B-0000'}</p>
+            <div className="w-full bg-gray-50/80 px-12 py-6 border-t border-gray-200 mt-auto flex flex-col items-center text-center">
+              <p className="text-xs font-semibold text-gray-500">
+                {settings?.companyName || ''}
+                {settings?.companyId ? ` - ${settings.companyId}` : ''}
+              </p>
+              <p className="text-xs font-medium text-gray-400 mt-1">
+                {settings?.invoiceFooter || 'Merci de votre confiance. Le paiement est attendu sous 30 jours.'}
+              </p>
             </div>
           </div>
         </div>
@@ -608,7 +613,20 @@ export default function InvoicesPage() {
           <p className="text-gray-500 dark:text-slate-400 mt-1">Gérez vos factures et suivez vos paiements.</p>
         </div>
         <button 
-          onClick={() => setIsCreating(true)}
+          onClick={() => {
+            const prefix = settings?.invoicePrefix || 'FAC-';
+            setInvoiceData({
+              ...invoiceData, 
+              number: `${prefix}${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}-${Math.floor(Math.random() * 10000)}`,
+              dbId: '',
+              clientName: '',
+              clientAddress: '',
+              clientEmail: '',
+              clientPhone: '',
+              items: [{ id: Date.now(), description: 'Prestation / Produit', quantity: 1, price: 0 }]
+            });
+            setIsCreating(true);
+          }}
           className="flex items-center px-4 py-2 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100 transition-colors shadow-sm"
         >
           <Plus className="w-4 h-4 mr-2" />
@@ -665,7 +683,7 @@ export default function InvoicesPage() {
                             className="fixed inset-0 z-40" 
                             onClick={(e) => { e.stopPropagation(); setOpenDropdownId(null); }}
                           />
-                          <div className="absolute right-8 top-10 w-56 bg-white dark:bg-[#1e293b] rounded-xl shadow-xl border border-gray-100 dark:border-slate-700 py-2 z-50 flex flex-col overflow-hidden">
+                          <div className="absolute right-8 top-10 w-52 bg-white dark:bg-[#1e293b] rounded-xl shadow-2xl border border-gray-100 dark:border-slate-700 py-1.5 z-50 flex flex-col overflow-hidden">
                             <button 
                               onClick={() => {
                                 setInvoiceData({
@@ -681,8 +699,9 @@ export default function InvoicesPage() {
                                 setIsViewing(true);
                                 setOpenDropdownId(null);
                               }}
-                              className="w-full px-4 py-2.5 text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 text-left font-medium transition-colors border-b border-gray-100 dark:border-slate-700/50"
+                              className="w-full px-4 py-2.5 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-800 text-left font-semibold transition-colors flex items-center gap-2.5 border-b border-gray-100 dark:border-slate-700/50"
                             >
+                              <Eye className="w-4 h-4 text-gray-400" />
                               Voir le détail
                             </button>
                             <button 
@@ -694,8 +713,9 @@ export default function InvoicesPage() {
                                 );
                                 setOpenDropdownId(null);
                               }}
-                              className="w-full px-4 py-2.5 text-sm text-[#2563EB] hover:bg-blue-50 dark:hover:bg-blue-500/10 text-left font-medium transition-colors border-b border-gray-100 dark:border-slate-700/50"
+                              className="w-full px-4 py-2.5 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 text-left font-semibold transition-colors flex items-center gap-2.5 border-b border-gray-100 dark:border-slate-700/50"
                             >
+                              <Download className="w-4 h-4" />
                               Télécharger PDF
                             </button>
                             <button 
@@ -713,8 +733,9 @@ export default function InvoicesPage() {
                                 setIsCreating(true);
                                 setOpenDropdownId(null);
                               }}
-                              className="w-full px-4 py-2.5 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 text-left font-medium transition-colors border-b border-gray-100 dark:border-slate-700/50"
+                              className="w-full px-4 py-2.5 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-800 text-left font-semibold transition-colors flex items-center gap-2.5 border-b border-gray-100 dark:border-slate-700/50"
                             >
+                              <Pencil className="w-4 h-4 text-gray-400" />
                               Modifier
                             </button>
                             <button 
@@ -725,8 +746,9 @@ export default function InvoicesPage() {
                                 }
                                 setOpenDropdownId(null);
                               }}
-                              className="w-full px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 text-left font-medium transition-colors"
+                              className="w-full px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 text-left font-semibold transition-colors flex items-center gap-2.5"
                             >
+                              <Trash2 className="w-4 h-4" />
                               Supprimer
                             </button>
                           </div>
