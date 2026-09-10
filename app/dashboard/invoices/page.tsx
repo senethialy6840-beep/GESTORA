@@ -505,97 +505,185 @@ export default function InvoicesPage() {
           </div>
         </div>
 
-        {/* Hidden PDF Template (Fixed A4 Size) */}
-        <div className="fixed top-0 left-[200vw] z-[-100]">
-          <div ref={pdfRef} className="bg-white text-gray-900 flex flex-col relative shrink-0" style={{ minHeight: '1122px', width: '794px' }}>
-            <div className="h-3 bg-[#2563EB] w-full"></div>
-            <div className="p-14 flex flex-col flex-grow">
-              <div className="flex justify-between items-start mb-14">
-                <div>
+        {/* Hidden PDF Template (Fixed A4 Size) - Styles inline pour rendu parfait */}
+        <div style={{ position: 'fixed', top: 0, left: '200vw', zIndex: -100 }}>
+          <div
+            ref={pdfRef}
+            style={{
+              width: '794px',
+              minHeight: '1122px',
+              backgroundColor: '#ffffff',
+              color: '#111827',
+              display: 'flex',
+              flexDirection: 'column',
+              fontFamily: 'Arial, Helvetica, sans-serif',
+              position: 'relative',
+            }}
+          >
+            {/* Barre bleue en haut */}
+            <div style={{ height: '12px', backgroundColor: '#2563EB', width: '100%', flexShrink: 0 }} />
+
+            {/* Corps principal */}
+            <div style={{ padding: '56px', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+
+              {/* En-tête : Entreprise + Titre Facture */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '48px' }}>
+                {/* Infos entreprise */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', maxWidth: '50%' }}>
                   {settings?.logo ? (
-                    <img src={settings.logo} alt="Logo" crossOrigin="anonymous" className="h-14 object-contain mb-6" />
+                    <img
+                      src={settings.logo}
+                      alt="Logo"
+                      crossOrigin="anonymous"
+                      style={{ height: '56px', objectFit: 'contain', marginBottom: '16px' }}
+                    />
                   ) : (
-                    <h1 className="text-3xl font-black text-gray-900 mb-6">
-                      <span className="text-[#2563EB]">{settings?.companyName ? settings.companyName.substring(0, 4).toUpperCase() : 'GEST'}</span>{settings?.companyName ? settings.companyName.substring(4) : 'ORA'}
-                    </h1>
+                    <div style={{ fontSize: '28px', fontWeight: '900', marginBottom: '16px', color: '#111827' }}>
+                      <span style={{ color: '#2563EB' }}>
+                        {settings?.companyName ? settings.companyName.slice(0, 4).toUpperCase() : 'GEST'}
+                      </span>
+                      {settings?.companyName ? settings.companyName.slice(4) : 'ORA'}
+                    </div>
                   )}
-                  {settings?.companyName && <p className="text-gray-900 font-bold text-lg mb-1">{settings.companyName}</p>}
-                  {settings?.address && <p className="text-gray-500 text-sm mb-0.5">{settings.address}</p>}
-                  {settings?.email && <p className="text-gray-500 text-sm mb-0.5">{settings.email}</p>}
-                  {settings?.phone && <p className="text-gray-500 text-sm">{settings.phone}</p>}
+                  {settings?.companyName && (
+                    <div style={{ fontWeight: '700', fontSize: '16px', color: '#111827' }}>{settings.companyName}</div>
+                  )}
+                  {settings?.address && (
+                    <div style={{ fontSize: '13px', color: '#6b7280', marginTop: '2px' }}>{settings.address}</div>
+                  )}
+                  {settings?.email && (
+                    <div style={{ fontSize: '13px', color: '#6b7280' }}>{settings.email}</div>
+                  )}
+                  {settings?.phone && (
+                    <div style={{ fontSize: '13px', color: '#6b7280' }}>{settings.phone}</div>
+                  )}
+                  {settings?.companyId && (
+                    <div style={{ fontSize: '12px', color: '#9ca3af', marginTop: '4px' }}>NINEA/RC : {settings.companyId}</div>
+                  )}
                 </div>
-                <div className="text-right flex flex-col items-end">
-                  <h2 className="text-4xl font-black text-[#2563EB] tracking-widest uppercase mb-6">Facture</h2>
-                  <div className="bg-gray-50/80 rounded-xl p-4 border border-gray-100 min-w-[200px]">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Référence</span>
-                      <span className="font-bold text-gray-900">{invoiceData.number}</span>
+
+                {/* Titre + Référence + Date */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px' }}>
+                  <div style={{ fontSize: '36px', fontWeight: '900', color: '#2563EB', letterSpacing: '4px', textTransform: 'uppercase' }}>Facture</div>
+                  <div style={{
+                    backgroundColor: '#f9fafb',
+                    borderRadius: '12px',
+                    padding: '16px',
+                    border: '1px solid #f3f4f6',
+                    minWidth: '210px'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '11px', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '1px' }}>Référence</span>
+                      <span style={{ fontWeight: '700', color: '#111827', fontSize: '14px' }}>{invoiceData.number}</span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Date</span>
-                      <span className="text-sm font-semibold text-gray-900">{invoiceData.date}</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '11px', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '1px' }}>Date</span>
+                      <span style={{ fontSize: '13px', fontWeight: '600', color: '#111827' }}>{invoiceData.date}</span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="flex justify-between items-start mb-12">
-                <div className="w-full">
-                  <h3 className="text-xs font-bold text-[#2563EB] uppercase tracking-widest mb-3 flex items-center">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#2563EB] mr-2"></div>
-                    Facturé à
-                  </h3>
-                  <div className="space-y-1">
-                    <p className="font-black text-gray-900 text-xl">{invoiceData.clientName || '---'}</p>
-                    {invoiceData.clientAddress && <p className="text-sm font-medium text-gray-600">{invoiceData.clientAddress}</p>}
-                    {invoiceData.clientEmail && <p className="text-sm font-medium text-gray-600">{invoiceData.clientEmail}</p>}
-                    {invoiceData.clientPhone && <p className="text-sm font-medium text-gray-600">{invoiceData.clientPhone}</p>}
-                  </div>
+              {/* Section Client */}
+              <div style={{ marginBottom: '40px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
+                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#2563EB' }} />
+                  <span style={{ fontSize: '11px', fontWeight: '700', color: '#2563EB', textTransform: 'uppercase', letterSpacing: '2px' }}>Facturé à</span>
+                </div>
+                <div style={{ backgroundColor: '#f9fafb', borderRadius: '10px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <div style={{ fontSize: '18px', fontWeight: '900', color: '#111827' }}>{invoiceData.clientName || '---'}</div>
+                  {invoiceData.clientAddress && <div style={{ fontSize: '13px', color: '#6b7280' }}>{invoiceData.clientAddress}</div>}
+                  {invoiceData.clientEmail && <div style={{ fontSize: '13px', color: '#6b7280' }}>{invoiceData.clientEmail}</div>}
+                  {invoiceData.clientPhone && <div style={{ fontSize: '13px', color: '#6b7280' }}>{invoiceData.clientPhone}</div>}
                 </div>
               </div>
 
-              <div className="flex-grow flex flex-col">
-                <div className="flex text-xs font-bold text-gray-500 uppercase tracking-wider border-b-2 border-gray-900 pb-3 mb-2 px-3">
-                  <div className="w-1/2">Désignation</div>
-                  <div className="w-1/6 text-center">Quantité</div>
-                  <div className="w-1/6 text-right">Prix Unitaire</div>
-                  <div className="w-1/6 text-right">Total</div>
+              {/* Tableau des articles */}
+              <div style={{ flexGrow: 1 }}>
+                {/* En-tête tableau */}
+                <div style={{
+                  display: 'flex',
+                  borderBottom: '2px solid #111827',
+                  paddingBottom: '10px',
+                  marginBottom: '4px',
+                  paddingLeft: '12px',
+                  paddingRight: '12px'
+                }}>
+                  <div style={{ width: '50%', fontSize: '11px', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '1px' }}>Désignation</div>
+                  <div style={{ width: '16.66%', fontSize: '11px', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '1px', textAlign: 'center' }}>Qté</div>
+                  <div style={{ width: '16.66%', fontSize: '11px', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '1px', textAlign: 'right' }}>Prix Unit.</div>
+                  <div style={{ width: '16.66%', fontSize: '11px', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '1px', textAlign: 'right' }}>Total</div>
                 </div>
-                <div className="space-y-0">
-                  {invoiceData.items.map((item, index) => (
-                    <div key={item.id} className={`flex items-center p-3 border-b border-gray-100 ${index % 2 === 0 ? 'bg-transparent' : 'bg-gray-50/50'}`}>
-                      <div className="w-1/2 pr-4 text-sm font-medium text-gray-900">{item.description}</div>
-                      <div className="w-1/6 px-2 text-sm font-semibold text-center text-gray-700">{item.quantity}</div>
-                      <div className="w-1/6 px-2 text-sm font-semibold text-right text-gray-700">{Number(item.price || 0).toLocaleString('fr-FR')}</div>
-                      <div className="w-1/6 text-right text-sm font-black text-gray-900">{((Number(item.quantity) || 0) * (Number(item.price) || 0)).toLocaleString('fr-FR')}</div>
+
+                {/* Lignes articles */}
+                {invoiceData.items.map((item: any, index: number) => (
+                  <div
+                    key={item.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: '10px 12px',
+                      borderBottom: '1px solid #f3f4f6',
+                      backgroundColor: index % 2 === 0 ? 'transparent' : '#f9fafb',
+                    }}
+                  >
+                    <div style={{ width: '50%', paddingRight: '16px', fontSize: '13px', fontWeight: '500', color: '#111827' }}>{item.description}</div>
+                    <div style={{ width: '16.66%', fontSize: '13px', fontWeight: '600', color: '#374151', textAlign: 'center' }}>{item.quantity}</div>
+                    <div style={{ width: '16.66%', fontSize: '13px', fontWeight: '600', color: '#374151', textAlign: 'right' }}>{Number(item.price || 0).toLocaleString('fr-FR')}</div>
+                    <div style={{ width: '16.66%', fontSize: '13px', fontWeight: '900', color: '#111827', textAlign: 'right' }}>
+                      {((Number(item.quantity) || 0) * (Number(item.price) || 0)).toLocaleString('fr-FR')}
                     </div>
-                  ))}
+                  </div>
+                ))}
+              </div>
+
+              {/* Totaux */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '48px', marginBottom: '16px' }}>
+                <div style={{ width: '41.66%' }}>
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '10px 16px',
+                    borderBottom: '1px solid #f3f4f6'
+                  }}>
+                    <span style={{ fontSize: '13px', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '1px' }}>Sous-total</span>
+                    <span style={{ fontSize: '13px', fontWeight: '900', color: '#111827' }}>{subtotal.toLocaleString('fr-FR')} FCFA</span>
+                  </div>
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    backgroundColor: '#2563EB',
+                    borderRadius: '10px',
+                    padding: '12px 16px',
+                    marginTop: '10px'
+                  }}>
+                    <span style={{ fontSize: '13px', fontWeight: '700', color: '#ffffff', textTransform: 'uppercase', letterSpacing: '1px' }}>Total</span>
+                    <span style={{ fontSize: '20px', fontWeight: '900', color: '#ffffff' }}>{total.toLocaleString('fr-FR')} FCFA</span>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex justify-end mt-16 mb-4">
-                <div className="w-5/12">
-                  <div className="flex justify-between items-center px-4 py-3 border-b border-gray-100">
-                    <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">Sous-total</span>
-                    <span className="text-sm font-black text-gray-900">{subtotal.toLocaleString('fr-FR')}</span>
-                  </div>
-                  <div className="flex justify-between items-center bg-[#2563EB] rounded-lg p-3 mt-3 text-white">
-                    <span className="text-sm font-bold uppercase tracking-wider">Total</span>
-                    <span className="text-xl font-black">{total.toLocaleString('fr-FR')} FCFA</span>
-                  </div>
-                </div>
+            </div>{/* fin corps principal */}
+
+            {/* Pied de page */}
+            <div style={{
+              width: '100%',
+              backgroundColor: '#f9fafb',
+              padding: '24px 56px',
+              borderTop: '1px solid #e5e7eb',
+              textAlign: 'center',
+              flexShrink: 0
+            }}>
+              <div style={{ fontSize: '12px', fontWeight: '600', color: '#6b7280' }}>
+                {settings?.companyName || ''}{settings?.companyId ? ` — ${settings.companyId}` : ''}
               </div>
-            </div>
-            
-            <div className="w-full bg-gray-50/80 px-12 py-6 border-t border-gray-200 mt-auto flex flex-col items-center text-center">
-              <p className="text-xs font-semibold text-gray-500">
-                {settings?.companyName || ''}
-                {settings?.companyId ? ` - ${settings.companyId}` : ''}
-              </p>
-              <p className="text-xs font-medium text-gray-400 mt-1">
+              <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '4px' }}>
                 {settings?.invoiceFooter || 'Merci de votre confiance. Le paiement est attendu sous 30 jours.'}
-              </p>
+              </div>
             </div>
+
           </div>
         </div>
       </div>
