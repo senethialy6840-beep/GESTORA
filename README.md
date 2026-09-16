@@ -1,6 +1,9 @@
 # Gestora
 
+*Projet réintégré & déployé sur Vercel.*
+
 Gestora est une application web SaaS moderne conçue pour simplifier la gestion de la facturation, le suivi des clients et l'administration des paramètres d'entreprise. Pensée pour les professionnels et les petites entreprises, Gestora offre une interface haut de gamme, fluide et intuitive, tout en garantissant une personnalisation poussée des documents commerciaux.
+
 
 ---
 
