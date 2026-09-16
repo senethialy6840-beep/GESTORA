@@ -2,6 +2,8 @@ Déploiement & Connexions externes
 ================================
 
 Ce fichier explique comment connecter le dépôt à GitHub Actions, Vercel et Supabase.
+Note: Le dossier racine Vercel (Root Directory) doit être défini sur `./` (racine).
+
 
 Variables / Secrets à ajouter (GitHub Actions secrets, Vercel environment variables, Supabase project):
 
