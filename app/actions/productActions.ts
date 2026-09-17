@@ -26,7 +26,7 @@ export async function createProduct(data: CreateProductData) {
     
     const validated = ProductSchema.safeParse(data);
     if (!validated.success) {
-      const errorMsg = validated.error.errors[0]?.message || "Données du produit invalides.";
+      const errorMsg = validated.error.issues[0]?.message || "Données du produit invalides.";
       return { success: false, error: errorMsg };
     }
     data = validated.data as CreateProductData;
