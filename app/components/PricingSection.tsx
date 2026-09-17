@@ -13,7 +13,7 @@ export function PricingSection() {
       name: "Starter",
       planId: "STARTUP",
       monthlyPrice: "5 900 FCFA",
-      annualPrice: "79 000 FCFA",
+      annualPrice: "59 000 FCFA",
       period: billingCycle === 'monthly' ? "/ mois" : "/ an",
       description: "L'essentiel pour les petits commerces qui se lancent.",
       features: [
@@ -32,8 +32,8 @@ export function PricingSection() {
       name: "Business",
       planId: "BUSINESS",
       badge: "Le plus populaire",
-      monthlyPrice: "14 900 FCFA",
-      annualPrice: "149 000 FCFA",
+      monthlyPrice: "10 900 FCFA",
+      annualPrice: "109 000 FCFA",
       period: billingCycle === 'monthly' ? "/ mois" : "/ an",
       description: "La solution complète pour les PME en croissance.",
       features: [
@@ -53,8 +53,8 @@ export function PricingSection() {
     {
       name: "Enterprise",
       planId: "ENTERPRISE",
-      monthlyPrice: "29 900 FCFA",
-      annualPrice: "299 000 FCFA",
+      monthlyPrice: "25 900 FCFA",
+      annualPrice: "259 000 FCFA",
       period: billingCycle === 'monthly' ? "/ mois" : "/ an",
       description: "Pour les réseaux multi-sites et les besoins avancés.",
       features: [

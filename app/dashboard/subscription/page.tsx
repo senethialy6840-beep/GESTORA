@@ -15,7 +15,7 @@ export default function SubscriptionPage() {
       name: 'Starter',
       icon: <Rocket className="w-6 h-6 text-blue-600 dark:text-blue-400" />,
       monthlyPrice: '5 900 FCFA',
-      annualPrice: '79 000 FCFA',
+      annualPrice: '59 000 FCFA',
       period: billingCycle === 'monthly' ? '/mois' : '/an',
       description: 'L\'essentiel pour les petits commerces qui se lancent.',
       features: [
@@ -27,15 +27,15 @@ export default function SubscriptionPage() {
         'Gestion des Clients',
         'Tableau de bord basique'
       ],
-      link: "https://link.saspay.me/dzhdwsevbca",
+      link: "https://link.saspay.me/f8sr3zdfo2c",
       color: 'blue'
     },
     {
       id: 'BUSINESS',
       name: 'Business',
       icon: <Briefcase className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />,
-      monthlyPrice: '14 900 FCFA',
-      annualPrice: '149 000 FCFA',
+      monthlyPrice: '10 900 FCFA',
+      annualPrice: '109 000 FCFA',
       period: billingCycle === 'monthly' ? '/mois' : '/an',
       description: 'La solution complète pour les PME en croissance.',
       features: [
@@ -49,7 +49,7 @@ export default function SubscriptionPage() {
         'Rapports',
         'Analyses détaillées'
       ],
-      link: "https://link.saspay.me/x9qdadsktnm",
+      link: "https://link.saspay.me/bwxsw0vkv_u",
       color: 'emerald',
       popular: true
     },
@@ -57,8 +57,8 @@ export default function SubscriptionPage() {
       id: 'ENTERPRISE',
       name: 'Enterprise',
       icon: <Building2 className="w-6 h-6 text-purple-600 dark:text-purple-400" />,
-      monthlyPrice: '29 900 FCFA',
-      annualPrice: '299 000 FCFA',
+      monthlyPrice: '25 900 FCFA',
+      annualPrice: '259 000 FCFA',
       period: billingCycle === 'monthly' ? '/mois' : '/an',
       description: 'Pour les réseaux multi-sites et les besoins avancés.',
       features: [
@@ -69,7 +69,7 @@ export default function SubscriptionPage() {
         'Assistant Intelligent (IA)',
         'Support technique dédié 7j/7'
       ],
-      link: "https://link.saspay.me/dveyilduqy0",
+      link: "https://link.saspay.me/36vjlj7csvi",
       color: 'purple'
     }
   ];
