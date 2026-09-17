@@ -110,39 +110,26 @@ export default function InvoicesPage() {
   };
 
   const handleDownloadPDF = async () => {
-    if (!pdfRef.current) return;
-    
     try {
       setIsDownloading(true);
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      const dataUrl = await htmlToImage.toPng(pdfRef.current, {
-        quality: 1,
-        pixelRatio: 2,
-        backgroundColor: '#ffffff',
-        width: 794,
-        style: {
-          transform: 'scale(1)',
-          transformOrigin: 'top left',
-          margin: '0'
+      generateInvoicePDF(
+        {
+          invoiceNo: invoiceData.number,
+          totalAmount: calculateSubtotal(),
+          createdAt: invoiceData.date,
+          items: invoiceData.items,
+        },
+        settings,
+        {
+          name: invoiceData.clientName,
+          address: invoiceData.clientAddress,
+          email: invoiceData.clientEmail,
+          phone: invoiceData.clientPhone,
         }
-      });
-      
-      const pdfWidth = 210; // A4 width in mm
-      const pdfHeight = (pdfRef.current.offsetHeight * pdfWidth) / pdfRef.current.offsetWidth;
-      
-      const pdf = new jsPDF({
-        orientation: 'p',
-        unit: 'mm',
-        format: [pdfWidth, Math.max(297, pdfHeight)]
-      });
-      
-      pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`${invoiceData.number || 'Facture'}.pdf`);
+      );
     } catch (error: any) {
       console.error("Erreur lors de la génération du PDF :", error);
-      alert(`Le téléchargement direct a échoué (${error?.message || String(error)}). Utilisez la fenêtre d'impression (Ctrl+P ou Cmd+P) et choisissez 'Enregistrer au format PDF'.`);
-      window.print();
+      alert("Impossible de générer la facture PDF.");
     } finally {
       setIsDownloading(false);
     }

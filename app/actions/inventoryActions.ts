@@ -1,6 +1,6 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { prisma, ensureCompanyExists } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { StockMovementSchema } from "@/lib/validations";
 import { auth } from "@/auth";
@@ -34,6 +34,7 @@ export async function createStockMovement(data: {
     if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
     
     data.companyId = session.user.companyId as string;
+    await ensureCompanyExists(data.companyId);
     
     const validated = StockMovementSchema.safeParse(data);
     if (!validated.success) {

@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { prisma } from "@/lib/prisma";
+import { prisma, ensureCompanyExists } from "@/lib/prisma";
 import { Employee } from "@prisma/client";
 import { EmployeeSchema } from "@/lib/validations";
 import { auth } from "@/auth";
@@ -29,6 +29,7 @@ export async function createEmployee(data: Omit<Employee, "id" | "createdAt" | "
     if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
     
     data.companyId = session.user.companyId as string;
+    await ensureCompanyExists(data.companyId);
     
     const validated = EmployeeSchema.safeParse(data);
     if (!validated.success) {

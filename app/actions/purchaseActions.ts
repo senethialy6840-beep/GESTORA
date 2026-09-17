@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { prisma } from "@/lib/prisma";
+import { prisma, ensureCompanyExists } from "@/lib/prisma";
 import { Purchase, Supplier, PurchaseItem } from "@prisma/client";
 import { PurchaseSchema, SupplierSchema } from "@/lib/validations";
 import { auth } from "@/auth";
@@ -31,6 +31,7 @@ export async function createSupplier(data: Omit<Supplier, "id" | "createdAt" | "
     if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
     
     data.companyId = session.user.companyId as string;
+    await ensureCompanyExists(data.companyId);
     
     const validated = SupplierSchema.safeParse(data);
     if (!validated.success) {
@@ -132,6 +133,7 @@ export async function createPurchase(
     if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
     
     data.companyId = session.user.companyId as string;
+    await ensureCompanyExists(data.companyId);
     
     const validated = PurchaseSchema.safeParse(data);
     if (!validated.success) {
