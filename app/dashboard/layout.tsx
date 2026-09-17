@@ -180,9 +180,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
   // --- FIN PROTECTION STRICTE ---
 
-  // Block access if subscription is pending or expired
+  // Block access UNIQUEMENT si l'abonnement est expiré (pas pour PENDING = nouveaux inscrits)
   const subStatus = (session?.user as any)?.subscriptionStatus;
-  const isSubscriptionBlocked = subStatus === 'PENDING' || subStatus === 'EXPIRED';
+  const isSubscriptionBlocked = subStatus === 'EXPIRED';
 
   if (session?.user && isSubscriptionBlocked && !isPlatformOwner) {
     // S'ils sont sur la page d'abonnement, on affiche UNIQUEMENT le contenu de la page (sans le menu latéral)
