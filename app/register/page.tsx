@@ -52,7 +52,7 @@ function RegisterForm() {
           ENTERPRISE: process.env.NEXT_PUBLIC_SASPAY_ENTERPRISE_LINK,
         };
         const paymentLink = plan ? paymentLinks[plan] : undefined;
-        if (paymentLink && res.companyId) {
+        if (paymentLink && res.companyId && plan) {
           const url = new URL(paymentLink);
           url.searchParams.set('client_reference', res.companyId);
           url.searchParams.set('metadata[companyId]', res.companyId);
