@@ -89,6 +89,21 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).id = token.id as string;
         (session.user as any).companyId = token.companyId as string;
         (session.user as any).role = token.role as string;
+        if (token.companyId) {
+          const company = await prisma.company.findUnique({
+            where: { id: token.companyId as string },
+            select: { subscriptionStatus: true, plan: true, subscriptionExpiresAt: true },
+          });
+          if (company) {
+            let subscriptionStatus = company.subscriptionStatus;
+            if (company.subscriptionExpiresAt && company.subscriptionExpiresAt < new Date() && subscriptionStatus === "ACTIVE") {
+              subscriptionStatus = "EXPIRED";
+            }
+            (session.user as any).subscriptionStatus = subscriptionStatus;
+            (session.user as any).plan = company.plan;
+            return session;
+          }
+        }
         (session.user as any).subscriptionStatus = token.subscriptionStatus as string;
         (session.user as any).plan = token.plan as string;
       }

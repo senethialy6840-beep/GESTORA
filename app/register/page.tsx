@@ -46,12 +46,18 @@ function RegisterForm() {
         setIsLoading(false);
       } else {
         // Redirection logique en fonction du plan
-        if (plan === 'STARTUP' && process.env.NEXT_PUBLIC_SASPAY_STARTUP_LINK) {
-          window.location.href = process.env.NEXT_PUBLIC_SASPAY_STARTUP_LINK;
-        } else if (plan === 'BUSINESS' && process.env.NEXT_PUBLIC_SASPAY_BUSINESS_LINK) {
-          window.location.href = process.env.NEXT_PUBLIC_SASPAY_BUSINESS_LINK;
-        } else if (plan === 'ENTERPRISE' && process.env.NEXT_PUBLIC_SASPAY_ENTERPRISE_LINK) {
-          window.location.href = process.env.NEXT_PUBLIC_SASPAY_ENTERPRISE_LINK;
+        const paymentLinks: Record<string, string | undefined> = {
+          STARTUP: process.env.NEXT_PUBLIC_SASPAY_STARTUP_LINK,
+          BUSINESS: process.env.NEXT_PUBLIC_SASPAY_BUSINESS_LINK,
+          ENTERPRISE: process.env.NEXT_PUBLIC_SASPAY_ENTERPRISE_LINK,
+        };
+        const paymentLink = plan ? paymentLinks[plan] : undefined;
+        if (paymentLink && res.companyId) {
+          const url = new URL(paymentLink);
+          url.searchParams.set('client_reference', res.companyId);
+          url.searchParams.set('metadata[companyId]', res.companyId);
+          url.searchParams.set('metadata[plan]', plan);
+          window.location.href = url.toString();
         } else {
           router.push('/dashboard');
           router.refresh();

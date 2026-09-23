@@ -113,7 +113,7 @@ export async function resetPassword(token: string, newPassword: string) {
       where: { id: resetRecord.id }
     });
 
-    return { success: true };
+    return { success: true, companyId: newCompany.id };
   } catch (error: any) {
     console.error("Reset password error", error);
     return { success: false, error: "Une erreur est survenue lors de la réinitialisation." };
