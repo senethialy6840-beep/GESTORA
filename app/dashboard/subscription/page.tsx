@@ -1,26 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Check, CreditCard, Rocket, Building2, Briefcase, Sparkles } from 'lucide-react';
 import { useSession } from 'next-auth/react';
-import { generateSasPayLink } from '@/app/actions/paymentActions';
 
 export default function SubscriptionPage() {
-  const { data: session, update } = useSession();
+  const { data: session } = useSession();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annually'>('monthly');
-
-  useEffect(() => {
-    let attempts = 0;
-    const refreshSession = async () => {
-      attempts += 1;
-      await update();
-      if (attempts >= 12) clearInterval(interval);
-    };
-    const interval = setInterval(refreshSession, 5000);
-    refreshSession();
-    return () => clearInterval(interval);
-  }, [update]);
 
   const plans = [
     {
@@ -40,6 +27,8 @@ export default function SubscriptionPage() {
         'Gestion des Clients',
         'Tableau de bord basique'
       ],
+      link: process.env.NEXT_PUBLIC_SASPAY_STARTUP_LINK || "https://link.saspay.me/dzhdwsevbca",
+      annualLink: process.env.NEXT_PUBLIC_SASPAY_STARTUP_ANNUAL_LINK || "https://link.saspay.me/gqymsozxixo",
       color: 'blue'
     },
     {
@@ -61,6 +50,8 @@ export default function SubscriptionPage() {
         'Rapports',
         'Analyses détaillées'
       ],
+      link: process.env.NEXT_PUBLIC_SASPAY_BUSINESS_LINK || "https://link.saspay.me/x9qdadsktnm",
+      annualLink: process.env.NEXT_PUBLIC_SASPAY_BUSINESS_ANNUAL_LINK || "https://link.saspay.me/jji9l4_m6vq",
       color: 'emerald',
       popular: true
     },
@@ -80,38 +71,33 @@ export default function SubscriptionPage() {
         'Assistant Intelligent (IA)',
         'Support technique dédié 7j/7'
       ],
+      link: process.env.NEXT_PUBLIC_SASPAY_ENTERPRISE_LINK || "https://link.saspay.me/dveyilduqy0",
+      annualLink: process.env.NEXT_PUBLIC_SASPAY_ENTERPRISE_ANNUAL_LINK || "https://link.saspay.me/lbss48r_f2q",
       color: 'purple'
     }
   ];
 
-  const handleSubscribe = async (planId: string) => {
-    setLoadingPlan(planId);
-    try {
-      const prices: Record<string, { monthly: number; annually: number }> = {
-        STARTUP: { monthly: 5900, annually: 59000 },
-        BUSINESS: { monthly: 10900, annually: 109000 },
-        ENTERPRISE: { monthly: 25900, annually: 259000 },
-      };
-      const amount = prices[planId]?.[billingCycle];
-      const response = await generateSasPayLink({
-        amount: amount || 0,
-        description: `Abonnement Gestora ${planId} (${billingCycle})`,
-        reference: `sub_${planId.toLowerCase()}_${Date.now()}`,
-        customer_email: session?.user?.email || undefined,
-        plan: planId,
-        billingCycle,
-      });
-      if (!response.success || !response.paymentUrl) {
-        alert(response.error || "Impossible de générer le paiement SasPay.");
-        return;
-      }
-      window.location.href = response.paymentUrl;
-    } catch (error) {
-      console.error('Erreur de génération SasPay:', error);
-      alert("Une erreur est survenue lors de la préparation du paiement.");
-    } finally {
-      setLoadingPlan(null);
+  const handleSubscribe = (planId: string, link: string, annualLink: string) => {
+    const selectedLink = billingCycle === 'annually' ? annualLink : link;
+    if (!selectedLink || selectedLink === '#') {
+      alert("Le lien de paiement n'est pas configuré pour ce plan.");
+      return;
     }
+    
+    setLoadingPlan(planId);
+    const companyId = (session?.user as any)?.companyId;
+    let finalLink = selectedLink;
+
+    if (companyId) {
+      const url = new URL(selectedLink);
+      url.searchParams.set('client_reference', companyId);
+      url.searchParams.set('metadata[plan]', planId);
+      url.searchParams.set('metadata[billingCycle]', billingCycle);
+      url.searchParams.set('metadata[companyId]', companyId);
+      finalLink = url.toString();
+    }
+
+    window.location.href = finalLink;
   };
 
   return (
@@ -202,7 +188,7 @@ export default function SubscriptionPage() {
               </div>
 
               <button
-                onClick={() => handleSubscribe(plan.id)}
+                onClick={() => handleSubscribe(plan.id, plan.link, plan.annualLink)}
                 disabled={loadingPlan === plan.id}
                 className={`w-full py-3.5 rounded-xl font-bold text-white transition-all shadow-sm flex items-center justify-center space-x-2 
                   ${plan.popular 
