@@ -35,7 +35,7 @@ export default function PurchasesPage() {
   }, [session?.user?.companyId]);
 
   const handleSavePurchase = async (newItem: any) => {
-    if (!session?.user?.companyId) return;
+    if (!session?.user?.companyId) return { success: false, error: 'Session expirée. Veuillez vous reconnecter.' };
 
     // Handle Supplier creation if doesn't exist
     let supplierId = null;
@@ -54,6 +54,8 @@ export default function PurchasesPage() {
         if (newSupp.success && newSupp.data) {
           supplierId = newSupp.data.id;
           setSuppliers(prev => [...prev, newSupp.data]);
+        } else {
+          return { success: false, error: newSupp.error || 'Impossible de créer le fournisseur.' };
         }
       }
     }
@@ -64,6 +66,7 @@ export default function PurchasesPage() {
       if (res.success && res.data) {
         setPurchases(prev => prev.map(p => p.id === editingItem.id ? { ...p, ...newItem, supplierId } : p));
       }
+      return res;
     } else {
       // Create
       const res = await createPurchase({
@@ -76,6 +79,7 @@ export default function PurchasesPage() {
       if (res.success && res.data) {
         setPurchases(prev => [res.data, ...prev]);
       }
+      return res;
     }
   };
 

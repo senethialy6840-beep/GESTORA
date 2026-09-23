@@ -10,6 +10,7 @@ interface SasPayPaymentRequest {
   reference: string;
   customer_email?: string;
   plan?: string;
+  billingCycle?: "monthly" | "annually";
 }
 
 export async function generateSasPayLink(data: SasPayPaymentRequest) {
@@ -33,8 +34,8 @@ export async function generateSasPayLink(data: SasPayPaymentRequest) {
       description: data.description,
       order_id: data.reference,
       customer_email: data.customer_email || "contact@gestora.app",
-      return_url: `${APP_URL}/dashboard/sales`,
-      cancel_url: `${APP_URL}/dashboard/sales`,
+      return_url: `${APP_URL}/dashboard/subscription?payment=return`,
+      cancel_url: `${APP_URL}/dashboard/subscription?payment=cancelled`,
       webhook_url: `${APP_URL}/api/webhooks/saspay`,
     };
 
@@ -44,6 +45,7 @@ export async function generateSasPayLink(data: SasPayPaymentRequest) {
         companyId,
       };
       if (data.plan) payload.metadata.plan = data.plan;
+      if (data.billingCycle) payload.metadata.billingCycle = data.billingCycle;
     }
 
     const response = await fetch("https://api.saspay.me/api/v1/payments", {
@@ -63,10 +65,13 @@ export async function generateSasPayLink(data: SasPayPaymentRequest) {
     }
 
     // Return the payment URL (assuming 'payment_url' or 'url' in response)
-    return { 
-      success: true, 
-      paymentUrl: result.data?.payment_url || result.payment_url || result.url 
-    };
+    const paymentUrl = result.data?.payment_url || result.data?.url || result.payment_url || result.url;
+    if (!paymentUrl) {
+      console.error("SasPay API response missing payment URL:", result);
+      return { success: false, error: "SasPay n'a pas retourné de lien de paiement." };
+    }
+
+    return { success: true, paymentUrl };
   } catch (error: any) {
     console.error("Payment generation error:", error);
     return { success: false, error: error.message || "Une erreur est survenue" };

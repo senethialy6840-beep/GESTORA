@@ -1,13 +1,26 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Check, CreditCard, Rocket, Building2, Briefcase, Sparkles } from 'lucide-react';
 import { useSession } from 'next-auth/react';
+import { generateSasPayLink } from '@/app/actions/paymentActions';
 
 export default function SubscriptionPage() {
-  const { data: session } = useSession();
+  const { data: session, update } = useSession();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annually'>('monthly');
+
+  useEffect(() => {
+    let attempts = 0;
+    const refreshSession = async () => {
+      attempts += 1;
+      await update();
+      if (attempts >= 12) clearInterval(interval);
+    };
+    const interval = setInterval(refreshSession, 5000);
+    refreshSession();
+    return () => clearInterval(interval);
+  }, [update]);
 
   const plans = [
     {
@@ -27,7 +40,6 @@ export default function SubscriptionPage() {
         'Gestion des Clients',
         'Tableau de bord basique'
       ],
-      link: "https://link.saspay.me/f8sr3zdfo2c",
       color: 'blue'
     },
     {
@@ -49,7 +61,6 @@ export default function SubscriptionPage() {
         'Rapports',
         'Analyses détaillées'
       ],
-      link: "https://link.saspay.me/bwxsw0vkv_u",
       color: 'emerald',
       popular: true
     },
@@ -69,32 +80,38 @@ export default function SubscriptionPage() {
         'Assistant Intelligent (IA)',
         'Support technique dédié 7j/7'
       ],
-      link: "https://link.saspay.me/36vjlj7csvi",
       color: 'purple'
     }
   ];
 
-  const handleSubscribe = (planId: string, link: string) => {
-    if (!link || link === '#') {
-      alert("Le lien de paiement n'est pas configuré pour ce plan.");
-      return;
-    }
-    
+  const handleSubscribe = async (planId: string) => {
     setLoadingPlan(planId);
-    
-    const companyId = (session?.user as any)?.companyId;
-    let finalLink = link;
-
-    if (companyId) {
-      const url = new URL(link);
-      url.searchParams.set('client_reference', companyId);
-      url.searchParams.set('metadata[plan]', planId);
-      url.searchParams.set('metadata[billingCycle]', billingCycle);
-      url.searchParams.set('metadata[companyId]', companyId);
-      finalLink = url.toString();
+    try {
+      const prices: Record<string, { monthly: number; annually: number }> = {
+        STARTUP: { monthly: 5900, annually: 59000 },
+        BUSINESS: { monthly: 10900, annually: 109000 },
+        ENTERPRISE: { monthly: 25900, annually: 259000 },
+      };
+      const amount = prices[planId]?.[billingCycle];
+      const response = await generateSasPayLink({
+        amount: amount || 0,
+        description: `Abonnement Gestora ${planId} (${billingCycle})`,
+        reference: `sub_${planId.toLowerCase()}_${Date.now()}`,
+        customer_email: session?.user?.email || undefined,
+        plan: planId,
+        billingCycle,
+      });
+      if (!response.success || !response.paymentUrl) {
+        alert(response.error || "Impossible de générer le paiement SasPay.");
+        return;
+      }
+      window.location.href = response.paymentUrl;
+    } catch (error) {
+      console.error('Erreur de génération SasPay:', error);
+      alert("Une erreur est survenue lors de la préparation du paiement.");
+    } finally {
+      setLoadingPlan(null);
     }
-    
-    window.location.href = finalLink;
   };
 
   return (
@@ -185,7 +202,7 @@ export default function SubscriptionPage() {
               </div>
 
               <button
-                onClick={() => handleSubscribe(plan.id, plan.link)}
+                onClick={() => handleSubscribe(plan.id)}
                 disabled={loadingPlan === plan.id}
                 className={`w-full py-3.5 rounded-xl font-bold text-white transition-all shadow-sm flex items-center justify-center space-x-2 
                   ${plan.popular 

@@ -4,7 +4,7 @@ import { X } from 'lucide-react';
 interface PurchaseModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (purchase: any) => void;
+  onSave: (purchase: any) => Promise<{ success?: boolean; error?: string } | void> | { success?: boolean; error?: string } | void;
   initialData?: any;
 }
 
@@ -15,10 +15,14 @@ export function PurchaseModal({ isOpen, onClose, onSave, initialData }: Purchase
     totalAmount: '',
     status: 'PENDING' // PENDING, RECEIVED, CANCELLED
   });
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Reset form when opened
   useEffect(() => {
     if (isOpen) {
+      setError('');
+      setIsSubmitting(false);
       if (initialData) {
         setFormData({
           orderNo: initialData.orderNo || '',
@@ -39,15 +43,27 @@ export function PurchaseModal({ isOpen, onClose, onSave, initialData }: Purchase
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({
-      id: initialData?.id || Date.now().toString(),
-      ...formData,
-      totalAmount: parseFloat(formData.totalAmount) || 0,
-      date: initialData?.date || new Date().toISOString()
-    });
-    onClose();
+    setError('');
+    setIsSubmitting(true);
+    try {
+      const result = await onSave({
+        id: initialData?.id || Date.now().toString(),
+        ...formData,
+        totalAmount: parseFloat(formData.totalAmount) || 0,
+        date: initialData?.date || new Date().toISOString()
+      });
+      if (result && result.success === false) {
+        setError(result.error || "Impossible d'enregistrer l'achat.");
+        return;
+      }
+      onClose();
+    } catch {
+      setError("Une erreur est survenue lors de l'enregistrement.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -77,6 +93,11 @@ export function PurchaseModal({ isOpen, onClose, onSave, initialData }: Purchase
         {/* Form body */}
         <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
           <form id="purchase-form" onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
+                {error}
+              </div>
+            )}
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -150,9 +171,10 @@ export function PurchaseModal({ isOpen, onClose, onSave, initialData }: Purchase
           <button 
             type="submit"
             form="purchase-form"
+            disabled={isSubmitting}
             className="px-5 py-2.5 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-all"
           >
-            Enregistrer
+            {isSubmitting ? 'Enregistrement...' : 'Enregistrer'}
           </button>
         </div>
 

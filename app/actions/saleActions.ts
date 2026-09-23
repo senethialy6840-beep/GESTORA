@@ -28,40 +28,57 @@ export async function createSale(data: CreateSaleData) {
       return { success: false, error: "Données de vente invalides." };
     }
     data = validated.data as CreateSaleData;
-    const sale = await prisma.sale.create({
-      data: {
-        invoiceNo: data.invoiceNo,
-        totalAmount: data.totalAmount,
-        status: data.status || 'COMPLETED',
-        customerId: data.customerId,
-        companyId: data.companyId,
-        items: data.items ? {
-          create: data.items.map(i => ({
-            description: i.description,
-            quantity: i.quantity,
-            price: i.price,
-          }))
-        } : undefined
-      },
-      include: { items: true }
+    if (data.customerId) {
+      const customer = await prisma.customer.findFirst({
+        where: { id: data.customerId, companyId: data.companyId },
+        select: { id: true },
+      });
+      if (!customer) return { success: false, error: "Client introuvable ou non autorisé." };
+    }
+
+    const products = new Map<string, { quantity: number; name: string; stock: number; stockAlert: number }>();
+    for (const item of data.items || []) {
+      if (!item.productId) continue;
+      const current = products.get(item.productId);
+      if (current) {
+        current.quantity += item.quantity;
+        continue;
+      }
+      const product = await prisma.product.findFirst({
+        where: { id: item.productId, companyId: data.companyId },
+        select: { id: true, name: true, stock: true, stockAlert: true },
+      });
+      if (!product) return { success: false, error: "Produit introuvable ou non autorisé." };
+      products.set(product.id, { quantity: item.quantity, name: product.name, stock: product.stock, stockAlert: product.stockAlert });
+    }
+    for (const product of products.values()) {
+      if (product.stock < product.quantity) return { success: false, error: `Stock insuffisant pour ${product.name}.` };
+    }
+
+    const sale = await prisma.$transaction(async (transaction) => {
+      const createdSale = await transaction.sale.create({
+        data: {
+          invoiceNo: data.invoiceNo,
+          totalAmount: data.totalAmount,
+          status: data.status || 'COMPLETED',
+          customerId: data.customerId,
+          companyId: data.companyId,
+          items: data.items ? {
+            create: data.items.map(i => ({ description: i.description, quantity: i.quantity, price: i.price }))
+          } : undefined,
+        },
+        include: { items: true },
+      });
+      for (const [productId, product] of products) {
+        await transaction.product.update({ where: { id: productId }, data: { stock: { decrement: product.quantity } } });
+      }
+      return createdSale;
     });
 
-    // Décrémenter le stock
-    if (data.items) {
-      for (const item of data.items) {
-        if (item.productId) {
-          const updatedProduct = await prisma.product.update({
-            where: { id: item.productId },
-            data: { stock: { decrement: item.quantity } }
-          }).catch(err => {
-            console.error("Erreur lors de la décrémentation du stock:", err);
-            return null;
-          });
-          
-          if (updatedProduct && updatedProduct.stock <= (updatedProduct.stockAlert || 10)) {
-            sendLowStockAlert(updatedProduct.name, updatedProduct.stock, data.companyId).catch(console.error);
-          }
-        }
+    for (const product of products.values()) {
+      const remainingStock = product.stock - product.quantity;
+      if (remainingStock <= product.stockAlert) {
+        sendLowStockAlert(product.name, remainingStock, data.companyId).catch(console.error);
       }
     }
 

@@ -180,9 +180,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
   // --- FIN PROTECTION STRICTE ---
 
-  // Block access UNIQUEMENT si l'abonnement est expiré (pas pour PENDING = nouveaux inscrits)
+  // Le tableau de bord reste inaccessible tant que le premier paiement n'est pas confirmé.
   const subStatus = (session?.user as any)?.subscriptionStatus;
-  const isSubscriptionBlocked = subStatus === 'EXPIRED';
+  const isSubscriptionBlocked = subStatus === 'PENDING' || subStatus === 'EXPIRED' || subStatus === 'CANCELLED';
 
   if (session?.user && isSubscriptionBlocked && !isPlatformOwner) {
     // S'ils sont sur la page d'abonnement, on affiche UNIQUEMENT le contenu de la page (sans le menu latéral)
@@ -203,11 +203,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Abonnement Requis</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Paiement requis</h2>
           <p className="text-gray-500 dark:text-slate-400 mb-8">
-            {subStatus === 'EXPIRED' 
+            {subStatus === 'EXPIRED'
               ? "Votre abonnement a expiré. Veuillez renouveler votre forfait pour continuer." 
-              : "Pour accéder à votre tableau de bord, vous devez d'abord activer votre abonnement."}
+              : "Pour accéder à votre tableau de bord, vous devez d'abord confirmer votre abonnement."}
           </p>
           <a 
             href="/dashboard/subscription"

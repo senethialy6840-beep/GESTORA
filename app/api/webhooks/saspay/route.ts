@@ -66,7 +66,12 @@ export async function POST(req: Request) {
 
     console.log("[SasPay Webhook] Payload reçu:", JSON.stringify(payload, null, 2));
 
-    const { status, order_id, metadata, custom_data, client_reference } = payload;
+    const paymentData = payload.data && typeof payload.data === "object" ? payload.data : payload;
+    const status = paymentData.status || payload.status;
+    const order_id = paymentData.order_id || paymentData.orderId || payload.order_id;
+    const metadata = paymentData.metadata || payload.metadata;
+    const custom_data = paymentData.custom_data || payload.custom_data;
+    const client_reference = paymentData.client_reference || payload.client_reference;
 
     // ─── 3. PAIEMENT RÉUSSI ────────────────────────────────────────────────────
     const isSuccess = ["SUCCESS", "COMPLETED", "PAID", "success", "completed", "paid"].includes(status);
@@ -81,12 +86,12 @@ export async function POST(req: Request) {
       client_reference ||
       metadata?.companyId ||
       custom_data?.companyId ||
-      payload.companyId;
+      paymentData.companyId || payload.companyId;
 
     const rawPlan =
       metadata?.plan ||
       custom_data?.plan ||
-      payload.plan ||
+      paymentData.plan || payload.plan ||
       (order_id?.startsWith("sub_") ? order_id.split("_")[1] : null);
 
     const plan = rawPlan ? (PLAN_MAP[String(rawPlan).toUpperCase()] ?? "STARTUP") : "STARTUP";

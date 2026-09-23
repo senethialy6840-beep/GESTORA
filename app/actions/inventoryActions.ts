@@ -41,28 +41,31 @@ export async function createStockMovement(data: {
       return { success: false, error: "Données de mouvement de stock invalides." };
     }
     data = validated.data as any;
-    const movement = await prisma.stockMovement.create({
-      data: {
-        type: data.type,
-        quantity: data.quantity,
-        reason: data.reason,
-        productId: data.productId,
-        companyId: data.companyId,
-      }
+    const product = await prisma.product.findFirst({
+      where: { id: data.productId, companyId: data.companyId },
+      select: { id: true, stock: true },
     });
-
-    // Automatically update product stock
-    if (data.type === 'IN') {
-      await prisma.product.update({
-        where: { id: data.productId },
-        data: { stock: { increment: data.quantity } }
-      });
-    } else if (data.type === 'OUT') {
-      await prisma.product.update({
-        where: { id: data.productId },
-        data: { stock: { decrement: data.quantity } }
-      });
+    if (!product) return { success: false, error: "Produit introuvable ou non autorisé." };
+    if (data.type === 'OUT' && product.stock < data.quantity) {
+      return { success: false, error: "Stock insuffisant pour cette sortie." };
     }
+
+    const movement = await prisma.$transaction(async (transaction) => {
+      const createdMovement = await transaction.stockMovement.create({
+        data: {
+          type: data.type,
+          quantity: data.quantity,
+          reason: data.reason,
+          productId: data.productId,
+          companyId: data.companyId,
+        }
+      });
+      await transaction.product.update({
+        where: { id: data.productId },
+        data: { stock: data.type === 'IN' ? { increment: data.quantity } : { decrement: data.quantity } },
+      });
+      return createdMovement;
+    });
 
     revalidatePath("/dashboard/inventory");
     revalidatePath("/dashboard/products");
@@ -83,22 +86,16 @@ export async function deleteStockMovement(id: string) {
       return { success: false, error: "Non autorisé" };
     }
 
-    const movement = await prisma.stockMovement.delete({
-      where: { id }
+    const movement = await prisma.$transaction(async (transaction) => {
+      const deletedMovement = await transaction.stockMovement.delete({ where: { id } });
+      await transaction.product.update({
+        where: { id: deletedMovement.productId },
+        data: deletedMovement.type === 'IN'
+          ? { stock: { decrement: deletedMovement.quantity } }
+          : { stock: { increment: deletedMovement.quantity } },
+      });
+      return deletedMovement;
     });
-    
-    // Revert the stock
-    if (movement.type === 'IN') {
-      await prisma.product.update({
-        where: { id: movement.productId },
-        data: { stock: { decrement: movement.quantity } }
-      });
-    } else if (movement.type === 'OUT') {
-      await prisma.product.update({
-        where: { id: movement.productId },
-        data: { stock: { increment: movement.quantity } }
-      });
-    }
 
     revalidatePath("/dashboard/inventory");
     revalidatePath("/dashboard/products");

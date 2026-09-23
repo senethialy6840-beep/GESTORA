@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "node:path";
 
 if (process.env.NEXTAUTH_URL === "") {
   delete process.env.NEXTAUTH_URL;
@@ -32,6 +33,9 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  turbopack: {
+    root: path.resolve(__dirname),
+  },
   async headers() {
     return [
       {

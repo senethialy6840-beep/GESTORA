@@ -44,8 +44,8 @@ export const ProductSchema = z.object({
   description: z.string().optional(),
   price: z.coerce.number().min(0, "Le prix ne peut pas être négatif."),
   cost: z.coerce.number().min(0, "Le coût ne peut pas être négatif."),
-  stock: z.coerce.number().min(0, "Le stock ne peut pas être négatif."),
-  stockAlert: z.coerce.number().optional().default(0),
+  stock: z.coerce.number().int("Le stock doit être un nombre entier.").min(0, "Le stock ne peut pas être négatif."),
+  stockAlert: z.coerce.number().int("L'alerte de stock doit être un nombre entier.").min(0, "L'alerte de stock ne peut pas être négative.").optional().default(0),
   companyId: z.string().min(1, "Company ID requis."),
 });
 
@@ -65,7 +65,7 @@ export const CustomerSchema = z.object({
 
 export const SaleItemSchema = z.object({
   description: z.string().min(1, "Description requise"),
-  quantity: z.coerce.number().min(1, "Quantité >= 1"),
+  quantity: z.coerce.number().int("La quantité doit être un nombre entier.").min(1, "Quantité >= 1"),
   price: z.coerce.number().min(0, "Prix invalide"),
   productId: z.string().optional()
 });
