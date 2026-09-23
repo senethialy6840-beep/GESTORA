@@ -28,6 +28,7 @@ export default function SubscriptionPage() {
         'Gestion des Clients',
         'Tableau de bord basique'
       ],
+      monthlyLink: process.env.NEXT_PUBLIC_SASPAY_STARTUP_LINK || "https://link.saspay.me/f8sr3zdfo2c",
       color: 'blue'
     },
     {
@@ -49,6 +50,7 @@ export default function SubscriptionPage() {
         'Rapports',
         'Analyses détaillées'
       ],
+      monthlyLink: process.env.NEXT_PUBLIC_SASPAY_BUSINESS_LINK || "https://link.saspay.me/bwxsw0vkv_u",
       color: 'emerald',
       popular: true
     },
@@ -68,13 +70,27 @@ export default function SubscriptionPage() {
         'Assistant Intelligent (IA)',
         'Support technique dédié 7j/7'
       ],
+      monthlyLink: process.env.NEXT_PUBLIC_SASPAY_ENTERPRISE_LINK || "https://link.saspay.me/36vjlj7csvi",
       color: 'purple'
     }
   ];
 
-  const handleSubscribe = async (planId: string) => {
+  const handleSubscribe = async (planId: string, monthlyLink: string) => {
     setLoadingPlan(planId);
     try {
+      const companyId = (session?.user as any)?.companyId;
+      if (billingCycle === 'monthly' && monthlyLink) {
+        const url = new URL(monthlyLink);
+        if (companyId) {
+          url.searchParams.set('client_reference', companyId);
+          url.searchParams.set('metadata[companyId]', companyId);
+        }
+        url.searchParams.set('metadata[plan]', planId);
+        url.searchParams.set('metadata[billingCycle]', billingCycle);
+        window.location.href = url.toString();
+        return;
+      }
+
       const prices: Record<string, { monthly: number; annually: number }> = {
         STARTUP: { monthly: 5900, annually: 59000 },
         BUSINESS: { monthly: 10900, annually: 109000 },
@@ -195,7 +211,7 @@ export default function SubscriptionPage() {
               </div>
 
               <button
-                onClick={() => handleSubscribe(plan.id)}
+                onClick={() => handleSubscribe(plan.id, plan.monthlyLink)}
                 disabled={loadingPlan === plan.id}
                 className={`w-full py-3.5 rounded-xl font-bold text-white transition-all shadow-sm flex items-center justify-center space-x-2 
                   ${plan.popular 
