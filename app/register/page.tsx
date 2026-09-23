@@ -2,7 +2,7 @@
 
 import { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft, Box, LayoutDashboard, LineChart, ShoppingCart, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { registerUser } from '../actions/authActions';
 import { signIn } from 'next-auth/react';
@@ -17,8 +17,6 @@ function RegisterForm() {
   const [errorMsg, setErrorMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const plan = searchParams.get('plan');
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,23 +43,8 @@ function RegisterForm() {
         setErrorMsg("Erreur de connexion automatique.");
         setIsLoading(false);
       } else {
-        // Redirection logique en fonction du plan
-        const paymentLinks: Record<string, string | undefined> = {
-          STARTUP: process.env.NEXT_PUBLIC_SASPAY_STARTUP_LINK,
-          BUSINESS: process.env.NEXT_PUBLIC_SASPAY_BUSINESS_LINK,
-          ENTERPRISE: process.env.NEXT_PUBLIC_SASPAY_ENTERPRISE_LINK,
-        };
-        const paymentLink = plan ? paymentLinks[plan] : undefined;
-        if (paymentLink && res.companyId && plan) {
-          const url = new URL(paymentLink);
-          url.searchParams.set('client_reference', res.companyId);
-          url.searchParams.set('metadata[companyId]', res.companyId);
-          url.searchParams.set('metadata[plan]', plan);
-          window.location.href = url.toString();
-        } else {
-          router.push('/dashboard');
-          router.refresh();
-        }
+        router.push('/dashboard/subscription');
+        router.refresh();
       }
     } catch (err) {
       setErrorMsg("Une erreur inattendue est survenue.");
