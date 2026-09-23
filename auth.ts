@@ -17,15 +17,17 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        const email = credentials.email.trim().toLowerCase();
+
         // Rate Limiting : Max 5 tentatives par minute par email
-        const { isRateLimited } = authRateLimit.check(5, credentials.email);
+        const { isRateLimited } = authRateLimit.check(5, email);
         if (isRateLimited) {
           throw new Error("Trop de tentatives de connexion. Veuillez patienter.");
         }
 
         const user = await prisma.user.findUnique({
           where: {
-            email: credentials.email
+            email
           },
           include: {
             company: true
