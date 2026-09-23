@@ -1,5 +1,5 @@
-import { prisma } from "../lib/prisma";
-
+import { PrismaClient } from "@prisma/client";
+const prisma = new PrismaClient();
 async function main() {
   try {
     const user = await prisma.user.findFirst();
@@ -10,5 +10,4 @@ async function main() {
     await prisma.$disconnect();
   }
 }
-
 main();

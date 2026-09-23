@@ -92,8 +92,8 @@ export default function DashboardPage() {
   const formatMoney = (val: number) => new Intl.NumberFormat('fr-FR').format(val) + ' F';
 
   const userRole = (session?.user as any)?.role || 'CASHIER';
-  const isOwner = session?.user?.email?.trim().toLowerCase() === 'gestorame112@gmail.com';
-  const canViewStats = isOwner || ['ADMIN', 'SUPER_ADMIN'].includes(userRole);
+  const isOwner = session?.user?.email === 'gestorame112@gmail.com';
+  const canViewStats = isOwner || userRole === 'SUPER_ADMIN';
 
   return (
     <div className="w-full max-w-7xl mx-auto space-y-6">

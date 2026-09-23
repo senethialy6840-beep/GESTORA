@@ -4,7 +4,7 @@ import "@/lib/env";
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 
-const connectionString = process.env.DATABASE_URL || "postgres://dummy:dummy@localhost/dummy";
+const connectionString = process.env.DIRECT_URL || process.env.DATABASE_URL || "postgres://dummy:dummy@localhost/dummy";
 
 const pool = new Pool({
   connectionString,
