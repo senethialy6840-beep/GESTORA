@@ -10,27 +10,27 @@ const pool = new Pool({
 async function seed() {
   try {
     const client = await pool.connect();
-    
+
     // Vérifier si la table User a des données
     const userCount = await client.query('SELECT COUNT(*) FROM "User"');
     console.log('Utilisateurs existants:', userCount.rows[0].count);
-    
+
     if (parseInt(userCount.rows[0].count) > 0) {
       console.log('\n⚠️  Des utilisateurs existent déjà. Affichage de ceux existants:');
       const users = await client.query('SELECT u.email, u.role, u."firstName", u."lastName", c.name as company, c."subscriptionStatus", c.plan FROM "User" u JOIN "Company" c ON u."companyId" = c.id');
       users.rows.forEach(u => {
         console.log(`  - ${u.email} | ${u.firstName} ${u.lastName} | ${u.company} | plan: ${u.plan} | status: ${u.subscriptionStatus}`);
       });
-      
+
       // Mettre à jour le statut de toutes les entreprises en ACTIVE
       const updateResult = await client.query("UPDATE \"Company\" SET \"subscriptionStatus\" = 'ACTIVE', plan = 'ENTERPRISE' WHERE \"subscriptionStatus\" != 'ACTIVE' OR plan = 'FREE'");
       console.log('\n✅ Mise à jour plan ENTERPRISE + status ACTIVE:', updateResult.rowCount, 'entreprises');
-      
+
       // Vérifier après mise à jour
       const after = await client.query('SELECT email, c.name, c."subscriptionStatus", c.plan FROM "User" u JOIN "Company" c ON u."companyId" = c.id');
       console.log('\nAprès mise à jour:');
       after.rows.forEach(u => console.log(`  - ${u.email} | ${u.name} | plan: ${u.plan} | status: ${u.subscriptionStatus}`));
-      
+
       client.release();
       await pool.end();
       return;
@@ -84,7 +84,7 @@ async function seed() {
 
     client.release();
     await pool.end();
-  } catch(err) {
+  } catch (err) {
     console.error('❌ Erreur:', err.message);
     process.exit(1);
   }
