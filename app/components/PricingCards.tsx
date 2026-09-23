@@ -6,7 +6,7 @@ import { Check, CreditCard, Rocket, Building2, Briefcase, Sparkles, Loader2 } fr
 export type PlanId = 'STARTUP' | 'BUSINESS' | 'ENTERPRISE';
 
 interface PricingCardsProps {
-  onSelectPlan: (planId: PlanId, monthlyLink: string, annualLink: string, billingCycle: 'monthly' | 'annually') => void;
+  onSelectPlan: (planId: PlanId, billingCycle: 'monthly' | 'annually', amount: number) => void;
   loadingPlan?: string | null;
 }
 
@@ -21,6 +21,8 @@ export function PricingCards({ onSelectPlan, loadingPlan }: PricingCardsProps) {
       monthlyPrice: '5 900 FCFA',
       annualPrice: '59 000 FCFA',
       period: billingCycle === 'monthly' ? '/mois' : '/an',
+      monthlyPriceNum: 5900,
+      annualPriceNum: 59000,
       description: 'L\'essentiel pour les petits commerces qui se lancent.',
       features: [
         '1 boutique',
@@ -31,8 +33,6 @@ export function PricingCards({ onSelectPlan, loadingPlan }: PricingCardsProps) {
         'Gestion des Clients',
         'Tableau de bord basique'
       ],
-      monthlyLink: process.env.NEXT_PUBLIC_SASPAY_STARTUP_LINK || "https://link.saspay.me/f8sr3zdfo2c",
-      annualLink: process.env.NEXT_PUBLIC_SASPAY_STARTUP_ANNUAL_LINK || "https://link.saspay.me/gqymsozxixo",
       color: 'blue'
     },
     {
@@ -42,6 +42,8 @@ export function PricingCards({ onSelectPlan, loadingPlan }: PricingCardsProps) {
       monthlyPrice: '10 900 FCFA',
       annualPrice: '109 000 FCFA',
       period: billingCycle === 'monthly' ? '/mois' : '/an',
+      monthlyPriceNum: 10900,
+      annualPriceNum: 109000,
       description: 'La solution complète pour les PME en croissance.',
       features: [
         '3 boutiques',
@@ -54,8 +56,6 @@ export function PricingCards({ onSelectPlan, loadingPlan }: PricingCardsProps) {
         'Rapports',
         'Analyses détaillées'
       ],
-      monthlyLink: process.env.NEXT_PUBLIC_SASPAY_BUSINESS_LINK || "https://link.saspay.me/bwxsw0vkv_u",
-      annualLink: process.env.NEXT_PUBLIC_SASPAY_BUSINESS_ANNUAL_LINK || "https://link.saspay.me/jji9l4_m6vq",
       color: 'emerald',
       popular: true
     },
@@ -66,6 +66,8 @@ export function PricingCards({ onSelectPlan, loadingPlan }: PricingCardsProps) {
       monthlyPrice: '25 900 FCFA',
       annualPrice: '259 000 FCFA',
       period: billingCycle === 'monthly' ? '/mois' : '/an',
+      monthlyPriceNum: 25900,
+      annualPriceNum: 259000,
       description: 'Pour les réseaux multi-sites et les besoins avancés.',
       features: [
         'Boutiques illimitées',
@@ -75,8 +77,6 @@ export function PricingCards({ onSelectPlan, loadingPlan }: PricingCardsProps) {
         'Assistant Intelligent (IA)',
         'Support technique dédié 7j/7'
       ],
-      monthlyLink: process.env.NEXT_PUBLIC_SASPAY_ENTERPRISE_LINK || "https://link.saspay.me/36vjlj7csvi",
-      annualLink: process.env.NEXT_PUBLIC_SASPAY_ENTERPRISE_ANNUAL_LINK || "https://link.saspay.me/lbss48r_f2q",
       color: 'purple'
     }
   ];
@@ -169,7 +169,7 @@ export function PricingCards({ onSelectPlan, loadingPlan }: PricingCardsProps) {
               </div>
 
               <button
-                onClick={() => onSelectPlan(plan.id, plan.monthlyLink, plan.annualLink, billingCycle)}
+                onClick={() => onSelectPlan(plan.id, billingCycle, billingCycle === 'monthly' ? plan.monthlyPriceNum : plan.annualPriceNum)}
                 disabled={loadingPlan === plan.id}
                 className={`w-full py-3.5 rounded-xl font-bold text-white transition-all shadow-sm flex items-center justify-center space-x-2 
                   ${plan.popular 
