@@ -4,7 +4,7 @@ import { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Box, LayoutDashboard, LineChart, ShoppingCart, Eye, EyeOff, Loader2 } from 'lucide-react';
-import { registerUser } from '../../actions/authActions';
+import { registerUser } from '../actions/authActions';
 import { signIn } from 'next-auth/react';
 
 function RegisterForm() {
