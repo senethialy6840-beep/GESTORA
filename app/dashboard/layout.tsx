@@ -103,6 +103,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     await signOut({ callbackUrl: '/' });
   };
 
+  // La page d'abonnement est autonome : elle ne doit pas afficher le shell du dashboard.
+  if (pathname === '/dashboard/subscription') {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-[#0A1226] font-sans text-gray-700 dark:text-slate-300 selection:bg-[#2563EB]/30 transition-colors duration-300 p-6">
+        {children}
+      </div>
+    );
+  }
+
   const isActive = (path: string) => pathname === path;
 
   const getLinkClass = (path: string) => {
