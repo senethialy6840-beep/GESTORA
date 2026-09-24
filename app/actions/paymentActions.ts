@@ -25,14 +25,14 @@ export async function generateSasPayLink(data: SasPayPaymentRequest) {
     const billingCycle = data.billingCycle || "monthly";
     const linkByPlan: Record<string, string | undefined> = billingCycle === "annually"
       ? {
-          STARTUP: process.env.NEXT_PUBLIC_SASPAY_STARTUP_ANNUAL_LINK,
-          BUSINESS: process.env.NEXT_PUBLIC_SASPAY_BUSINESS_ANNUAL_LINK,
-          ENTERPRISE: process.env.NEXT_PUBLIC_SASPAY_ENTERPRISE_ANNUAL_LINK,
+          STARTUP: process.env.NEXT_PUBLIC_SASPAY_STARTUP_ANNUAL_LINK || "https://link.saspay.me/gqymsozxixo",
+          BUSINESS: process.env.NEXT_PUBLIC_SASPAY_BUSINESS_ANNUAL_LINK || "https://link.saspay.me/jji9l4_m6vq",
+          ENTERPRISE: process.env.NEXT_PUBLIC_SASPAY_ENTERPRISE_ANNUAL_LINK || "https://link.saspay.me/lbss48r_f2q",
         }
       : {
-          STARTUP: process.env.NEXT_PUBLIC_SASPAY_STARTUP_LINK,
-          BUSINESS: process.env.NEXT_PUBLIC_SASPAY_BUSINESS_LINK,
-          ENTERPRISE: process.env.NEXT_PUBLIC_SASPAY_ENTERPRISE_LINK,
+          STARTUP: process.env.NEXT_PUBLIC_SASPAY_STARTUP_LINK || "https://link.saspay.me/f8sr3zdfo2c",
+          BUSINESS: process.env.NEXT_PUBLIC_SASPAY_BUSINESS_LINK || "https://link.saspay.me/bwxsw0vkv_u",
+          ENTERPRISE: process.env.NEXT_PUBLIC_SASPAY_ENTERPRISE_LINK || "https://link.saspay.me/36vjlj7csvi",
         };
 
     const configuredLink = plan ? linkByPlan[plan] : undefined;
