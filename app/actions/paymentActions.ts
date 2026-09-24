@@ -15,60 +15,39 @@ interface SasPayPaymentRequest {
 
 export async function generateSasPayLink(data: SasPayPaymentRequest) {
   try {
-    const SASPAY_SECRET_KEY = process.env.SASPAY_SECRET_KEY;
-    const APP_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || "http://localhost:3000";
-
-    if (!SASPAY_SECRET_KEY) {
-      throw new Error("La clé secrète SasPay n'est pas configurée.");
-    }
-
-    // Prepare payload based on typical SasPay requirements
-    // Attach the current user's companyId as client_reference so the webhook
-    // can identify and activate the company automatically after payment.
     const session = await auth();
     const companyId = session?.user?.companyId as string | undefined;
-
-    const payload: any = {
-      amount: data.amount,
-      currency: data.currency || "XOF",
-      description: data.description,
-      order_id: data.reference,
-      customer_email: data.customer_email || "contact@gestora.app",
-      return_url: `${APP_URL}/dashboard/subscription?payment=return`,
-      cancel_url: `${APP_URL}/dashboard/subscription?payment=cancelled`,
-      webhook_url: `${APP_URL}/api/webhooks/saspay`,
-    };
-
-    if (companyId) {
-      payload.client_reference = companyId;
-      payload.metadata = {
-        companyId,
-      };
-      if (data.plan) payload.metadata.plan = data.plan;
-      if (data.billingCycle) payload.metadata.billingCycle = data.billingCycle;
+    if (!companyId) {
+      return { success: false, error: "Votre entreprise n'est pas identifiée. Veuillez vous reconnecter." };
     }
 
-    const response = await fetch("https://api.saspay.me/api/v1/payments", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${SASPAY_SECRET_KEY}`,
-      },
-      body: JSON.stringify(payload),
-    });
+    const plan = data.plan?.toUpperCase();
+    const billingCycle = data.billingCycle || "monthly";
+    const linkByPlan: Record<string, string | undefined> = billingCycle === "annually"
+      ? {
+          STARTUP: process.env.NEXT_PUBLIC_SASPAY_STARTUP_ANNUAL_LINK,
+          BUSINESS: process.env.NEXT_PUBLIC_SASPAY_BUSINESS_ANNUAL_LINK,
+          ENTERPRISE: process.env.NEXT_PUBLIC_SASPAY_ENTERPRISE_ANNUAL_LINK,
+        }
+      : {
+          STARTUP: process.env.NEXT_PUBLIC_SASPAY_STARTUP_LINK,
+          BUSINESS: process.env.NEXT_PUBLIC_SASPAY_BUSINESS_LINK,
+          ENTERPRISE: process.env.NEXT_PUBLIC_SASPAY_ENTERPRISE_LINK,
+        };
 
-    const result = await response.json();
-
-    if (!response.ok) {
-      console.error("SasPay API Error:", result);
-      throw new Error(result.message || "Erreur lors de la génération du lien de paiement");
+    const configuredLink = plan ? linkByPlan[plan] : undefined;
+    if (!plan || !configuredLink) {
+      return { success: false, error: "Le lien SasPay de ce forfait n'est pas configuré." };
     }
 
-    // Return the payment URL (assuming 'payment_url' or 'url' in response)
-    return { 
-      success: true, 
-      paymentUrl: result.data?.payment_url || result.payment_url || result.url 
-    };
+    const paymentUrl = new URL(configuredLink);
+    paymentUrl.searchParams.set("client_reference", companyId);
+    paymentUrl.searchParams.set("metadata[companyId]", companyId);
+    paymentUrl.searchParams.set("metadata[plan]", plan);
+    paymentUrl.searchParams.set("metadata[billingCycle]", billingCycle);
+    paymentUrl.searchParams.set("metadata[reference]", data.reference);
+
+    return { success: true, paymentUrl: paymentUrl.toString() };
   } catch (error: any) {
     console.error("Payment generation error:", error);
     return { success: false, error: error.message || "Une erreur est survenue" };
