@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { MobileMenu } from './components/MobileMenu';
 import { ThemeToggle } from './components/ThemeToggle';
 import { PricingSection } from './components/PricingSection';
+import ContactForm from './components/ContactForm';
 import { CheckCircle2, ArrowRight, LayoutDashboard, Calculator, ShoppingCart, Package, Users, BarChart3, ChevronDown, Mail, Phone, MapPin, Box, FileText, Truck, Settings, Users2, LineChart, DollarSign, Clock, MessageCircle } from 'lucide-react';
 
 export default function LandingPage() {
@@ -750,42 +751,7 @@ export default function LandingPage() {
 
             {/* Right: Form */}
             <div className="bg-[#FAFBFF] dark:bg-[#162032] p-8 md:p-10 rounded-[2rem] border border-gray-100 dark:border-slate-700/50 shadow-sm">
-              <form className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-bold text-gray-900 dark:text-white mb-2">Prénom *</label>
-                    <input type="text" className="w-full px-4 py-3 bg-white dark:bg-[#0A1226] text-gray-900 dark:text-white border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#2563EB] outline-none transition-all" placeholder="Votre prénom" required />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-gray-900 dark:text-white mb-2">Nom *</label>
-                    <input type="text" className="w-full px-4 py-3 bg-white dark:bg-[#0A1226] text-gray-900 dark:text-white border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#2563EB] outline-none transition-all" placeholder="Votre nom" required />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-bold text-gray-900 dark:text-white mb-2">Téléphone *</label>
-                    <input type="tel" className="w-full px-4 py-3 bg-white dark:bg-[#0A1226] text-gray-900 dark:text-white border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#2563EB] outline-none transition-all" placeholder="Votre numéro de téléphone" required />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-gray-900 dark:text-white mb-2">Email *</label>
-                    <input type="email" className="w-full px-4 py-3 bg-white dark:bg-[#0A1226] text-gray-900 dark:text-white border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#2563EB] outline-none transition-all" placeholder="Adresse e-mail" required />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-gray-900 dark:text-white mb-2">Sujet de la demande *</label>
-                  <select className="w-full px-4 py-3 bg-white dark:bg-[#0A1226] text-gray-900 dark:text-white border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#2563EB] outline-none transition-all appearance-none" required>
-                    <option>Demande générale</option>
-                    <option>Autre demande</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-gray-900 dark:text-white mb-2">Message</label>
-                  <textarea rows={6} className="w-full px-4 py-3 bg-white dark:bg-[#0A1226] text-gray-900 dark:text-white border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#2563EB] outline-none transition-all resize-none" placeholder="Votre message ici..." required></textarea>
-                </div>
-                <button type="submit" className="w-full py-4 bg-[#2563EB] hover:bg-blue-600 text-white font-bold rounded-xl transition-all shadow-md hover:shadow-lg hover:-translate-y-1">
-                  Envoyer le message
-                </button>
-              </form>
+              <ContactForm variant="landing" />
             </div>
           </div>
         </div>

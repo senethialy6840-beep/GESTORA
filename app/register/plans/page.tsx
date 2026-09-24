@@ -40,7 +40,7 @@ function PlansContent() {
     <div className="min-h-screen bg-white dark:bg-[#0A1226] flex flex-col py-12 px-4 transition-colors duration-300">
       <Link href="/dashboard" className="absolute top-8 left-8 flex items-center text-sm font-medium text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition-colors">
         <ArrowLeft className="w-4 h-4 mr-2" />
-        Aller au tableau de bord (sans forfait)
+        
       </Link>
       <div className="mt-8">
         <PricingCards onSelectPlan={handleSelectPlan} loadingPlan={loadingPlan} />
