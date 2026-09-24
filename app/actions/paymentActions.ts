@@ -30,9 +30,9 @@ export async function generateSasPayLink(data: SasPayPaymentRequest) {
           ENTERPRISE: process.env.NEXT_PUBLIC_SASPAY_ENTERPRISE_ANNUAL_LINK || "https://link.saspay.me/lbss48r_f2q",
         }
       : {
-          STARTUP: "https://link.saspay.me/dzhdwsevbca",
-          BUSINESS: "https://link.saspay.me/x9qdadsktnm",
-          ENTERPRISE: "https://link.saspay.me/dveyilduqy0",
+          STARTUP: "https://link.saspay.me/f8sr3zdfo2c",
+          BUSINESS: "https://link.saspay.me/bwxsw0vkv_u",
+          ENTERPRISE: "https://link.saspay.me/36vjlj7csvi",
         };
 
     const configuredLink = plan ? linkByPlan[plan] : undefined;
