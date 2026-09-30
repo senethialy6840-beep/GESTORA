@@ -93,7 +93,7 @@ export default function DashboardPage() {
 
   const userRole = (session?.user as any)?.role || 'CASHIER';
   const isOwner = session?.user?.email === 'gestorame112@gmail.com';
-  const canViewStats = isOwner || userRole === 'SUPER_ADMIN' || userRole === 'COMMERCIAL';
+  const canViewStats = isOwner || userRole === 'SUPER_ADMIN' || userRole === 'ADMIN' || userRole === 'COMMERCIAL';
 
   return (
     <div className="w-full max-w-7xl mx-auto space-y-6">
