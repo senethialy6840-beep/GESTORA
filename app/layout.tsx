@@ -38,6 +38,8 @@ export const metadata: Metadata = {
 
 import { ThemeProvider } from "./components/ThemeProvider";
 import NextAuthSessionProvider from "./components/SessionProvider";
+import ReferralTracker from "./components/ReferralTracker";
+import { Suspense } from "react";
 
 export default function RootLayout({
   children,
@@ -56,6 +58,9 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <NextAuthSessionProvider>
+            <Suspense fallback={null}>
+              <ReferralTracker />
+            </Suspense>
             {children}
           </NextAuthSessionProvider>
         </ThemeProvider>

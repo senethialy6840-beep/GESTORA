@@ -29,7 +29,8 @@ function RegisterForm() {
     setIsLoading(true);
 
     try {
-      const res = await registerUser({ prenom, nom, entreprise, email, motDePasse });
+      const referralCode = localStorage.getItem('gestora_ref') || undefined;
+      const res = await registerUser({ prenom, nom, entreprise, email, motDePasse, referralCode });
       
       if (res.error || !res.companyId) {
         setErrorMsg(res.error || "Une erreur est survenue.");

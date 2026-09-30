@@ -43,6 +43,8 @@ model Company {
   employees    Employee[]
   transactions AccountingTransaction[]
   stockMovements StockMovement[]
+  referrals      Referral[] @relation("ReferredCompany")
+  subscriptionPayments SubscriptionPayment[]
 }
 
 model User {
@@ -59,6 +61,7 @@ model User {
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  commercial Commercial?
 }
 
 model PasswordResetToken {
@@ -251,4 +254,115 @@ model AccountingTransaction {
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+// -----------------------------------------------------------------------------
+// AFFILIATION COMMERCIALE & COMMISSIONS
+// -----------------------------------------------------------------------------
+// A platform customer is represented by Company: one Company is created when an
+// account registers.  This deliberately does not reuse Customer, which is the
+// CRM customer belonging to an individual Company's own store.
+
+model Commercial {
+  id              String   @id @default(uuid())
+  userId          String   @unique @map("user_id")
+  nom             String
+  prenom          String
+  email           String   @unique
+  telephone       String?
+  codeAffiliation String   @unique @map("code_affiliation")
+  lienAffiliation String   @map("lien_affiliation")
+  tauxCommission  Float    @default(20) @map("taux_commission")
+  statut          String   @default("ACTIVE")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  referrals   Referral[]
+  commissions Commission[]
+  payouts     CommissionPayout[]
+
+  @@map("commercials")
+}
+
+model Referral {
+  id              String   @id @default(uuid())
+  commercialId    String   @map("commercial_id")
+  customerId      String   @unique @map("customer_id")
+  codeAffiliation String   @map("code_affiliation")
+  dateAttribution DateTime @default(now()) @map("date_attribution")
+  source          String   @default("register")
+  statut          String   @default("PENDING")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  commercial Commercial @relation(fields: [commercialId], references: [id], onDelete: Restrict)
+  customer   Company    @relation("ReferredCompany", fields: [customerId], references: [id], onDelete: Restrict)
+  commissions Commission[]
+
+  @@index([commercialId])
+  @@map("referrals")
+}
+
+model SubscriptionPayment {
+  id                String   @id @default(uuid())
+  companyId         String   @map("company_id")
+  provider          String   @default("SASPAY")
+  providerPaymentId String?  @unique @map("provider_payment_id")
+  reference         String   @unique
+  plan              String
+  billingCycle      String   @default("monthly") @map("billing_cycle")
+  amount            Int
+  currency          String   @default("XOF")
+  statut            String   @default("CONFIRMED")
+  confirmedAt       DateTime? @map("confirmed_at")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  company    Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  commission Commission?
+
+  @@index([companyId])
+  @@map("subscription_payments")
+}
+
+model Commission {
+  id                    String   @id @default(uuid())
+  commercialId          String   @map("commercial_id")
+  referralId            String   @map("referral_id")
+  subscriptionPaymentId String   @unique @map("subscription_payment_id")
+  montantPaye           Int      @map("montant_paye")
+  tauxCommission        Float    @map("taux_commission")
+  montantCommission     Int      @map("montant_commission")
+  plan                  String
+  statut                String   @default("PENDING")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+  payoutId              String?  @map("payout_id")
+
+  commercial          Commercial          @relation(fields: [commercialId], references: [id], onDelete: Restrict)
+  referral            Referral            @relation(fields: [referralId], references: [id], onDelete: Restrict)
+  subscriptionPayment SubscriptionPayment @relation(fields: [subscriptionPaymentId], references: [id], onDelete: Restrict)
+  payout              CommissionPayout?   @relation(fields: [payoutId], references: [id], onDelete: SetNull)
+
+  @@index([commercialId, statut])
+  @@index([referralId])
+  @@map("commissions")
+}
+
+model CommissionPayout {
+  id         String   @id @default(uuid())
+  commercialId String @map("commercial_id")
+  montant    Int
+  methode    String
+  reference  String?
+  paidAt     DateTime @default(now()) @map("paid_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  commercial Commercial   @relation(fields: [commercialId], references: [id], onDelete: Restrict)
+  commissions Commission[]
+
+  @@index([commercialId])
+  @@map("commission_payouts")
 }

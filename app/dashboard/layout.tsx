@@ -380,13 +380,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </Link>
               </li>
               {isPlatformOwner && (
-                <li>
-                  <Link href="/dashboard/super-admin" className={getLinkClass('/dashboard/super-admin')} title="Super Admin">
-                    {isActive('/dashboard/super-admin') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-purple-500 rounded-r-full"></div>}
-                    <Shield className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/super-admin') ? 'text-purple-400' : 'text-purple-400/70'}`} />
-                    {!isSidebarCollapsed && <span className="truncate text-purple-400">Super Admin</span>}
-                  </Link>
-                </li>
+                <>
+                  <li>
+                    <Link href="/dashboard/super-admin" className={getLinkClass('/dashboard/super-admin')} title="Super Admin">
+                      {isActive('/dashboard/super-admin') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-purple-500 rounded-r-full"></div>}
+                      <Shield className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/super-admin') ? 'text-purple-400' : 'text-purple-400/70'}`} />
+                      {!isSidebarCollapsed && <span className="truncate text-purple-400">Super Admin</span>}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/dashboard/super-admin/commercials" className={getLinkClass('/dashboard/super-admin/commercials')} title="Commerciaux">
+                      {isActive('/dashboard/super-admin/commercials') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-purple-500 rounded-r-full"></div>}
+                      <Users className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/super-admin/commercials') ? 'text-purple-400' : 'text-purple-400/70'}`} />
+                      {!isSidebarCollapsed && <span className="truncate text-purple-400">Commerciaux</span>}
+                    </Link>
+                  </li>
+                </>
               )}
             </ul>
           </div>

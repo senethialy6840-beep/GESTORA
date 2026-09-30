@@ -64,3 +64,102 @@ export async function deleteCompany(companyId: string) {
   revalidatePath('/dashboard/super-admin');
   return { success: true };
 }
+
+import bcrypt from "bcryptjs";
+
+export async function getAllCommercials() {
+  const session = await auth();
+  if (session?.user?.email !== PLATFORM_OWNER_EMAIL) {
+    return { success: false, error: 'Accès interdit.' };
+  }
+
+  const commercials = await prisma.commercial.findMany({
+    include: {
+      referrals: {
+        include: {
+          commissions: true
+        }
+      },
+      commissions: true,
+      payouts: true,
+    },
+    orderBy: { createdAt: 'desc' }
+  });
+
+  return { success: true, data: commercials };
+}
+
+export async function createCommercial(data: { prenom: string, nom: string, email: string, telephone: string, codeAffiliation: string }) {
+  const session = await auth();
+  if (session?.user?.email !== PLATFORM_OWNER_EMAIL) {
+    return { success: false, error: 'Accès interdit.' };
+  }
+
+  const { prenom, nom, email, telephone, codeAffiliation } = data;
+
+  const existingUser = await prisma.user.findUnique({ where: { email } });
+  if (existingUser) return { success: false, error: 'Cet email est déjà utilisé.' };
+
+  const existingCode = await prisma.commercial.findUnique({ where: { codeAffiliation } });
+  if (existingCode) return { success: false, error: 'Ce code d\'affiliation est déjà utilisé.' };
+
+  const hashedPassword = await bcrypt.hash("password123", 10);
+
+  const newCompany = await prisma.company.create({
+    data: { name: `Commercial - ${prenom} ${nom}`, plan: "FREE" }
+  });
+
+  const newUser = await prisma.user.create({
+    data: {
+      firstName: prenom,
+      lastName: nom,
+      email,
+      password: hashedPassword,
+      companyId: newCompany.id,
+      role: "COMMERCIAL"
+    }
+  });
+
+  const commercial = await prisma.commercial.create({
+    data: {
+      userId: newUser.id,
+      prenom,
+      nom,
+      email,
+      telephone,
+      codeAffiliation,
+      lienAffiliation: `https://gestora.shop/register?ref=${codeAffiliation}`,
+      tauxCommission: 20
+    }
+  });
+
+  revalidatePath('/dashboard/super-admin/commercials');
+  return { success: true, data: commercial };
+}
+
+export async function payCommission(commercialId: string, montant: number, methode: string, reference: string) {
+  const session = await auth();
+  if (session?.user?.email !== PLATFORM_OWNER_EMAIL) {
+    return { success: false, error: 'Accès interdit.' };
+  }
+
+  // Créer le paiement de commission
+  const payout = await prisma.commissionPayout.create({
+    data: {
+      commercialId,
+      montant,
+      methode,
+      reference
+    }
+  });
+
+  // Mettre à jour les commissions en attente
+  await prisma.commission.updateMany({
+    where: { commercialId, statut: 'PENDING' },
+    data: { statut: 'PAID', payoutId: payout.id }
+  });
+
+  revalidatePath('/dashboard/super-admin/commercials');
+  return { success: true, data: payout };
+}
+

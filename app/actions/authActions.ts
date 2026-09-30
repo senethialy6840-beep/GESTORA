@@ -120,13 +120,13 @@ export async function resetPassword(token: string, newPassword: string) {
   }
 }
 
-export async function registerUser(data: { prenom: string, nom: string, entreprise: string, email: string, motDePasse: string }) {
+export async function registerUser(data: { prenom: string, nom: string, entreprise: string, email: string, motDePasse: string, referralCode?: string }) {
   try {
     const validated = RegisterUserSchema.safeParse(data);
     if (!validated.success) {
       return { success: false, error: validated.error.issues[0].message };
     }
-    const { prenom, nom, entreprise, email, motDePasse } = validated.data;
+    const { prenom, nom, entreprise, email, motDePasse, referralCode } = validated.data;
     const existingUser = await prisma.user.findUnique({
       where: { email }
     });
@@ -153,6 +153,21 @@ export async function registerUser(data: { prenom: string, nom: string, entrepri
         role: "ADMIN"
       }
     });
+
+    if (referralCode) {
+      const commercial = await prisma.commercial.findUnique({
+        where: { codeAffiliation: referralCode }
+      });
+      if (commercial) {
+        await prisma.referral.create({
+          data: {
+            commercialId: commercial.id,
+            customerId: newCompany.id,
+            codeAffiliation: referralCode,
+          }
+        });
+      }
+    }
 
     return { success: true, companyId: newCompany.id };
   } catch (error: any) {
