@@ -14,7 +14,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const clients = await prisma.client.findMany({
+    const clients = await prisma.customer.findMany({
       where: { companyId },
       orderBy: { name: 'asc' }
     });

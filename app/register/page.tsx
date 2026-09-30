@@ -4,11 +4,12 @@ import { useState, Suspense, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Box, LayoutDashboard, LineChart, ShoppingCart, Eye, EyeOff, Loader2 } from 'lucide-react';
-import { registerUser } from '../actions/authActions';
+import { registerUser, getCommercialByRef } from '../actions/authActions';
 import { signIn } from 'next-auth/react';
 
 function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
+  const [commercialName, setCommercialName] = useState<string | null>(null);
   const [prenom, setPrenom] = useState('');
   const [nom, setNom] = useState('');
   const [entreprise, setEntreprise] = useState('');
@@ -26,7 +27,15 @@ function RegisterForm() {
   const refParam = searchParams.get('ref');
 
   useEffect(() => {
-    if (refParam) localStorage.setItem('gestora_ref', refParam);
+    const ref = refParam || localStorage.getItem('gestora_ref');
+    if (ref) {
+      if (refParam) localStorage.setItem('gestora_ref', refParam);
+      getCommercialByRef(ref).then(res => {
+        if (res.success && res.name) {
+          setCommercialName(res.name);
+        }
+      });
+    }
   }, [refParam]);
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -77,6 +86,13 @@ function RegisterForm() {
 
           <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-2 tracking-tight">Créer un compte 🚀</h1>
           <p className="text-gray-500 dark:text-slate-400 mb-6 font-medium">Rejoignez des milliers de commerçants qui utilisent GESTORA.</p>
+
+          {commercialName && (
+            <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20 rounded-xl text-sm font-medium flex items-center">
+              <span className="mr-2">🤝</span>
+              Vous avez été invité par <strong className="ml-1">{commercialName}</strong>
+            </div>
+          )}
 
           {errorMsg && (
             <div className="mb-6 p-4 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/20 rounded-xl text-sm font-medium">

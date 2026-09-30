@@ -92,7 +92,7 @@ export async function GET(request: Request) {
       .slice(0, 5);
       
     // Clients count
-    const clientsCount = await prisma.client.count({
+    const clientsCount = await prisma.customer.count({
       where: { companyId }
     });
     

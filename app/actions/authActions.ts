@@ -176,3 +176,16 @@ export async function registerUser(data: { prenom: string, nom: string, entrepri
   }
 }
 
+export async function getCommercialByRef(ref: string) {
+  try {
+    const commercial = await prisma.commercial.findUnique({
+      where: { codeAffiliation: ref }
+    });
+    if (commercial) {
+      return { success: true, name: `${commercial.prenom} ${commercial.nom}` };
+    }
+    return { success: false };
+  } catch (error) {
+    return { success: false };
+  }
+}

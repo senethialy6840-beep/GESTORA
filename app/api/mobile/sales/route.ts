@@ -25,7 +25,7 @@ export async function POST(request: Request) {
 
     // Calculer le total et préparer les items
     let totalAmount = 0;
-    const saleItemsData = [];
+    const saleItemsData: { description: string; quantity: number; price: number }[] = [];
     
     // On fait tout dans une transaction pour éviter les incohérences de stock
     const result = await prisma.$transaction(async (tx) => {
@@ -40,11 +40,9 @@ export async function POST(request: Request) {
         totalAmount += lineTotal;
         
         saleItemsData.push({
-          productId: product.id,
           description: product.name,
           quantity: item.quantity,
-          unitPrice: item.price,
-          totalPrice: lineTotal
+          price: item.price
         });
 
         // Décrémenter le stock
@@ -58,12 +56,10 @@ export async function POST(request: Request) {
       const sale = await tx.sale.create({
         data: {
           companyId,
-          userId,
-          clientId: clientId || null,
+          customerId: clientId || null,
+          invoiceNo: `INV-${Date.now()}`,
           totalAmount,
           status: 'COMPLETED',
-          paymentMethod: paymentMethod || 'CASH',
-          amountPaid: amountPaid || totalAmount,
           items: {
             create: saleItemsData
           }
@@ -71,12 +67,14 @@ export async function POST(request: Request) {
       });
 
       // Enregistrer le paiement
-      await tx.payment.create({
+      await tx.accountingTransaction.create({
         data: {
+          date: new Date(),
+          description: `Paiement Vente ${sale.invoiceNo}`,
+          type: 'INCOME',
+          category: 'SALES',
           amount: amountPaid || totalAmount,
-          method: paymentMethod || 'CASH',
           status: 'COMPLETED',
-          saleId: sale.id,
           companyId
         }
       });

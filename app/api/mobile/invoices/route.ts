@@ -14,10 +14,10 @@ export async function GET(request: Request) {
   }
 
   try {
-    const invoices = await prisma.invoice.findMany({
+    const invoices = await prisma.sale.findMany({
       where: { companyId },
       include: {
-        client: true,
+        customer: true,
       },
       orderBy: { createdAt: 'desc' },
       take: 50

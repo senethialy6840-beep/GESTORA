@@ -18,7 +18,7 @@ export async function GET(request: Request) {
       where: { companyId },
       include: {
         items: true,
-        client: true,
+        customer: true,
       },
       orderBy: { createdAt: 'desc' },
       take: 50 // Limit to last 50 for mobile performance
