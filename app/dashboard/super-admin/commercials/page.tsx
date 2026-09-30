@@ -198,7 +198,7 @@ export default function CommercialsPage() {
     loadCommercials();
   }, [session, status, loadCommercials, router]);
 
-  if (status === 'loading' || isLoading) {
+  if (status === 'loading') {
     return (
       <div className="w-full max-w-7xl mx-auto py-20 flex justify-center items-center">
         <RefreshCw className="w-8 h-8 text-blue-500 animate-spin" />
@@ -241,7 +241,7 @@ export default function CommercialsPage() {
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-slate-700/50">
               {commercials.map(commercial => {
-                const clientsApportes = commercial.referrals.length;
+                const clientsApportes = commercial.referrals.filter((r: any) => r.statut === "CONVERTED").length;
                 const ventes = commercial.referrals.filter((r: any) => r.statut === "CONVERTED").length;
                 const commissionTotale = commercial.commissions.reduce((acc: number, curr: any) => acc + curr.montantCommission, 0);
                 const commissionEnAttente = commercial.commissions.filter((c: any) => c.statut === "PENDING").reduce((acc: number, curr: any) => acc + curr.montantCommission, 0);
@@ -280,34 +280,50 @@ export default function CommercialsPage() {
                       {new Intl.NumberFormat("fr-FR", { style: "currency", currency: "XOF" }).format(commissionEnAttente)}
                     </td>
                     <td className="px-5 py-4 text-center">
-                      <div className="flex justify-center items-center gap-2">
-                        <button
-                          onClick={() => setPayCommercial(commercial)}
-                          disabled={commissionEnAttente <= 0}
-                          className="px-3 py-1.5 bg-emerald-600 text-white text-xs font-bold rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors"
-                        >
-                          Payer
-                        </button>
-                        <button
-                          onClick={async () => {
-                            if (confirm('Voulez-vous vraiment supprimer ce commercial ?')) {
-                              await deleteCommercial(commercial.id);
-                              loadCommercials();
-                            }
-                          }}
-                          className="p-1.5 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
-                          title="Supprimer le commercial"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                      <div className="flex flex-col items-center gap-2">
+                        {commissionEnAttente > 0 ? (
+                          <span className="px-2 py-1 bg-orange-100 text-orange-700 text-[10px] font-bold rounded uppercase tracking-wider">Pas encore payé</span>
+                        ) : commissionTotale > 0 ? (
+                          <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded uppercase tracking-wider">Payé</span>
+                        ) : (
+                          <span className="px-2 py-1 bg-gray-100 text-gray-600 text-[10px] font-bold rounded uppercase tracking-wider">Aucune commission</span>
+                        )}
+                        <div className="flex justify-center items-center gap-2">
+                          <button
+                            onClick={() => setPayCommercial(commercial)}
+                            disabled={commissionEnAttente <= 0}
+                            className="px-3 py-1.5 bg-emerald-600 text-white text-xs font-bold rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+                          >
+                            Payer
+                          </button>
+                          <button
+                            onClick={async () => {
+                              if (confirm('Voulez-vous vraiment supprimer ce commercial ?')) {
+                                await deleteCommercial(commercial.id);
+                                loadCommercials();
+                              }
+                            }}
+                            className="p-1.5 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
+                            title="Supprimer le commercial"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     </td>
                   </tr>
                 );
               })}
-              {commercials.length === 0 && (
+              {!isLoading && commercials.length === 0 && (
                 <tr>
                   <td colSpan={7} className="py-16 text-center text-gray-500 dark:text-slate-400">Aucun commercial trouvé.</td>
+                </tr>
+              )}
+              {isLoading && (
+                <tr>
+                  <td colSpan={7} className="py-16 text-center text-gray-500 dark:text-slate-400">
+                    <RefreshCw className="w-6 h-6 text-blue-500 animate-spin mx-auto" />
+                  </td>
                 </tr>
               )}
             </tbody>
