@@ -251,7 +251,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <aside className={`bg-[#0A1226] text-slate-300 border-r border-slate-800/60 flex flex-col shrink-0 h-screen overflow-hidden transition-all duration-300 z-50 fixed md:sticky top-0 left-0 md:translate-x-0 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} ${isSidebarCollapsed ? 'w-20' : 'w-64'}`}>
         {/* LOGO */}
         <div className={`h-16 flex items-center border-b border-slate-800/60 shrink-0 sticky top-0 z-20 bg-[#0A1226] ${isSidebarCollapsed ? 'justify-center px-0' : 'px-6'}`}>
-          <Link href="/" className="flex items-center space-x-2">
+          <Link href="/dashboard" className="flex items-center space-x-2">
             <div className="w-8 h-8 shrink-0 bg-gradient-to-tr from-blue-600 to-cyan-400 rounded-lg flex items-center justify-center text-white font-black text-xl">
               G
             </div>
