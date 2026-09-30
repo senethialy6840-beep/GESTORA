@@ -104,3 +104,45 @@ export async function deleteStockMovement(id: string) {
     return { success: false, error: error.message };
   }
 }
+
+export async function createWarehouse(data: { name: string, location?: string }) {
+  try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    
+    const companyId = session.user.companyId as string;
+    await ensureCompanyExists(companyId);
+    
+    // Vérification des limites selon le forfait
+    const company = await prisma.company.findUnique({
+      where: { id: companyId },
+      select: { plan: true, _count: { select: { warehouses: true } } }
+    });
+    
+    if (company) {
+      const plan = company.plan || 'FREE';
+      const warehouseCount = company._count.warehouses;
+      
+      let maxWarehouses = 1;
+      if (plan === 'BUSINESS') maxWarehouses = 3;
+      else if (plan === 'ENTERPRISE') maxWarehouses = 9999;
+      
+      if (warehouseCount >= maxWarehouses) {
+        return { success: false, error: `Limite atteinte. Votre forfait ${plan} permet un maximum de ${maxWarehouses} boutique(s).` };
+      }
+    }
+    
+    const warehouse = await prisma.warehouse.create({
+      data: {
+        name: data.name,
+        location: data.location,
+        companyId
+      }
+    });
+    
+    revalidatePath("/dashboard/settings");
+    return { success: true, data: warehouse };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}

@@ -31,6 +31,26 @@ export async function createEmployee(data: Omit<Employee, "id" | "createdAt" | "
     data.companyId = session.user.companyId as string;
     await ensureCompanyExists(data.companyId);
     
+    // Vérification des limites selon le forfait
+    const company = await prisma.company.findUnique({
+      where: { id: data.companyId },
+      select: { plan: true, _count: { select: { employees: true } } }
+    });
+    
+    if (company) {
+      const plan = company.plan || 'FREE';
+      const employeeCount = company._count.employees;
+      
+      let maxEmployees = 0;
+      if (plan === 'BUSINESS') maxEmployees = 5;
+      else if (plan === 'ENTERPRISE') maxEmployees = 9999;
+      else maxEmployees = 0; // STARTUP ou FREE n'ont droit qu'à l'admin (0 employé additionnel)
+      
+      if (employeeCount >= maxEmployees) {
+        return { success: false, error: `Limite atteinte. Votre forfait ${plan} permet un maximum de ${maxEmployees} utilisateur(s) supplémentaire(s).` };
+      }
+    }
+    
     const validated = EmployeeSchema.safeParse(data);
     if (!validated.success) {
       return { success: false, error: "Données de l'employé invalides." };
