@@ -3,11 +3,17 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 
-export async function analyzeQueryAction(query: string, _companyId: string, userName: string) {
+export async function analyzeQueryAction(query: string, companyIdParam?: string, userNameParam?: string) {
   try {
-    const session = await auth();
-    if (!session?.user?.companyId) return "Non autorisé";
-    const companyId = session.user.companyId as string;
+    let companyId = companyIdParam;
+    let userName = userNameParam || 'Utilisateur';
+
+    if (!companyId) {
+      const session = await auth();
+      if (!session?.user?.companyId) return "Non autorisé";
+      companyId = session.user.companyId as string;
+      userName = session.user.name || userName;
+    }
     
     const q = query.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     const fmt = (num: number) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', maximumFractionDigits: 0 }).format(num);
