@@ -1,13 +1,38 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { PricingCards, PlanId } from '@/app/components/PricingCards';
 import { generateSasPayLink } from '@/app/actions/paymentActions';
 
 export default function SubscriptionPage() {
-  const { data: session } = useSession();
+  const { data: session, update } = useSession();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    let initialStatus = (session?.user as any)?.subscriptionStatus;
+
+    const checkStatus = async () => {
+      const newSession = await update();
+      const newStatus = (newSession?.user as any)?.subscriptionStatus;
+      
+      if (initialStatus !== 'ACTIVE' && newStatus === 'ACTIVE') {
+        router.push('/dashboard');
+      }
+    };
+    
+    // Si l'utilisateur est en attente ou expiré, on vérifie régulièrement
+    if (session?.user && initialStatus !== 'ACTIVE') {
+      interval = setInterval(checkStatus, 5000);
+    }
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [session, update, router]);
 
   const handleSubscribe = async (planId: PlanId, billingCycle: 'monthly' | 'annually', amount: number) => {
     setLoadingPlan(planId);

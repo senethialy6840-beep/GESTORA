@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Box, LayoutDashboard, LineChart, ShoppingCart, Eye, EyeOff, Loader2 } from 'lucide-react';
@@ -23,13 +23,19 @@ function RegisterForm() {
   const plan = searchParams.get('plan');
   const billingCycle = searchParams.get('billingCycle');
 
+  const refParam = searchParams.get('ref');
+
+  useEffect(() => {
+    if (refParam) localStorage.setItem('gestora_ref', refParam);
+  }, [refParam]);
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
     setIsLoading(true);
 
     try {
-      const referralCode = localStorage.getItem('gestora_ref') || undefined;
+      const referralCode = refParam || localStorage.getItem('gestora_ref') || undefined;
       const res = await registerUser({ prenom, nom, entreprise, email, motDePasse, referralCode });
       
       if (res.error || !res.companyId) {

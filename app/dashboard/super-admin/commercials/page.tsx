@@ -236,10 +236,24 @@ export default function CommercialsPage() {
                     <td className="px-5 py-4">
                       <div className="font-bold text-gray-900 dark:text-white">{commercial.prenom} {commercial.nom}</div>
                       <div className="text-xs text-gray-500 dark:text-slate-400">{commercial.telephone}</div>
+                      <div className="text-xs font-medium text-purple-600 dark:text-purple-400 mt-1">Identifiants de connexion :</div>
+                      <div className="text-xs text-gray-600 dark:text-slate-400">Email: {commercial.email}</div>
+                      <div className="text-xs text-gray-600 dark:text-slate-400">Pass: password123</div>
                     </td>
                     <td className="px-5 py-4">
-                      <div className="font-mono text-sm text-blue-600 font-bold bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded inline-block">
-                        {commercial.codeAffiliation}
+                      <div className="flex flex-col gap-2 items-start">
+                        <div className="font-mono text-sm text-blue-600 font-bold bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded inline-block">
+                          {commercial.codeAffiliation}
+                        </div>
+                        <button 
+                          onClick={() => {
+                            navigator.clipboard.writeText(commercial.lienAffiliation);
+                            alert('Lien copié !');
+                          }}
+                          className="text-xs flex items-center text-gray-500 hover:text-blue-600 transition-colors"
+                        >
+                          <LinkIcon className="w-3 h-3 mr-1" /> Copier le lien
+                        </button>
                       </div>
                     </td>
                     <td className="px-5 py-4 text-center font-bold">{clientsApportes}</td>

@@ -16,6 +16,13 @@ export async function getAllCompanies() {
   }
 
   const companies = await prisma.company.findMany({
+    where: {
+      users: {
+        none: {
+          role: 'COMMERCIAL'
+        }
+      }
+    },
     include: {
       users: {
         select: { email: true, firstName: true, lastName: true, role: true },
@@ -106,7 +113,7 @@ export async function createCommercial(data: { prenom: string, nom: string, emai
   const hashedPassword = await bcrypt.hash("password123", 10);
 
   const newCompany = await prisma.company.create({
-    data: { name: `Commercial - ${prenom} ${nom}`, plan: "ENTERPRISE", subscriptionStatus: "ACTIVE", isActive: true }
+    data: { name: `Commercial - ${prenom} ${nom}`, plan: "FREE" }
   });
 
   const newUser = await prisma.user.create({

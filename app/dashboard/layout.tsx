@@ -6,7 +6,7 @@ import { Suspense, useState, useEffect, useRef } from 'react';
 import { 
   LayoutDashboard, BarChart3, Sparkles, Monitor, ShoppingCart, 
   Users, Package, Box, Truck, Calculator, FileText, Users2, 
-  Building, Search, Menu, PanelLeftClose, PanelLeftOpen, Settings, User, LogOut, HelpCircle, X, CreditCard, Shield, Briefcase, Link2, DollarSign
+  Building, Search, Menu, PanelLeftClose, PanelLeftOpen, Settings, User, LogOut, HelpCircle, X, CreditCard, Shield
 } from 'lucide-react';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { useSession, signOut } from 'next-auth/react';
@@ -131,6 +131,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     // Le PROPRIETAIRE a toujours accès à tout
     if (isPlatformOwner) return true;
 
+    // Les COMMERCIAUX ont accès à toutes les fonctionnalités de l'application pour les démos
+    if (userRole === 'COMMERCIAL') return true;
+
     // ENTERPRISE a toujours accès à tout
     if (userPlan === 'ENTERPRISE') return true;
     
@@ -150,10 +153,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const sellerRestrictedPaths = ['/dashboard/settings', '/dashboard/accounting', '/dashboard/hr', '/dashboard/purchases', '/dashboard/clients'];
   const isSellerRestricted = userRole === 'SELLER' && sellerRestrictedPaths.some(p => pathname.startsWith(p));
 
-  // 1b. Restriction Commercial (COMMERCIAL) - bloqué des pages super-admin et commercials
-  const commercialRestrictedPaths = ['/dashboard/super-admin'];
-  const isCommercialRestricted = userRole === 'COMMERCIAL' && !isPlatformOwner && commercialRestrictedPaths.some(p => pathname.startsWith(p));
-
   // 2. Restriction par Forfait (PLAN)
   if (pathname.startsWith('/dashboard/accounting') || pathname.startsWith('/dashboard/hr') || pathname.startsWith('/dashboard/ai')) {
     requiredPlanForCurrentRoute = 'ENTERPRISE';
@@ -163,7 +162,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const isPlanRestricted = !isPlatformOwner && requiredPlanForCurrentRoute && !hasAccess(requiredPlanForCurrentRoute);
 
-  if (session?.user && (isSellerRestricted || isPlanRestricted || isCommercialRestricted)) {
+  if (session?.user && (isSellerRestricted || isPlanRestricted)) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-[#0A1226] flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white dark:bg-[#162032] p-8 rounded-2xl shadow-xl text-center border border-gray-200 dark:border-slate-700/50">
@@ -192,9 +191,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   // Les utilisateurs doivent avoir un abonnement actif avant d'accéder au dashboard.
   const subStatus = (session?.user as any)?.subscriptionStatus;
-  const isSubscriptionBlocked = subStatus === 'PENDING' || subStatus === 'EXPIRED' || subStatus === 'CANCELLED';
+  const isSubscriptionBlocked = (subStatus === 'PENDING' || subStatus === 'EXPIRED' || subStatus === 'CANCELLED') && userRole !== 'COMMERCIAL';
 
-  if (session?.user && isSubscriptionBlocked && !isPlatformOwner && userRole !== 'COMMERCIAL') {
+  if (session?.user && isSubscriptionBlocked && !isPlatformOwner) {
     // S'ils sont sur la page d'abonnement, on affiche UNIQUEMENT le contenu de la page (sans le menu latéral)
     if (pathname === '/dashboard/subscription') {
       return (
@@ -383,44 +382,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   {!isSidebarCollapsed && <span className="truncate">Aide et assistance</span>}
                 </Link>
               </li>
-              {/* Section Affiliation pour les Commerciaux */}
-              {userRole === 'COMMERCIAL' && (
-                <>
-                  {!isSidebarCollapsed && (
-                    <li className="pt-4 pb-1">
-                      <span className="px-3 text-[10px] font-bold uppercase tracking-widest text-emerald-500/70">Mon Affiliation</span>
-                    </li>
-                  )}
-                  <li>
-                    <Link href="/dashboard/affiliation" className={getLinkClass('/dashboard/affiliation')} title="Mon Affiliation">
-                      {isActive('/dashboard/affiliation') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-emerald-500 rounded-r-full"></div>}
-                      <Link2 className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/affiliation') ? 'text-emerald-400' : 'text-emerald-400/70'}`} />
-                      {!isSidebarCollapsed && <span className="truncate text-emerald-400">Mon Lien & Stats</span>}
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/dashboard/affiliation/clients" className={getLinkClass('/dashboard/affiliation/clients')} title="Mes Clients Affiliés">
-                      {isActive('/dashboard/affiliation/clients') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-emerald-500 rounded-r-full"></div>}
-                      <Users className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/affiliation/clients') ? 'text-emerald-400' : 'text-emerald-400/70'}`} />
-                      {!isSidebarCollapsed && <span className="truncate text-emerald-400">Mes Clients</span>}
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/dashboard/affiliation/commissions" className={getLinkClass('/dashboard/affiliation/commissions')} title="Mes Commissions">
-                      {isActive('/dashboard/affiliation/commissions') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-emerald-500 rounded-r-full"></div>}
-                      <DollarSign className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/affiliation/commissions') ? 'text-emerald-400' : 'text-emerald-400/70'}`} />
-                      {!isSidebarCollapsed && <span className="truncate text-emerald-400">Mes Commissions</span>}
-                    </Link>
-                  </li>
-                </>
-              )}
               {isPlatformOwner && (
                 <>
-                  {!isSidebarCollapsed && (
-                    <li className="pt-4 pb-1">
-                      <span className="px-3 text-[10px] font-bold uppercase tracking-widest text-purple-500/70">Administration</span>
-                    </li>
-                  )}
                   <li>
                     <Link href="/dashboard/super-admin" className={getLinkClass('/dashboard/super-admin')} title="Super Admin">
                       {isActive('/dashboard/super-admin') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-purple-500 rounded-r-full"></div>}
@@ -431,7 +394,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <li>
                     <Link href="/dashboard/super-admin/commercials" className={getLinkClass('/dashboard/super-admin/commercials')} title="Commerciaux">
                       {isActive('/dashboard/super-admin/commercials') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-purple-500 rounded-r-full"></div>}
-                      <Briefcase className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/super-admin/commercials') ? 'text-purple-400' : 'text-purple-400/70'}`} />
+                      <Users className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/super-admin/commercials') ? 'text-purple-400' : 'text-purple-400/70'}`} />
                       {!isSidebarCollapsed && <span className="truncate text-purple-400">Commerciaux</span>}
                     </Link>
                   </li>
