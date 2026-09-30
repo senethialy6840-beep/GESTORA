@@ -170,3 +170,27 @@ export async function payCommission(commercialId: string, montant: number, metho
   return { success: true, data: payout };
 }
 
+export async function deleteCommercial(commercialId: string) {
+  const session = await auth();
+  if (session?.user?.email !== PLATFORM_OWNER_EMAIL) {
+    return { success: false, error: 'Accès interdit.' };
+  }
+
+  // Find the commercial to get the userId and companyId
+  const commercial = await prisma.commercial.findUnique({
+    where: { id: commercialId },
+    include: { user: true }
+  });
+
+  if (!commercial) return { success: false, error: 'Commercial introuvable.' };
+
+  // Delete the company associated with the commercial (this will cascade delete the user and commercial)
+  if (commercial.user?.companyId) {
+    await prisma.company.delete({
+      where: { id: commercial.user.companyId }
+    });
+  }
+
+  revalidatePath('/dashboard/super-admin/commercials');
+  return { success: true };
+}

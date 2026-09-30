@@ -100,7 +100,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [pathname]);
 
   const handleLogout = async () => {
-    await signOut({ callbackUrl: '/' });
+    await signOut({ redirect: false });
+    window.location.href = '/';
   };
 
   // La page d'abonnement est autonome : elle ne doit pas afficher le shell du dashboard.

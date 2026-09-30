@@ -1,20 +1,27 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Users, UserPlus, DollarSign, Briefcase, RefreshCw, X, Link as LinkIcon, CheckCircle } from 'lucide-react';
+import { Users, UserPlus, DollarSign, Briefcase, RefreshCw, X, Link as LinkIcon, CheckCircle, Trash2 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { getAllCommercials, createCommercial, payCommission } from '@/app/actions/superAdminActions';
+import { getAllCommercials, createCommercial, payCommission, deleteCommercial } from '@/app/actions/superAdminActions';
 
 const PLATFORM_OWNER_EMAIL = 'gestorame112@gmail.com';
 
 function AddCommercialModal({ isOpen, onClose, onAdd }: { isOpen: boolean; onClose: () => void; onAdd: () => void }) {
-  const [prenom, setPrenom] = useState('');
-  const [nom, setNom] = useState('');
-  const [email, setEmail] = useState('');
-  const [telephone, setTelephone] = useState('');
+  const [prenom, setPrenom] = useState(() => typeof window !== 'undefined' ? localStorage.getItem('add_comm_prenom') || '' : '');
+  const [nom, setNom] = useState(() => typeof window !== 'undefined' ? localStorage.getItem('add_comm_nom') || '' : '');
+  const [email, setEmail] = useState(() => typeof window !== 'undefined' ? localStorage.getItem('add_comm_email') || '' : '');
+  const [telephone, setTelephone] = useState(() => typeof window !== 'undefined' ? localStorage.getItem('add_comm_tel') || '' : '');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    localStorage.setItem('add_comm_prenom', prenom);
+    localStorage.setItem('add_comm_nom', nom);
+    localStorage.setItem('add_comm_email', email);
+    localStorage.setItem('add_comm_tel', telephone);
+  }, [prenom, nom, email, telephone]);
 
   if (!isOpen) return null;
 
@@ -28,6 +35,14 @@ function AddCommercialModal({ isOpen, onClose, onAdd }: { isOpen: boolean; onClo
     const res = await createCommercial({ prenom, nom, email, telephone, codeAffiliation });
     
     if (res.success) {
+      setPrenom('');
+      setNom('');
+      setEmail('');
+      setTelephone('');
+      localStorage.removeItem('add_comm_prenom');
+      localStorage.removeItem('add_comm_nom');
+      localStorage.removeItem('add_comm_email');
+      localStorage.removeItem('add_comm_tel');
       onAdd();
       onClose();
     } else {
@@ -265,13 +280,27 @@ export default function CommercialsPage() {
                       {new Intl.NumberFormat("fr-FR", { style: "currency", currency: "XOF" }).format(commissionEnAttente)}
                     </td>
                     <td className="px-5 py-4 text-center">
-                      <button
-                        onClick={() => setPayCommercial(commercial)}
-                        disabled={commissionEnAttente <= 0}
-                        className="px-3 py-1.5 bg-emerald-600 text-white text-xs font-bold rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors"
-                      >
-                        Payer
-                      </button>
+                      <div className="flex justify-center items-center gap-2">
+                        <button
+                          onClick={() => setPayCommercial(commercial)}
+                          disabled={commissionEnAttente <= 0}
+                          className="px-3 py-1.5 bg-emerald-600 text-white text-xs font-bold rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+                        >
+                          Payer
+                        </button>
+                        <button
+                          onClick={async () => {
+                            if (confirm('Voulez-vous vraiment supprimer ce commercial ?')) {
+                              await deleteCommercial(commercial.id);
+                              loadCommercials();
+                            }
+                          }}
+                          className="p-1.5 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
+                          title="Supprimer le commercial"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
