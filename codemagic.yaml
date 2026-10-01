@@ -1,0 +1,46 @@
+workflows:
+  capacitor-android:
+    name: Compilation Android (Play Store)
+    instance_type: mac_mini_m1
+    environment:
+      node: 20
+    scripts:
+      - name: Installer les dépendances
+        script: npm install
+      - name: Compiler le site Web (Next.js)
+        script: npm run build
+      - name: Synchroniser Capacitor
+        script: npx cap sync android
+      - name: Générer le fichier Android (.aab)
+        script: |
+          cd android
+          ./gradlew bundleRelease
+          ./gradlew assembleRelease
+    artifacts:
+      - android/app/build/outputs/**/*.aab
+      - android/app/build/outputs/**/*.apk
+
+  capacitor-ios:
+    name: Compilation iOS (App Store)
+    instance_type: mac_mini_m1
+    environment:
+      node: 20
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Installer les dépendances
+        script: npm install
+      - name: Compiler le site Web (Next.js)
+        script: npm run build
+      - name: Synchroniser Capacitor
+        script: npx cap sync ios
+      - name: Installer les Pods iOS
+        script: |
+          cd ios/App
+          pod install
+      - name: Générer le fichier iOS
+        script: |
+          cd ios/App
+          xcodebuild build -workspace App.xcworkspace -scheme App -destination generic/platform=iOS -archivePath App.xcarchive archive
+    artifacts:
+      - build/ios/ipa/*.ipa
