@@ -15,6 +15,7 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   title: "GESTORA | Logiciel de gestion de caisse et de stocks",
   description: "GESTORA est la solution de gestion de stock et de caisse intuitive pour propulser votre entreprise. Suivez vos ventes, gérez votre équipe et pilotez votre activité en temps réel.",
+  manifest: "/manifest.json",
   keywords: ["gestion de stock", "logiciel de caisse", "point de vente", "ERP", "Sénégal", "Afrique", "GESTORA", "PME", "commerce"],
   authors: [{ name: "GESTORA" }],
   openGraph: {
