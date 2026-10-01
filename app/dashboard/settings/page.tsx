@@ -511,7 +511,7 @@ export default function SettingsPage() {
                             <div className="text-xs text-gray-500">{emp.email}</div>
                           </td>
                           <td className="px-4 py-3 text-gray-600 dark:text-slate-300">
-                            {emp.role === 'ADMIN' ? 'Administrateur' : emp.role === 'MANAGER' ? 'Manager' : emp.role === 'SALES' ? 'Commercial' : 'Caissier(e)'}
+                            {emp.role === 'ADMIN' ? 'Administrateur' : emp.role === 'MANAGER' ? 'Gérant' : emp.role === 'EMPLOYEE' ? 'Employé(e)' : 'Caissier(e)'}
                           </td>
                           <td className="px-4 py-3 text-right">
                             <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${emp.status === 'ACTIVE' ? 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400'}`}>

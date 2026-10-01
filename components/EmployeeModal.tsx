@@ -147,9 +147,9 @@ export function EmployeeModal({ isOpen, onClose, onSave, initialData }: Employee
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-gray-50 dark:bg-[#0A1226] text-gray-900 dark:text-white"
                 >
                   <option value="ADMIN">Administrateur</option>
-                  <option value="MANAGER">Manager</option>
-                  <option value="SALES">Commercial / Vendeur</option>
+                  <option value="MANAGER">Gérant</option>
                   <option value="CASHIER">Caissier(e)</option>
+                  <option value="EMPLOYEE">Employé(e)</option>
                 </select>
               </div>
               <div>

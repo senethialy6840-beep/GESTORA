@@ -147,14 +147,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return false;
   };
 
-  // --- PROTECTION STRICTE PAR URL ---
+  // --- PROTECTION STRICTE PAR RÔLE & PLAN ---
   let requiredPlanForCurrentRoute: string | null = null;
   
-  // 1. Restriction Vendeur (SELLER) - on bloque ces URLs pour eux
-  const sellerRestrictedPaths = ['/dashboard/settings', '/dashboard/accounting', '/dashboard/hr', '/dashboard/purchases', '/dashboard/clients'];
-  const isSellerRestricted = userRole === 'SELLER' && sellerRestrictedPaths.some(p => pathname.startsWith(p));
-
-  // 2. Restriction par Forfait (PLAN)
+  // 1. Restriction par Forfait (PLAN)
   if (pathname.startsWith('/dashboard/accounting') || pathname.startsWith('/dashboard/hr') || pathname.startsWith('/dashboard/ai')) {
     requiredPlanForCurrentRoute = 'ENTERPRISE';
   } else if (pathname.startsWith('/dashboard/inventory') || pathname.startsWith('/dashboard/reports') || pathname.startsWith('/dashboard/purchases') || pathname.startsWith('/dashboard/invoices')) {
@@ -163,7 +159,33 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const isPlanRestricted = !isPlatformOwner && requiredPlanForCurrentRoute && !hasAccess(requiredPlanForCurrentRoute);
 
-  if (session?.user && (isSellerRestricted || isPlanRestricted)) {
+  // 2. Restriction par Rôle Utilisateur
+  let isRoleRestricted = false;
+  
+  if (!isPlatformOwner && userRole !== 'ADMIN') {
+    if (userRole === 'CASHIER' || userRole === 'SELLER') {
+      // Caissier : POS et Ventes uniquement (+ le dashboard d'accueil et profil)
+      const allowedPaths = ['/dashboard/pos', '/dashboard/sales', '/dashboard/profile'];
+      if (pathname !== '/dashboard' && !allowedPaths.some(p => pathname.startsWith(p))) {
+        isRoleRestricted = true;
+      }
+    } else if (userRole === 'MANAGER') {
+      // Gérant : Ventes, Stocks, Produits, Clients, Rapports, Achats (+ accueil et profil)
+      // Ils n'ont pas accès à : Paramètres, Comptabilité, RH, Super-Admin
+      const restrictedForManager = ['/dashboard/settings', '/dashboard/accounting', '/dashboard/hr', '/dashboard/super-admin', '/dashboard/ai'];
+      if (restrictedForManager.some(p => pathname.startsWith(p))) {
+        isRoleRestricted = true;
+      }
+    } else if (userRole === 'EMPLOYEE') {
+      // Employé standard : on bloque les trucs sensibles par défaut
+      const restrictedForEmployee = ['/dashboard/settings', '/dashboard/accounting', '/dashboard/hr', '/dashboard/reports', '/dashboard/super-admin'];
+      if (restrictedForEmployee.some(p => pathname.startsWith(p))) {
+        isRoleRestricted = true;
+      }
+    }
+  }
+
+  if (session?.user && (isRoleRestricted || isPlanRestricted)) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-[#0A1226] flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white dark:bg-[#162032] p-8 rounded-2xl shadow-xl text-center border border-gray-200 dark:border-slate-700/50">
@@ -174,15 +196,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Accès Refusé</h2>
           <p className="text-gray-500 dark:text-slate-400 mb-8">
-            {isSellerRestricted 
-              ? "Vous n'avez pas les permissions nécessaires pour accéder à cette page." 
+            {isRoleRestricted 
+              ? "Vous n'avez pas les permissions nécessaires pour accéder à cette fonctionnalité avec votre rôle actuel." 
               : "Cette fonctionnalité n'est pas incluse dans votre forfait actuel."}
           </p>
           <Link 
-            href={isSellerRestricted ? "/dashboard" : "/dashboard/subscription"}
+            href={isRoleRestricted ? "/dashboard" : "/dashboard/subscription"}
             className="block w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-center rounded-xl transition-colors"
           >
-            {isSellerRestricted ? "Retour au tableau de bord" : "Voir les forfaits"}
+            {isRoleRestricted ? "Retour au tableau de bord" : "Voir les forfaits"}
           </Link>
         </div>
       </div>
@@ -317,7 +339,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </>
               )}
 
-              {hasAccess('BUSINESS') && (session?.user as any)?.role !== 'SELLER' && (
+              {hasAccess('BUSINESS') && userRole !== 'CASHIER' && userRole !== 'SELLER' && (
                 <li>
                   <Link href="/dashboard/purchases" className={getLinkClass('/dashboard/purchases')} title="Achats & Fournisseurs">
                     {isActive('/dashboard/purchases') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
@@ -329,7 +351,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
 
 
-              {hasAccess('BUSINESS') && (
+              {hasAccess('BUSINESS') && userRole !== 'CASHIER' && userRole !== 'SELLER' && (
                 <li>
                   <Link href="/dashboard/invoices" className={getLinkClass('/dashboard/invoices')} title="Factures & Devis">
                     {isActive('/dashboard/invoices') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
@@ -339,7 +361,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </li>
               )}
 
-              {hasAccess('ENTERPRISE') && (session?.user as any)?.role !== 'SELLER' && (
+              {hasAccess('ENTERPRISE') && (isPlatformOwner || userRole === 'ADMIN') && (
                 <>
                   <li>
                     <Link href="/dashboard/accounting" className={getLinkClass('/dashboard/accounting')} title="Comptabilité">
@@ -358,7 +380,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </>
               )}
 
-              {hasAccess('ENTERPRISE') && (
+              {hasAccess('ENTERPRISE') && (isPlatformOwner || userRole === 'ADMIN' || userRole === 'MANAGER') && (
                 <li>
                   <Link href="/dashboard/ai" className={getLinkClass('/dashboard/ai')} title="Gestora AI">
                     {isActive('/dashboard/ai') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
@@ -367,7 +389,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   </Link>
                 </li>
               )}
-              {(session?.user as any)?.role !== 'SELLER' && (
+              {(isPlatformOwner || userRole === 'ADMIN') && (
                 <li>
                   <Link href="/dashboard/settings" className={getLinkClass('/dashboard/settings')} title="Paramètres">
                     {isActive('/dashboard/settings') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
