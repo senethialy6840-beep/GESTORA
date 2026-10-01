@@ -62,14 +62,19 @@ export async function updateCompanySubscription(
  * Supprime une entreprise (et toutes ses données) de la plateforme.
  */
 export async function deleteCompany(companyId: string) {
-  const session = await auth();
-  if (session?.user?.email !== PLATFORM_OWNER_EMAIL) {
-    return { success: false, error: 'Accès interdit.' };
-  }
+  try {
+    const session = await auth();
+    if (session?.user?.email !== PLATFORM_OWNER_EMAIL) {
+      return { success: false, error: 'Accès interdit.' };
+    }
 
-  await prisma.company.delete({ where: { id: companyId } });
-  revalidatePath('/dashboard/super-admin');
-  return { success: true };
+    await prisma.company.delete({ where: { id: companyId } });
+    revalidatePath('/dashboard/super-admin');
+    return { success: true };
+  } catch (error: any) {
+    console.error("Erreur lors de la suppression de la boutique:", error);
+    return { success: false, error: error?.message || 'Erreur lors de la suppression.' };
+  }
 }
 
 import bcrypt from "bcryptjs";
@@ -97,100 +102,117 @@ export async function getAllCommercials() {
 }
 
 export async function createCommercial(data: { prenom: string, nom: string, email: string, telephone: string, codeAffiliation: string }) {
-  const session = await auth();
-  if (session?.user?.email !== PLATFORM_OWNER_EMAIL) {
-    return { success: false, error: 'Accès interdit.' };
+  try {
+    const session = await auth();
+    if (session?.user?.email !== PLATFORM_OWNER_EMAIL) {
+      return { success: false, error: 'Accès interdit.' };
+    }
+
+    const { prenom, nom, email, telephone, codeAffiliation } = data;
+
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) return { success: false, error: 'Cet email est déjà utilisé.' };
+
+    const existingCode = await prisma.commercial.findUnique({ where: { codeAffiliation } });
+    if (existingCode) return { success: false, error: 'Ce code d\'affiliation est déjà utilisé.' };
+
+    const hashedPassword = await bcrypt.hash("password123", 10);
+
+    const newCompany = await prisma.company.create({
+      data: { name: `Commercial - ${prenom} ${nom}`, plan: "FREE" }
+    });
+
+    const newUser = await prisma.user.create({
+      data: {
+        firstName: prenom,
+        lastName: nom,
+        email,
+        password: hashedPassword,
+        companyId: newCompany.id,
+        role: "COMMERCIAL"
+      }
+    });
+
+    const commercial = await prisma.commercial.create({
+      data: {
+        userId: newUser.id,
+        prenom,
+        nom,
+        email,
+        telephone,
+        codeAffiliation,
+        lienAffiliation: `https://gestora.shop/register?ref=${codeAffiliation}`,
+        tauxCommission: 20
+      }
+    });
+
+    revalidatePath('/dashboard/super-admin/commercials');
+    return { success: true, data: commercial };
+  } catch (error: any) {
+    console.error("Erreur lors de la création du commercial:", error);
+    return { success: false, error: error?.message || 'Erreur interne lors de la création.' };
   }
-
-  const { prenom, nom, email, telephone, codeAffiliation } = data;
-
-  const existingUser = await prisma.user.findUnique({ where: { email } });
-  if (existingUser) return { success: false, error: 'Cet email est déjà utilisé.' };
-
-  const existingCode = await prisma.commercial.findUnique({ where: { codeAffiliation } });
-  if (existingCode) return { success: false, error: 'Ce code d\'affiliation est déjà utilisé.' };
-
-  const hashedPassword = await bcrypt.hash("password123", 10);
-
-  const newCompany = await prisma.company.create({
-    data: { name: `Commercial - ${prenom} ${nom}`, plan: "FREE" }
-  });
-
-  const newUser = await prisma.user.create({
-    data: {
-      firstName: prenom,
-      lastName: nom,
-      email,
-      password: hashedPassword,
-      companyId: newCompany.id,
-      role: "COMMERCIAL"
-    }
-  });
-
-  const commercial = await prisma.commercial.create({
-    data: {
-      userId: newUser.id,
-      prenom,
-      nom,
-      email,
-      telephone,
-      codeAffiliation,
-      lienAffiliation: `https://gestora.shop/register?ref=${codeAffiliation}`,
-      tauxCommission: 20
-    }
-  });
-
-  revalidatePath('/dashboard/super-admin/commercials');
-  return { success: true, data: commercial };
 }
 
 export async function payCommission(commercialId: string, montant: number, methode: string, reference: string) {
-  const session = await auth();
-  if (session?.user?.email !== PLATFORM_OWNER_EMAIL) {
-    return { success: false, error: 'Accès interdit.' };
-  }
-
-  // Créer le paiement de commission
-  const payout = await prisma.commissionPayout.create({
-    data: {
-      commercialId,
-      montant,
-      methode,
-      reference
+  try {
+    const session = await auth();
+    if (session?.user?.email !== PLATFORM_OWNER_EMAIL) {
+      return { success: false, error: 'Accès interdit.' };
     }
-  });
 
-  // Mettre à jour les commissions en attente
-  await prisma.commission.updateMany({
-    where: { commercialId, statut: 'PENDING' },
-    data: { statut: 'PAID', payoutId: payout.id }
-  });
+    // Créer le paiement de commission
+    const payout = await prisma.commissionPayout.create({
+      data: {
+        commercialId,
+        montant,
+        methode,
+        reference
+      }
+    });
 
-  revalidatePath('/dashboard/super-admin/commercials');
-  return { success: true, data: payout };
+    // Mettre à jour les commissions en attente
+    await prisma.commission.updateMany({
+      where: { commercialId, statut: 'PENDING' },
+      data: { statut: 'PAID', payoutId: payout.id }
+    });
+
+    revalidatePath('/dashboard/super-admin/commercials');
+    return { success: true, data: payout };
+  } catch (error: any) {
+    console.error("Erreur lors du paiement de la commission:", error);
+    return { success: false, error: error?.message || 'Erreur lors du paiement.' };
+  }
 }
 
 export async function deleteCommercial(commercialId: string) {
-  const session = await auth();
-  if (session?.user?.email !== PLATFORM_OWNER_EMAIL) {
-    return { success: false, error: 'Accès interdit.' };
-  }
+  try {
+    const session = await auth();
+    if (session?.user?.email !== PLATFORM_OWNER_EMAIL) {
+      return { success: false, error: 'Accès interdit.' };
+    }
 
-  // Find the commercial to get the userId and companyId
-  const commercial = await prisma.commercial.findUnique({
-    where: { id: commercialId },
-    include: { user: true }
-  });
-
-  if (!commercial) return { success: false, error: 'Commercial introuvable.' };
-
-  // Delete the company associated with the commercial (this will cascade delete the user and commercial)
-  if (commercial.user?.companyId) {
-    await prisma.company.delete({
-      where: { id: commercial.user.companyId }
+    // Find the commercial to get the userId and companyId
+    const commercial = await prisma.commercial.findUnique({
+      where: { id: commercialId },
+      include: { user: true }
     });
-  }
 
-  revalidatePath('/dashboard/super-admin/commercials');
-  return { success: true };
+    if (!commercial) return { success: false, error: 'Commercial introuvable.' };
+
+    // Delete the company associated with the commercial (this will cascade delete the user and commercial)
+    if (commercial.user?.companyId) {
+      await prisma.company.delete({
+        where: { id: commercial.user.companyId }
+      });
+    } else {
+       await prisma.commercial.delete({ where: { id: commercialId } });
+    }
+
+    revalidatePath('/dashboard/super-admin/commercials');
+    return { success: true };
+  } catch (error: any) {
+    console.error("Erreur lors de la suppression du commercial:", error);
+    return { success: false, error: error?.message || 'Erreur lors de la suppression.' };
+  }
 }

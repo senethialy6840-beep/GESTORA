@@ -296,8 +296,8 @@ model Referral {
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
-  commercial Commercial @relation(fields: [commercialId], references: [id], onDelete: Restrict)
-  customer   Company    @relation("ReferredCompany", fields: [customerId], references: [id], onDelete: Restrict)
+  commercial Commercial @relation(fields: [commercialId], references: [id], onDelete: Cascade)
+  customer   Company    @relation("ReferredCompany", fields: [customerId], references: [id], onDelete: Cascade)
   commissions Commission[]
 
   @@index([commercialId])
@@ -340,9 +340,9 @@ model Commission {
   updatedAt             DateTime @updatedAt @map("updated_at")
   payoutId              String?  @map("payout_id")
 
-  commercial          Commercial          @relation(fields: [commercialId], references: [id], onDelete: Restrict)
-  referral            Referral            @relation(fields: [referralId], references: [id], onDelete: Restrict)
-  subscriptionPayment SubscriptionPayment @relation(fields: [subscriptionPaymentId], references: [id], onDelete: Restrict)
+  commercial          Commercial          @relation(fields: [commercialId], references: [id], onDelete: Cascade)
+  referral            Referral            @relation(fields: [referralId], references: [id], onDelete: Cascade)
+  subscriptionPayment SubscriptionPayment @relation(fields: [subscriptionPaymentId], references: [id], onDelete: Cascade)
   payout              CommissionPayout?   @relation(fields: [payoutId], references: [id], onDelete: SetNull)
 
   @@index([commercialId, statut])
@@ -360,7 +360,7 @@ model CommissionPayout {
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
-  commercial Commercial   @relation(fields: [commercialId], references: [id], onDelete: Restrict)
+  commercial Commercial   @relation(fields: [commercialId], references: [id], onDelete: Cascade)
   commissions Commission[]
 
   @@index([commercialId])
