@@ -29,44 +29,44 @@ export async function getDashboardStats(_companyId: string, startDate?: string, 
     // For AreaChart: past 7 months including current
     const sevenMonthsAgo = startOfMonth(subMonths(end, 6));
 
-    // 1. Chiffre d'affaires
-    const revenueAggr = await prisma.sale.aggregate({
-      where: {
-        companyId,
-        status: 'COMPLETED',
-        createdAt: { gte: start, lte: end }
-      },
-      _sum: { totalAmount: true }
-    });
-    const revenue = revenueAggr._sum.totalAmount || 0;
+    // Fetch aggregations concurrently to fix "lenteurs de l'application"
+    const [revenueAggr, expensesAggr, purchasesAggr, allProducts] = await Promise.all([
+      prisma.sale.aggregate({
+        where: {
+          companyId,
+          status: 'COMPLETED',
+          createdAt: { gte: start, lte: end }
+        },
+        _sum: { totalAmount: true }
+      }),
+      prisma.accountingTransaction.aggregate({
+        where: {
+          companyId,
+          type: 'EXPENSE',
+          date: { gte: start, lte: end }
+        },
+        _sum: { amount: true }
+      }),
+      prisma.purchase.aggregate({
+        where: {
+          companyId,
+          createdAt: { gte: start, lte: end }
+        },
+        _sum: { totalAmount: true }
+      }),
+      prisma.product.findMany({
+        where: { companyId },
+        select: { id: true, name: true, stock: true, stockAlert: true }
+      })
+    ]);
 
-    // 2. Dépenses totales
-    const expensesAggr = await prisma.accountingTransaction.aggregate({
-      where: {
-        companyId,
-        type: 'EXPENSE',
-        date: { gte: start, lte: end }
-      },
-      _sum: { amount: true }
-    });
-    const purchasesAggr = await prisma.purchase.aggregate({
-      where: {
-        companyId,
-        createdAt: { gte: start, lte: end }
-      },
-      _sum: { totalAmount: true }
-    });
+    const revenue = revenueAggr._sum.totalAmount || 0;
     const expenses = (expensesAggr._sum.amount || 0) + (purchasesAggr._sum.totalAmount || 0);
 
     // 3. Bénéfice net
     const netProfit = revenue - expenses;
 
     // 4. Stocks faibles
-    const allProducts = await prisma.product.findMany({
-      where: { companyId },
-      select: { id: true, name: true, stock: true, stockAlert: true }
-    });
-    
     const lowStockProducts = allProducts
       .filter(p => p.stock <= (p.stockAlert || 0))
       .map(p => ({
@@ -79,16 +79,23 @@ export async function getDashboardStats(_companyId: string, startDate?: string, 
 
     // Removed newCustomers as per user request
 
-    // 5. AreaChart Data (7 derniers mois)
-    const salesOverTime = await prisma.sale.findMany({
-      where: {
-        companyId,
-        status: 'COMPLETED',
-        createdAt: { gte: sevenMonthsAgo, lte: end }
-      },
-      select: { totalAmount: true, createdAt: true }
-    });
-
+    // 5. & 7. Fetch salesOverTime and saleItems concurrently
+    const [salesOverTime, saleItems] = await Promise.all([
+      prisma.sale.findMany({
+        where: {
+          companyId,
+          status: 'COMPLETED',
+          createdAt: { gte: sevenMonthsAgo, lte: end }
+        },
+        select: { totalAmount: true, createdAt: true }
+      }),
+      prisma.saleItem.findMany({
+        where: {
+          sale: { companyId, createdAt: { gte: start, lte: end } }
+        },
+        select: { description: true, quantity: true }
+      })
+    ]);
     const monthsMap = new Map();
     for (let i = 6; i >= 0; i--) {
       const d = subMonths(end, i);
@@ -113,14 +120,6 @@ export async function getDashboardStats(_companyId: string, startDate?: string, 
       { name: 'En Ligne', value: revenue * 0.3 || 30 },
       { name: 'Partenaires', value: revenue * 0.1 || 10 },
     ];
-
-    // 7. Bar Chart Data
-    const saleItems = await prisma.saleItem.findMany({
-      where: {
-        sale: { companyId, createdAt: { gte: start, lte: end } }
-      },
-      select: { description: true, quantity: true }
-    });
     
     const productSales = new Map();
     saleItems.forEach(item => {

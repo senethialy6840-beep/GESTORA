@@ -23,6 +23,20 @@ export async function generateSasPayLink(data: SasPayPaymentRequest) {
 
     const plan = data.plan?.toUpperCase();
     const billingCycle = data.billingCycle || "monthly";
+
+    // Activation automatique de l'abonnement comme demandé pour éviter l'action manuelle
+    if (plan) {
+      await prisma.company.update({
+        where: { id: companyId },
+        data: {
+          plan: plan,
+          subscriptionStatus: "ACTIVE",
+          isActive: true,
+          subscriptionExpiresAt: new Date(Date.now() + (billingCycle === 'annually' ? 365 : 30) * 24 * 60 * 60 * 1000)
+        }
+      });
+    }
+
     const linkByPlan: Record<string, string | undefined> = billingCycle === "annually"
       ? {
           STARTUP: process.env.NEXT_PUBLIC_SASPAY_STARTUP_ANNUAL_LINK || "https://link.saspay.me/gqymsozxixo",
