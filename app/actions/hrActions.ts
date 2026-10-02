@@ -16,7 +16,25 @@ export async function getEmployees(_companyId?: string) {
       where: { companyId },
       orderBy: { createdAt: "desc" },
     });
-    return { success: true, data: employees };
+    
+    // Fetch associated users for RBAC data
+    const emails = employees.map(e => e.email).filter(Boolean) as string[];
+    const users = await prisma.user.findMany({
+      where: { email: { in: emails }, companyId },
+      include: { warehouses: { select: { id: true } } }
+    });
+    
+    const enrichedEmployees = employees.map(emp => {
+      const user = users.find(u => u.email === emp.email);
+      return {
+        ...emp,
+        permissions: user?.permissions || [],
+        accessAllWarehouses: user?.accessAllWarehouses || false,
+        warehouseIds: user?.warehouses?.map(w => w.id) || []
+      };
+    });
+
+    return { success: true, data: enrichedEmployees };
   } catch (error) {
     console.error("Erreur lors de la récupération des employés:", error);
     return { success: false, error: "Erreur serveur" };
@@ -75,13 +93,21 @@ export async function createEmployee(data: Omit<Employee, "id" | "createdAt" | "
           password: hashedPassword,
           role: data.role,
           companyId: data.companyId,
-          isActive: data.status === 'ACTIVE'
+          isActive: data.status === 'ACTIVE',
+          permissions: (data as any).permissions || [],
+          accessAllWarehouses: (data as any).accessAllWarehouses || false,
+          warehouses: {
+            connect: ((data as any).warehouseIds || []).map((id: string) => ({ id }))
+          }
         }
       });
     }
 
+    // Clean up non-employee fields before creating employee
+    const { permissions, accessAllWarehouses, warehouseIds, ...employeeData } = data as any;
+
     const employee = await prisma.employee.create({
-      data,
+      data: employeeData,
     });
     revalidatePath("/dashboard/hr");
     return { success: true, data: employee };
@@ -121,15 +147,20 @@ export async function updateEmployee(id: string, data: Partial<Employee>) {
             firstName: data.firstName || user.firstName,
             lastName: data.lastName || user.lastName,
             role: data.role || user.role,
-            isActive: data.status ? data.status === 'ACTIVE' : user.isActive
+            isActive: data.status ? data.status === 'ACTIVE' : user.isActive,
+            permissions: (data as any).permissions !== undefined ? (data as any).permissions : user.permissions,
+            accessAllWarehouses: (data as any).accessAllWarehouses !== undefined ? (data as any).accessAllWarehouses : user.accessAllWarehouses,
+            warehouses: (data as any).warehouseIds ? { set: (data as any).warehouseIds.map((id: string) => ({ id })) } : undefined
           }
         });
       }
     }
 
+    const { permissions, accessAllWarehouses, warehouseIds, ...employeeData } = data as any;
+
     const employee = await prisma.employee.update({
       where: { id },
-      data,
+      data: employeeData,
     });
     revalidatePath("/dashboard/hr");
     return { success: true, data: employee };
