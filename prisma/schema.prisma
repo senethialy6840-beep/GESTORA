@@ -62,11 +62,6 @@ model User {
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
   commercial Commercial?
-
-  // RBAC: Access Control
-  accessAllWarehouses Boolean     @default(false)
-  warehouses          Warehouse[] @relation("UserWarehouses")
-  permissions         String[]    @default([])
 }
 
 model PasswordResetToken {
@@ -92,7 +87,6 @@ model Warehouse {
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  users     User[]  @relation("UserWarehouses")
 }
 
 model Product {

@@ -30,8 +30,7 @@ export const authOptions: NextAuthOptions = {
             email
           },
           include: {
-            company: true,
-            warehouses: { select: { id: true } }
+            company: true
           }
         });
 
@@ -69,10 +68,7 @@ export const authOptions: NextAuthOptions = {
           companyId: user.companyId,
           role: user.role,
           subscriptionStatus: currentStatus,
-          plan: user.company?.plan || "FREE",
-          permissions: user.permissions || [],
-          accessAllWarehouses: user.accessAllWarehouses || false,
-          warehouseIds: user.warehouses?.map(w => w.id) || []
+          plan: user.company?.plan || "FREE"
         } as any;
       },
     }),
@@ -85,9 +81,6 @@ export const authOptions: NextAuthOptions = {
         token.role = (user as any).role;
         token.subscriptionStatus = (user as any).subscriptionStatus;
         token.plan = (user as any).plan;
-        token.permissions = (user as any).permissions;
-        token.accessAllWarehouses = (user as any).accessAllWarehouses;
-        token.warehouseIds = (user as any).warehouseIds;
       }
       return token;
     },
@@ -96,9 +89,6 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).id = token.id as string;
         (session.user as any).companyId = token.companyId as string;
         (session.user as any).role = token.role as string;
-        (session.user as any).permissions = token.permissions;
-        (session.user as any).accessAllWarehouses = token.accessAllWarehouses;
-        (session.user as any).warehouseIds = token.warehouseIds;
         if (token.companyId) {
           const company = await prisma.company.findUnique({
             where: { id: token.companyId as string },

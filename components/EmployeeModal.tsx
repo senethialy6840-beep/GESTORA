@@ -1,18 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Shield, Store } from 'lucide-react';
-import { getWarehouses } from '@/app/actions/warehouseActions';
-
-const AVAILABLE_PERMISSIONS = [
-  { id: 'POS', label: 'Caisse' },
-  { id: 'SALES', label: 'Ventes' },
-  { id: 'PRODUCTS', label: 'Produits' },
-  { id: 'INVENTORY', label: 'Stocks' },
-  { id: 'CUSTOMERS', label: 'Clients' },
-  { id: 'PURCHASES', label: 'Achats' },
-  { id: 'SUPPLIERS', label: 'Fournisseurs' },
-  { id: 'INVOICES', label: 'Factures' },
-  { id: 'REPORTS', label: 'Rapports' },
-];
+import { X } from 'lucide-react';
 
 interface EmployeeModalProps {
   isOpen: boolean;
@@ -28,25 +15,8 @@ export function EmployeeModal({ isOpen, onClose, onSave, initialData }: Employee
     email: '',
     phone: '',
     role: 'CASHIER', // MANAGER, CASHIER, ADMIN, SALES
-    status: 'ACTIVE', // ACTIVE, INACTIVE
-    accessAllWarehouses: false,
-    warehouseIds: [] as string[],
-    permissions: [] as string[]
+    status: 'ACTIVE' // ACTIVE, INACTIVE
   });
-
-  const [warehouses, setWarehouses] = useState<any[]>([]);
-
-  useEffect(() => {
-    async function fetchWarehouses() {
-      const res = await getWarehouses();
-      if (res.success && res.data) {
-        setWarehouses(res.data);
-      }
-    }
-    if (isOpen) {
-      fetchWarehouses();
-    }
-  }, [isOpen]);
 
   // Reset form when opened
   useEffect(() => {
@@ -58,10 +28,7 @@ export function EmployeeModal({ isOpen, onClose, onSave, initialData }: Employee
           email: initialData.email || '',
           phone: initialData.phone || '',
           role: initialData.role || 'CASHIER',
-          status: initialData.status || 'ACTIVE',
-          accessAllWarehouses: initialData.accessAllWarehouses || false,
-          warehouseIds: initialData.warehouseIds || [],
-          permissions: initialData.permissions || []
+          status: initialData.status || 'ACTIVE'
         });
       } else {
         setFormData({
@@ -70,10 +37,7 @@ export function EmployeeModal({ isOpen, onClose, onSave, initialData }: Employee
           email: '',
           phone: '',
           role: 'CASHIER',
-          status: 'ACTIVE',
-          accessAllWarehouses: false,
-          warehouseIds: [],
-          permissions: []
+          status: 'ACTIVE'
         });
       }
     }
@@ -93,33 +57,8 @@ export function EmployeeModal({ isOpen, onClose, onSave, initialData }: Employee
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    if (type === 'checkbox') {
-      const checked = (e.target as HTMLInputElement).checked;
-      setFormData(prev => ({ ...prev, [name]: checked }));
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
-    }
-  };
-
-  const toggleWarehouse = (id: string) => {
-    setFormData(prev => {
-      const current = prev.warehouseIds;
-      if (current.includes(id)) {
-        return { ...prev, warehouseIds: current.filter(wId => wId !== id) };
-      }
-      return { ...prev, warehouseIds: [...current, id] };
-    });
-  };
-
-  const togglePermission = (id: string) => {
-    setFormData(prev => {
-      const current = prev.permissions;
-      if (current.includes(id)) {
-        return { ...prev, permissions: current.filter(pId => pId !== id) };
-      }
-      return { ...prev, permissions: [...current, id] };
-    });
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   return (
@@ -224,68 +163,6 @@ export function EmployeeModal({ isOpen, onClose, onSave, initialData }: Employee
                   <option value="ACTIVE">Actif</option>
                   <option value="INACTIVE">Inactif (Suspendu)</option>
                 </select>
-              </div>
-            </div>
-
-            {/* RBAC Settings */}
-            <div className="space-y-6 pt-4 border-t border-gray-200 dark:border-slate-700/50">
-              
-              {/* Warehouses */}
-              <div>
-                <h3 className="flex items-center text-lg font-bold text-gray-900 dark:text-white mb-4">
-                  <Store className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" />
-                  Accès aux Boutiques
-                </h3>
-                <div className="mb-4">
-                  <label className="flex items-center space-x-3 cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      name="accessAllWarehouses"
-                      checked={formData.accessAllWarehouses}
-                      onChange={handleChange}
-                      className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                    />
-                    <span className="text-sm font-medium text-gray-700 dark:text-slate-300">
-                      Toutes les boutiques
-                    </span>
-                  </label>
-                </div>
-                {!formData.accessAllWarehouses && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {warehouses.map(w => (
-                      <label key={w.id} className={`flex items-center p-3 border rounded-xl cursor-pointer transition-all ${formData.warehouseIds.includes(w.id) ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-slate-700/50 hover:bg-gray-50 dark:hover:bg-slate-800/30'}`}>
-                        <input 
-                          type="checkbox" 
-                          checked={formData.warehouseIds.includes(w.id)}
-                          onChange={() => toggleWarehouse(w.id)}
-                          className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 mr-3"
-                        />
-                        <span className="text-sm font-medium text-gray-800 dark:text-slate-200">{w.name}</span>
-                      </label>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Permissions */}
-              <div className="pt-4 border-t border-gray-200 dark:border-slate-700/50">
-                <h3 className="flex items-center text-lg font-bold text-gray-900 dark:text-white mb-4">
-                  <Shield className="w-5 h-5 mr-2 text-purple-600 dark:text-purple-400" />
-                  Fonctionnalités Autorisées
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {AVAILABLE_PERMISSIONS.map(p => (
-                    <label key={p.id} className={`flex items-center p-3 border rounded-xl cursor-pointer transition-all ${formData.permissions.includes(p.id) ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20' : 'border-gray-200 dark:border-slate-700/50 hover:bg-gray-50 dark:hover:bg-slate-800/30'}`}>
-                      <input 
-                        type="checkbox" 
-                        checked={formData.permissions.includes(p.id)}
-                        onChange={() => togglePermission(p.id)}
-                        className="w-4 h-4 text-purple-600 rounded border-gray-300 focus:ring-purple-500 mr-3"
-                      />
-                      <span className="text-sm font-medium text-gray-800 dark:text-slate-200">{p.label}</span>
-                    </label>
-                  ))}
-                </div>
               </div>
             </div>
 
