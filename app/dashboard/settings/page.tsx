@@ -142,6 +142,7 @@ export default function SettingsPage() {
 
   const tabs = [
     { id: 'profil', label: 'Profil de l\'entreprise', icon: Building2 },
+    { id: 'boutiques', label: 'Mes Boutiques', icon: Store },
     { id: 'regional', label: 'Régional & Devise', icon: Globe },
     { id: 'facturation', label: 'Modèles de facturation', icon: FileText },
     { id: 'equipe', label: 'Équipe & Accès', icon: Users },
@@ -174,6 +175,8 @@ export default function SettingsPage() {
     const res = await saveSettings(session.user.companyId, formData);
     if (res.success) {
       setShowSuccess(true);
+    } else {
+      alert(res.error || "Erreur lors de la sauvegarde.");
     }
     setIsSaving(false);
   };
