@@ -68,12 +68,9 @@ export async function saveSettings(requestedCompanyId: string, data: any) {
     if (!session?.user?.companyId) return { success: false, error: "Non autorisé." };
     
     // FORCER l'utilisation du companyId de la session (IDOR Fix)
-    const companyId = session.user.companyId as string;
+    const dbCompanyId = session.user.companyId as string;
     
-    const validated = SettingsSchema.safeParse({
-      ...data,
-      companyId: companyId
-    });
+    const validated = SettingsSchema.safeParse(data);
     if (!validated.success) {
       console.error("Validation failed", validated.error.issues);
       return { success: false, error: "Données invalides." };
@@ -105,6 +102,11 @@ export async function saveSettings(requestedCompanyId: string, data: any) {
           
           const filename = `${companyId}-${Date.now()}.${type}`;
           
+          const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+          if (supabaseUrl === 'https://placeholder.supabase.co') {
+             throw new Error("Supabase n'est pas configuré. Upload ignoré pour éviter de bloquer.");
+          }
+
           const { data: uploadData, error } = await getSupabase()
             .storage
             .from('logos')
@@ -131,7 +133,7 @@ export async function saveSettings(requestedCompanyId: string, data: any) {
     }
     
     const company = await prisma.company.update({
-      where: { id: companyId },
+      where: { id: dbCompanyId },
       data: {
         name: data.companyName,
         taxNumber: data.companyId,
