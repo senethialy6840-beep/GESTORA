@@ -7,6 +7,8 @@ import { SkeletonForm } from '../../../components/Skeletons';
 import { useSession } from 'next-auth/react';
 import { EmployeeModal } from '../../../components/EmployeeModal';
 import { getEmployees, createEmployee, updateEmployee, deleteEmployee } from '@/app/actions/hrActions';
+import { getWarehouses, createWarehouse } from '@/app/actions/inventoryActions';
+import { Store, Plus } from 'lucide-react';
 
 export default function SettingsPage() {
   const { data: session, status } = useSession();
@@ -36,6 +38,11 @@ export default function SettingsPage() {
   const [isEmployeeModalOpen, setIsEmployeeModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<any>(null);
 
+  const [warehouses, setWarehouses] = useState<any[]>([]);
+  const [isBoutiqueModalOpen, setIsBoutiqueModalOpen] = useState(false);
+  const [newBoutiqueName, setNewBoutiqueName] = useState('');
+  const [newBoutiqueLocation, setNewBoutiqueLocation] = useState('');
+
   useEffect(() => {
     async function load() {
       if (session?.user?.companyId) {
@@ -57,6 +64,11 @@ export default function SettingsPage() {
         const empRes = await getEmployees(session.user.companyId);
         if (empRes.success && empRes.data) {
           setEmployees(empRes.data);
+        }
+        
+        const whRes = await getWarehouses(session.user.companyId);
+        if (whRes.success && whRes.data) {
+          setWarehouses(whRes.data);
         }
       }
       setIsLoading(false);
@@ -109,6 +121,22 @@ export default function SettingsPage() {
       } else {
         alert("Erreur lors de la suppression.");
       }
+    }
+  };
+
+  const handleCreateBoutique = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newBoutiqueName.trim()) return;
+    
+    const res = await createWarehouse({ name: newBoutiqueName, location: newBoutiqueLocation });
+    if (res.success && res.data) {
+      setWarehouses(prev => [...prev, res.data]);
+      setIsBoutiqueModalOpen(false);
+      setNewBoutiqueName('');
+      setNewBoutiqueLocation('');
+      alert("Boutique ajoutée avec succès !");
+    } else {
+      alert(res.error || "Erreur lors de l'ajout de la boutique.");
     }
   };
 
@@ -372,6 +400,88 @@ export default function SettingsPage() {
                 </div>
               </div>
 
+            </div>
+          )}
+
+          {activeTab === 'boutiques' && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 space-y-6">
+              <div className="bg-white dark:bg-[#162032] rounded-2xl border border-gray-200 dark:border-slate-700/50 p-5 shadow-sm transition-colors">
+                <div className="flex justify-between items-start mb-6">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-500/10 shrink-0">
+                      <Store className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-bold text-gray-900 dark:text-white">Mes Boutiques (Points de Vente)</h2>
+                      <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Gérez vos différentes boutiques selon votre forfait.</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setIsBoutiqueModalOpen(true)}
+                    className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Ajouter
+                  </button>
+                </div>
+                
+                <div className="border border-gray-100 dark:border-slate-800 rounded-xl overflow-hidden">
+                  <table className="w-full text-sm text-left">
+                    <thead className="bg-gray-50 dark:bg-slate-800/50 text-gray-500 dark:text-slate-400">
+                      <tr>
+                        <th className="px-4 py-3 font-medium">Nom de la boutique</th>
+                        <th className="px-4 py-3 font-medium">Adresse / Localisation</th>
+                        <th className="px-4 py-3 font-medium">Créée le</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 dark:divide-slate-800/60">
+                      {warehouses.map(wh => (
+                        <tr key={wh.id} className="bg-white dark:bg-[#162032] hover:bg-gray-50 dark:hover:bg-slate-800/30">
+                          <td className="px-4 py-3 font-medium text-gray-900 dark:text-white flex items-center">
+                            <Store className="w-4 h-4 mr-2 text-gray-400" />
+                            {wh.name}
+                            {wh.isDefault && <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-[10px] uppercase font-bold rounded">Principal</span>}
+                          </td>
+                          <td className="px-4 py-3 text-gray-600 dark:text-slate-300">
+                            {wh.location || '-'}
+                          </td>
+                          <td className="px-4 py-3 text-gray-500">
+                            {new Date(wh.createdAt).toLocaleDateString('fr-FR')}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              
+              {/* Modal Ajout Boutique */}
+              {isBoutiqueModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                  <div className="w-full max-w-md bg-white dark:bg-[#162032] rounded-2xl shadow-2xl overflow-hidden">
+                    <div className="px-6 py-4 border-b border-gray-200 dark:border-slate-700/50 flex justify-between items-center bg-gray-50/50 dark:bg-[#1E293B]/50">
+                      <h2 className="text-xl font-bold text-gray-900 dark:text-white">Nouvelle Boutique</h2>
+                      <button onClick={() => setIsBoutiqueModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                    <form onSubmit={handleCreateBoutique} className="p-6 space-y-4">
+                      <div>
+                        <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Nom de la boutique *</label>
+                        <input type="text" required value={newBoutiqueName} onChange={e => setNewBoutiqueName(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700/50 bg-gray-50 dark:bg-[#0A1226] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" placeholder="Ex: GESTORA Point E" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Localisation (Optionnel)</label>
+                        <input type="text" value={newBoutiqueLocation} onChange={e => setNewBoutiqueLocation(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700/50 bg-gray-50 dark:bg-[#0A1226] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" placeholder="Ex: Point E, Rue de Thiès" />
+                      </div>
+                      <div className="pt-4 flex justify-end gap-3">
+                        <button type="button" onClick={() => setIsBoutiqueModalOpen(false)} className="px-4 py-2 text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg">Annuler</button>
+                        <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold">Créer la boutique</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

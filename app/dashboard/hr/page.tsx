@@ -44,6 +44,7 @@ export default function HrPage() {
       });
       if (res.success && res.data) {
         setEmployees(prev => prev.map(p => p.id === editingItem.id ? res.data : p));
+        alert("Employé mis à jour avec succès.");
       } else {
         alert(res.error || "Erreur lors de la mise à jour.");
       }
@@ -63,6 +64,7 @@ export default function HrPage() {
       });
       if (res.success && res.data) {
         setEmployees(prev => [res.data, ...prev]);
+        alert("Employé ajouté avec succès.");
       } else {
         alert(res.error || "Erreur lors de l'ajout.");
       }

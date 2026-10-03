@@ -33,10 +33,7 @@ model Company {
   invoicePrefix  String?  @default("FAC-")
   invoiceFooter  String?
 
-  ownerId      String?
-  owner        User?    @relation("CompanyOwner", fields: [ownerId], references: [id])
-
-  users        User[]   @relation("UserActiveCompany")
+  users        User[]
   warehouses   Warehouse[]
   products     Product[]
   customers    Customer[]
@@ -63,9 +60,7 @@ model User {
   updatedAt DateTime @updatedAt
 
   companyId String
-  company   Company @relation("UserActiveCompany", fields: [companyId], references: [id], onDelete: Cascade)
-  
-  ownedCompanies Company[] @relation("CompanyOwner")
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
   commercial Commercial?
 }
 
