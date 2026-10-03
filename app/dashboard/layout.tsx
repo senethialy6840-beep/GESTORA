@@ -361,7 +361,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </li>
               )}
 
-              {hasAccess('ENTERPRISE') && (isPlatformOwner || userRole === 'ADMIN') && (
+              {hasAccess('ENTERPRISE') && (isPlatformOwner || userRole === 'ADMIN' || userRole === 'COMMERCIAL') && (
                 <>
                   <li>
                     <Link href="/dashboard/accounting" className={getLinkClass('/dashboard/accounting')} title="Comptabilité">
@@ -380,7 +380,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </>
               )}
 
-              {hasAccess('ENTERPRISE') && (isPlatformOwner || userRole === 'ADMIN' || userRole === 'MANAGER') && (
+              {hasAccess('ENTERPRISE') && (isPlatformOwner || userRole === 'ADMIN' || userRole === 'MANAGER' || userRole === 'COMMERCIAL') && (
                 <li>
                   <Link href="/dashboard/ai" className={getLinkClass('/dashboard/ai')} title="Gestora AI">
                     {isActive('/dashboard/ai') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
@@ -389,7 +389,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   </Link>
                 </li>
               )}
-              {(isPlatformOwner || userRole === 'ADMIN') && (
+              {(isPlatformOwner || userRole === 'ADMIN' || userRole === 'COMMERCIAL') && (
                 <li>
                   <Link href="/dashboard/settings" className={getLinkClass('/dashboard/settings')} title="Paramètres">
                     {isActive('/dashboard/settings') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
