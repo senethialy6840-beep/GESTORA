@@ -45,7 +45,7 @@ export async function createEmployee(data: Omit<Employee, "id" | "createdAt" | "
       let maxEmployees = 0;
       if (plan === 'BUSINESS') maxEmployees = 5;
       else if (plan === 'ENTERPRISE') maxEmployees = 9999;
-      else maxEmployees = 0; // STARTUP ou FREE n'ont droit qu'à l'admin (0 employé additionnel)
+      else maxEmployees = 2; // STARTUP ou FREE ont droit à 2 employés supplémentaires par défaut
       
       if (employeeCount >= maxEmployees) {
         return { success: false, error: `Limite atteinte. Votre forfait ${plan} permet un maximum de ${maxEmployees} utilisateur(s) supplémentaire(s).` };
