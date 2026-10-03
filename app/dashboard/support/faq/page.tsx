@@ -45,55 +45,51 @@ export default function FAQPage() {
           answer="GESTORA est conçu pour les petits commerces, boutiques, PME et entreprises ayant plusieurs points de vente." 
         />
         <FaqItem 
-          question="3. Puis-je essayer GESTORA avant de m'abonner ?" 
-          answer="Oui, vous pouvez créer un compte et découvrir la plateforme avant de choisir l'offre adaptée à votre entreprise." 
-        />
-        <FaqItem 
-          question="4. Puis-je changer d'offre à tout moment ?" 
+          question="3. Puis-je changer d'offre à tout moment ?" 
           answer="Oui. Vous pouvez passer à une offre supérieure ou modifier votre abonnement selon l'évolution de vos besoins." 
         />
         <FaqItem 
-          question="5. Puis-je gérer plusieurs boutiques ?" 
+          question="4. Puis-je gérer plusieurs boutiques ?" 
           answer="Oui. L'offre Starter permet de gérer 1 boutique, Business jusqu'à 3 boutiques et Entreprise un nombre illimité de boutiques." 
         />
         <FaqItem 
-          question="6. Combien d'utilisateurs puis-je ajouter ?" 
+          question="5. Combien d'utilisateurs puis-je ajouter ?" 
           answer="Cela dépend de votre offre : Starter (1 utilisateur), Business (jusqu'à 5 utilisateurs), Entreprise (utilisateurs illimités)." 
         />
         <FaqItem 
-          question="7. Mes données sont-elles sécurisées ?" 
+          question="6. Mes données sont-elles sécurisées ?" 
           answer="GESTORA met en place des mesures de sécurité pour protéger les données de votre entreprise et contrôler les accès des utilisateurs." 
         />
         <FaqItem 
-          question="8. Puis-je accéder à GESTORA depuis mon téléphone ?" 
+          question="7. Puis-je accéder à GESTORA depuis mon téléphone ?" 
           answer="Oui. GESTORA est conçu pour fonctionner sur ordinateur, tablette et smartphone." 
         />
         <FaqItem 
-          question="9. Que se passe-t-il si je dépasse les limites de mon offre ?" 
+          question="8. Que se passe-t-il si je dépasse les limites de mon offre ?" 
           answer="Vous serez invité à passer à une offre supérieure afin de continuer à utiliser les fonctionnalités ou capacités supplémentaires." 
         />
         <FaqItem 
-          question="10. Puis-je résilier mon abonnement ?" 
+          question="9. Puis-je résilier mon abonnement ?" 
           answer="Oui. Vous pouvez demander l'arrêt ou la modification de votre abonnement selon les conditions applicables à votre formule." 
         />
         <FaqItem 
-          question="11. Quels moyens de paiement sont acceptés ?" 
+          question="10. Quels moyens de paiement sont acceptés ?" 
           answer="Les moyens de paiement disponibles sont affichés au moment du paiement et peuvent varier selon votre pays et votre mode d'abonnement." 
         />
         <FaqItem 
-          question="12. L'intelligence artificielle est-elle disponible pour toutes les offres ?" 
+          question="11. L'intelligence artificielle est-elle disponible pour toutes les offres ?" 
           answer="L'assistant intelligent YEYA AI est inclus dans l'offre Entreprise." 
         />
         <FaqItem 
-          question="13. Puis-je obtenir de l'aide en cas de problème ?" 
+          question="12. Puis-je obtenir de l'aide en cas de problème ?" 
           answer="Oui. GESTORA propose une assistance pour accompagner les utilisateurs dans l'utilisation de la plateforme." 
         />
         <FaqItem 
-          question="14. Que se passe-t-il avec mes données si je change d'offre ?" 
+          question="13. Que se passe-t-il avec mes données si je change d'offre ?" 
           answer="Vos données restent associées à votre entreprise. Le changement d'offre modifie principalement les fonctionnalités et limites disponibles." 
         />
         <FaqItem 
-          question="15. Comment commencer avec GESTORA ?" 
+          question="14. Comment commencer avec GESTORA ?" 
           answer="Créez votre compte, configurez votre entreprise et choisissez l'offre adaptée à vos besoins pour commencer à gérer votre activité." 
         />
       </div>

@@ -6,7 +6,7 @@ import { Suspense, useState, useEffect, useRef } from 'react';
 import { 
   LayoutDashboard, BarChart3, Sparkles, Monitor, ShoppingCart, 
   Users, Package, Box, Truck, Calculator, FileText, Users2, 
-  Building, Search, Menu, PanelLeftClose, PanelLeftOpen, Settings, User, LogOut, HelpCircle, X, CreditCard, Shield
+  Building, Search, Menu, PanelLeftClose, PanelLeftOpen, Settings, User, LogOut, HelpCircle, X, CreditCard, Shield, Store
 } from 'lucide-react';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { useSession, signOut } from 'next-auth/react';
@@ -487,6 +487,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <div className="py-1">
                     <Link href="/dashboard/profile" className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-slate-800/50">
                       <User className="w-4 h-4 mr-3" /> Mon profil
+                    </Link>
+                    <Link href="/dashboard/settings/boutiques" className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-slate-800/50">
+                      <Store className="w-4 h-4 mr-3" /> Mes boutiques
                     </Link>
                   </div>
                   <div className="py-1 border-t border-gray-200 dark:border-slate-700/50">

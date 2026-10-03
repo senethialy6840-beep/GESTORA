@@ -131,10 +131,10 @@ export async function POST(request: NextRequest) {
       </div>
     `;
 
-    // Send email to gestorame112@gmail.com
+    // Send email to gestorame122@gmail.com
     await transporter.sendMail({
       from: `"GESTORA Contact" <${process.env.SMTP_USER}>`,
-      to: 'gestorame112@gmail.com',
+      to: 'gestorame122@gmail.com',
       replyTo: email,
       subject: `📩 [GESTORA Contact] ${subject} — ${firstName} ${lastName}`,
       html: htmlContent,

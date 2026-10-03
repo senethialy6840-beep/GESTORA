@@ -5,7 +5,6 @@ import { Users2, Plus, Search, Edit, Trash2, Shield, UserCog, UserCheck, UserX }
 import { EmployeeModal } from '../../../components/EmployeeModal';
 import { useSession } from 'next-auth/react';
 import { getEmployees, createEmployee, updateEmployee, deleteEmployee } from '@/app/actions/hrActions';
-import { toast } from 'react-hot-toast';
 
 export default function HrPage() {
   const { data: session } = useSession();
@@ -45,9 +44,8 @@ export default function HrPage() {
       });
       if (res.success && res.data) {
         setEmployees(prev => prev.map(p => p.id === editingItem.id ? res.data : p));
-        toast.success("Employé mis à jour avec succès.");
       } else {
-        toast.error(res.error || "Erreur lors de la mise à jour.");
+        alert(res.error || "Erreur lors de la mise à jour.");
       }
     } else {
       // Create
@@ -65,9 +63,8 @@ export default function HrPage() {
       });
       if (res.success && res.data) {
         setEmployees(prev => [res.data, ...prev]);
-        toast.success("Employé ajouté avec succès.");
       } else {
-        toast.error(res.error || "Erreur lors de l'ajout.");
+        alert(res.error || "Erreur lors de l'ajout.");
       }
     }
   };
