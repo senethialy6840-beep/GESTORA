@@ -151,6 +151,11 @@ export default function SettingsPage() {
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Vérifier la taille (max 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        alert("Le logo est trop volumineux. La taille maximale est de 2 Mo.");
+        return;
+      }
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64 = reader.result as string;
@@ -172,13 +177,19 @@ export default function SettingsPage() {
   const handleSave = async () => {
     if (!session?.user?.companyId) return;
     setIsSaving(true);
-    const res = await saveSettings(session.user.companyId, formData);
-    if (res.success) {
-      setShowSuccess(true);
-    } else {
-      alert(res.error || "Erreur lors de la sauvegarde.");
+    try {
+      const res = await saveSettings(session.user.companyId, formData);
+      if (res.success) {
+        setShowSuccess(true);
+      } else {
+        alert(res.error || "Erreur lors de la sauvegarde.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Une erreur est survenue (fichier potentiellement trop volumineux).");
+    } finally {
+      setIsSaving(false);
     }
-    setIsSaving(false);
   };
 
   return (

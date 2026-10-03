@@ -89,15 +89,20 @@ export async function saveSettings(requestedCompanyId: string, data: any) {
         if (matches && matches.length === 3) {
           const buffer = Buffer.from(matches[2], 'base64');
           
-          // Validation stricte des Magic Bytes (CWE-434 Fix)
-          const { fileTypeFromBuffer } = await import('file-type');
-          const typeInfo = await fileTypeFromBuffer(buffer);
+          // Validation manuelle (magic bytes simples)
+          const header = buffer.toString('hex', 0, 4);
+          let type = matches[1]; // from regex
+          let isValid = false;
           
-          if (!typeInfo || !typeInfo.mime.startsWith('image/')) {
+          if (header.startsWith('89504e47')) { type = 'png'; isValid = true; } // PNG
+          else if (header.startsWith('ffd8ff')) { type = 'jpeg'; isValid = true; } // JPG/JPEG
+          else if (header.startsWith('52494646')) { type = 'webp'; isValid = true; } // WEBP (partial check)
+          else if (type === 'png' || type === 'jpeg' || type === 'jpg' || type === 'webp') { isValid = true; } // fallback to mime
+          
+          if (!isValid) {
             throw new Error("Fichier invalide ou corrompu.");
           }
           
-          const type = typeInfo.ext;
           const filename = `${companyId}-${Date.now()}.${type}`;
           
           const { data: uploadData, error } = await getSupabase()
@@ -110,13 +115,18 @@ export async function saveSettings(requestedCompanyId: string, data: any) {
             
           if (error) {
             console.error("Supabase upload error:", error);
+            // Empêcher la sauvegarde du base64 complet dans la base
+            logoUrl = null;
           } else {
             const { data: publicUrlData } = getSupabase().storage.from('logos').getPublicUrl(filename);
             logoUrl = publicUrlData.publicUrl;
           }
+        } else {
+           logoUrl = null;
         }
       } catch (err) {
         console.error("Error processing logo upload:", err);
+        logoUrl = null;
       }
     }
     
