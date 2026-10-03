@@ -5,6 +5,7 @@ import { prisma, ensureCompanyExists } from "@/lib/prisma";
 import { Employee } from "@prisma/client";
 import { EmployeeSchema } from "@/lib/validations";
 import { auth } from "@/auth";
+import { sendEmployeeWelcomeEmail } from "@/lib/mailer";
 
 export async function getEmployees(_companyId?: string) {
   try {
@@ -34,7 +35,7 @@ export async function createEmployee(data: Omit<Employee, "id" | "createdAt" | "
     // Vérification des limites selon le forfait
     const company = await prisma.company.findUnique({
       where: { id: data.companyId },
-      select: { plan: true, _count: { select: { employees: true } } }
+      select: { name: true, plan: true, _count: { select: { employees: true } } }
     });
     
     if (company) {
@@ -78,6 +79,11 @@ export async function createEmployee(data: Omit<Employee, "id" | "createdAt" | "
           isActive: data.status === 'ACTIVE'
         }
       });
+
+      // Envoi de l'email de bienvenue
+      if (company && company.name) {
+        await sendEmployeeWelcomeEmail(data.email, data.firstName, company.name);
+      }
     }
 
     const employee = await prisma.employee.create({

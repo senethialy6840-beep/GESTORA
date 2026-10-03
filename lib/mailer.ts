@@ -116,3 +116,44 @@ export const sendPasswordResetEmail = async (email: string, resetLink: string) =
     console.error('[Mailer] Erreur envoi reset password:', error);
   }
 };
+
+/**
+ * Envoie un email de bienvenue à un nouvel employé avec ses accès.
+ */
+export const sendEmployeeWelcomeEmail = async (email: string, firstName: string, companyName: string) => {
+  if (!process.env.SMTP_USER) return;
+
+  try {
+    await transporter.sendMail({
+      from: `"GESTORA" <${process.env.SMTP_USER}>`,
+      to: email,
+      subject: `👋 Bienvenue sur GESTORA - Vos accès à ${companyName}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 24px; background: #f8fafc; border-radius: 12px;">
+          <div style="background: #1e40af; padding: 16px 24px; border-radius: 8px 8px 0 0;">
+            <h1 style="color: white; margin: 0; font-size: 20px;">🏪 GESTORA</h1>
+          </div>
+          <div style="background: white; padding: 24px; border-radius: 0 0 8px 8px; border: 1px solid #e2e8f0;">
+            <h2 style="color: #1e293b; margin-top: 0;">Bienvenue ${firstName} !</h2>
+            <p style="color: #374151;">Vous avez été ajouté(e) en tant qu'employé(e) sur la boutique <strong>${companyName}</strong> via GESTORA.</p>
+            <p style="color: #374151;">Voici vos informations de connexion par défaut :</p>
+            <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 16px; margin: 16px 0;">
+              <p style="margin: 0; font-size: 14px; color: #374151;"><strong>Identifiant (Email) :</strong> ${email}</p>
+              <p style="margin: 8px 0 0; font-size: 14px; color: #374151;"><strong>Mot de passe :</strong> Gestora2026</p>
+            </div>
+            <p style="color: #64748b; font-size: 14px;">Nous vous recommandons de modifier ce mot de passe après votre première connexion (si la fonctionnalité est activée) ou de le conserver en lieu sûr.</p>
+            <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://gestora.sn'}/login" 
+               style="display: inline-block; background: #1e40af; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; margin: 16px 0;">
+              Se connecter à GESTORA →
+            </a>
+            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;" />
+            <p style="color: #94a3b8; font-size: 12px; margin: 0;">GESTORA — Plateforme de gestion d'entreprise</p>
+          </div>
+        </div>
+      `,
+    });
+    console.log(\`[Mailer] ✅ Email de bienvenue envoyé à l'employé \${email}\`);
+  } catch (error) {
+    console.error('[Mailer] Erreur envoi email bienvenue employé:', error);
+  }
+};
