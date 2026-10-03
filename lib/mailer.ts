@@ -152,7 +152,7 @@ export const sendEmployeeWelcomeEmail = async (email: string, firstName: string,
         </div>
       `,
     });
-    console.log(\`[Mailer] ✅ Email de bienvenue envoyé à l'employé \${email}\`);
+    console.log(`[Mailer] ✅ Email de bienvenue envoyé à l'employé ${email}`);
   } catch (error) {
     console.error('[Mailer] Erreur envoi email bienvenue employé:', error);
   }
