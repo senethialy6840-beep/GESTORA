@@ -123,7 +123,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   };
 
   const userRole = (session?.user as any)?.role || 'USER';
-  const userPlan = (session?.user as any)?.plan || 'FREE';
+  const userPlan = (session?.user as any)?.plan || 'GRATUIT';
   const sessionEmail = (session?.user as any)?.email || '';
 
   const isPlatformOwner = sessionEmail.trim().toLowerCase() === 'gestorame112@gmail.com' || userRole === 'SUPER_ADMIN';
@@ -135,8 +135,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     // Les COMMERCIAUX ont accès à toutes les fonctionnalités de l'application pour les démos
     if (userRole === 'COMMERCIAL') return true;
 
-    // ENTERPRISE a toujours accès à tout
-    if (userPlan === 'ENTERPRISE') return true;
+    // ENTREPRISE a toujours accès à tout
+    if (userPlan === 'ENTREPRISE') return true;
     
     // BUSINESS a accès aux siens et à ceux de STARTUP
     if (userPlan === 'BUSINESS' && ['STARTUP', 'BUSINESS'].includes(requiredPlan)) return true;
@@ -152,7 +152,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   
   // 1. Restriction par Forfait (PLAN)
   if (pathname.startsWith('/dashboard/accounting') || pathname.startsWith('/dashboard/hr') || pathname.startsWith('/dashboard/ai')) {
-    requiredPlanForCurrentRoute = 'ENTERPRISE';
+    requiredPlanForCurrentRoute = 'ENTREPRISE';
   } else if (pathname.startsWith('/dashboard/inventory') || pathname.startsWith('/dashboard/reports') || pathname.startsWith('/dashboard/purchases') || pathname.startsWith('/dashboard/invoices')) {
     requiredPlanForCurrentRoute = 'BUSINESS';
   }
@@ -362,7 +362,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </li>
               )}
 
-              {hasAccess('ENTERPRISE') && (isPlatformOwner || userRole === 'ADMIN' || userRole === 'COMMERCIAL') && (
+              {hasAccess('ENTREPRISE') && (isPlatformOwner || userRole === 'ADMIN' || userRole === 'COMMERCIAL') && (
                 <>
                   <li>
                     <Link href="/dashboard/accounting" className={getLinkClass('/dashboard/accounting')} title="Comptabilité">
@@ -381,7 +381,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </>
               )}
 
-              {hasAccess('ENTERPRISE') && (isPlatformOwner || userRole === 'ADMIN' || userRole === 'MANAGER' || userRole === 'COMMERCIAL') && (
+              {hasAccess('ENTREPRISE') && (isPlatformOwner || userRole === 'ADMIN' || userRole === 'MANAGER' || userRole === 'COMMERCIAL') && (
                 <li>
                   <Link href="/dashboard/ai" className={getLinkClass('/dashboard/ai')} title="Gestora AI">
                     {isActive('/dashboard/ai') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}

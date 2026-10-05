@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Check, CreditCard, Rocket, Building2, Briefcase, Sparkles, Loader2 } from 'lucide-react';
 
-export type PlanId = 'STARTUP' | 'BUSINESS' | 'ENTERPRISE';
+export type PlanId = 'STARTUP' | 'BUSINESS' | 'ENTREPRISE';
 
 interface PricingCardsProps {
   onSelectPlan: (planId: PlanId, billingCycle: 'monthly' | 'annually', amount: number) => void;
@@ -60,7 +60,7 @@ export function PricingCards({ onSelectPlan, loadingPlan }: PricingCardsProps) {
       popular: true
     },
     {
-      id: 'ENTERPRISE' as PlanId,
+      id: 'ENTREPRISE' as PlanId,
       name: 'Enterprise',
       icon: <Building2 className="w-6 h-6 text-purple-600 dark:text-purple-400" />,
       monthlyPrice: '25 900 FCFA',
@@ -174,7 +174,7 @@ export function PricingCards({ onSelectPlan, loadingPlan }: PricingCardsProps) {
                 className={`w-full py-3.5 rounded-xl font-bold text-white transition-all shadow-sm flex items-center justify-center space-x-2 
                   ${plan.popular 
                     ? 'bg-emerald-600 hover:bg-emerald-700' 
-                    : plan.id === 'ENTERPRISE' 
+                    : plan.id === 'ENTREPRISE' 
                       ? 'bg-purple-600 hover:bg-purple-700'
                       : 'bg-blue-600 hover:bg-blue-700'
                   } disabled:opacity-70 disabled:cursor-not-allowed`}

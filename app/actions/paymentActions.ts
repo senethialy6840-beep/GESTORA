@@ -42,12 +42,12 @@ export async function generateSasPayLink(data: SasPayPaymentRequest) {
       ? {
           STARTUP: process.env.NEXT_PUBLIC_SASPAY_STARTUP_ANNUAL_LINK || "https://link.saspay.me/gqymsozxixo",
           BUSINESS: process.env.NEXT_PUBLIC_SASPAY_BUSINESS_ANNUAL_LINK || "https://link.saspay.me/jji9l4_m6vq",
-          ENTERPRISE: process.env.NEXT_PUBLIC_SASPAY_ENTERPRISE_ANNUAL_LINK || "https://link.saspay.me/lbss48r_f2q",
+          ENTREPRISE: process.env.NEXT_PUBLIC_SASPAY_ENTERPRISE_ANNUAL_LINK || "https://link.saspay.me/lbss48r_f2q",
         }
       : {
           STARTUP: "https://link.saspay.me/f8sr3zdfo2c",
           BUSINESS: "https://link.saspay.me/bwxsw0vkv_u",
-          ENTERPRISE: "https://link.saspay.me/36vjlj7csvi",
+          ENTREPRISE: "https://link.saspay.me/36vjlj7csvi",
         };
 
     const configuredLink = plan ? linkByPlan[plan] : undefined;

@@ -120,12 +120,14 @@ export async function createWarehouse(data: { name: string, location?: string })
     });
     
     if (company) {
-      const plan = company.plan || 'FREE';
+      const plan = company.plan || 'GRATUIT';
       const warehouseCount = company._count.warehouses;
       
-      let maxWarehouses = 1;
-      if (plan === 'BUSINESS') maxWarehouses = 3;
-      else if (plan === 'ENTERPRISE') maxWarehouses = 9999;
+      let maxWarehouses = 0;
+      if (plan === 'STARTUP') maxWarehouses = 1;
+      else if (plan === 'BUSINESS') maxWarehouses = 3;
+      else if (plan === 'ENTREPRISE') maxWarehouses = 9999;
+      else maxWarehouses = 1; // GRATUIT
       
       if (warehouseCount >= maxWarehouses) {
         return { success: false, error: `Limite atteinte. Votre forfait ${plan} permet un maximum de ${maxWarehouses} boutique(s).` };

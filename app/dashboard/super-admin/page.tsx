@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { getAllCompanies, updateCompanySubscription, deleteCompany } from '@/app/actions/superAdminActions';
 
 const PLATFORM_OWNER_EMAIL = 'gestorame112@gmail.com';
-const PLANS = ['FREE', 'STARTUP', 'BUSINESS', 'ENTERPRISE'];
+const PLANS = ['GRATUIT', 'STARTUP', 'BUSINESS', 'ENTREPRISE'];
 const STATUSES = ['ACTIVE', 'PENDING', 'EXPIRED', 'CANCELLED'];
 
 // Composant séparé pour chaque ligne d'entreprise (évite les hooks dans .map)

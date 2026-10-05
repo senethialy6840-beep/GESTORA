@@ -119,7 +119,7 @@ export async function createCommercial(data: { prenom: string, nom: string, emai
     const hashedPassword = await bcrypt.hash("password123", 10);
 
     const newCompany = await prisma.company.create({
-      data: { name: `Commercial - ${prenom} ${nom}`, plan: "FREE" }
+      data: { name: `Commercial - ${prenom} ${nom}`, plan: "GRATUIT" }
     });
 
     const newUser = await prisma.user.create({

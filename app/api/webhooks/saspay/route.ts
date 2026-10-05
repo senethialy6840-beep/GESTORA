@@ -27,10 +27,10 @@ function verifySignature(body: string, signature: string | null, secret: string)
 const PLAN_MAP: Record<string, string> = {
   startup: "STARTUP",
   business: "BUSINESS",
-  enterprise: "ENTERPRISE",
+  enterprise: "ENTREPRISE",
   STARTUP: "STARTUP",
   BUSINESS: "BUSINESS",
-  ENTERPRISE: "ENTERPRISE",
+  ENTREPRISE: "ENTREPRISE",
 };
 
 export async function POST(req: Request) {
@@ -140,7 +140,7 @@ export async function POST(req: Request) {
         },
       });
 
-      const amount = paymentData.amount || payload.amount || (plan === "STARTUP" ? 5900 : plan === "BUSINESS" ? 14900 : plan === "ENTERPRISE" ? 29900 : 0);
+      const amount = paymentData.amount || payload.amount || (plan === "STARTUP" ? 5900 : plan === "BUSINESS" ? 14900 : plan === "ENTREPRISE" ? 29900 : 0);
       
       const subPayment = await prisma.subscriptionPayment.create({
         data: {
