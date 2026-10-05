@@ -3,7 +3,6 @@
 import { prisma } from '@/lib/prisma';
 import { subDays, startOfMonth, subMonths, endOfDay, startOfDay, format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { fr } from 'date-fns/locale';
 import { auth } from '@/auth';
 import { cookies } from 'next/headers';
 
