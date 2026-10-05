@@ -99,8 +99,7 @@ export async function saveSettings(requestedCompanyId: string, data: any) {
           if (!isValid) {
             throw new Error("Fichier invalide ou corrompu.");
           }
-          
-          const filename = `${companyId}-${Date.now()}.${type}`;
+          const filename = `${dbCompanyId}-${Date.now()}.${type}`;
           
           const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
           if (supabaseUrl === 'https://placeholder.supabase.co') {

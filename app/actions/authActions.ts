@@ -143,6 +143,14 @@ export async function registerUser(data: { prenom: string, nom: string, entrepri
       }
     });
 
+    await prisma.warehouse.create({
+      data: {
+        name: entreprise,
+        isDefault: true,
+        companyId: newCompany.id,
+      }
+    });
+
     const newUser = await prisma.user.create({
       data: {
         firstName: prenom,

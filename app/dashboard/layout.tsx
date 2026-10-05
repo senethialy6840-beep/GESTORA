@@ -6,7 +6,7 @@ import { Suspense, useState, useEffect, useRef } from 'react';
 import { 
   LayoutDashboard, BarChart3, Sparkles, Monitor, ShoppingCart, 
   Users, Package, Box, Truck, Calculator, FileText, Users2, 
-  Building, Search, Menu, PanelLeftClose, PanelLeftOpen, Settings, User, LogOut, HelpCircle, X, CreditCard, Shield
+  Building, Search, Menu, PanelLeftClose, PanelLeftOpen, Settings, User, LogOut, HelpCircle, X, CreditCard, Shield, Store
 } from 'lucide-react';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { useSession, signOut } from 'next-auth/react';
@@ -293,6 +293,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   {!isSidebarCollapsed && <span className="truncate">Tableau de bord</span>}
                 </Link>
               </li>
+
+              {(isPlatformOwner || userRole === 'ADMIN' || userRole === 'MANAGER' || userRole === 'COMMERCIAL') && (
+                <li>
+                  <Link href="/dashboard/boutiques" className={getLinkClass('/dashboard/boutiques')} title="Mes Boutiques">
+                    {isActive('/dashboard/boutiques') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
+                    <Store className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/boutiques') ? 'text-blue-400' : ''}`} />
+                    {!isSidebarCollapsed && <span className="truncate">Mes Boutiques</span>}
+                  </Link>
+                </li>
+              )}
 
               {hasAccess('STARTUP') && (
                 <>

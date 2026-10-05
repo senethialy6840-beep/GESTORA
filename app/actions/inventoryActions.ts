@@ -162,3 +162,48 @@ export async function getWarehouses(_companyId?: string) {
     return { success: false, error: error.message };
   }
 }
+
+export async function updateWarehouse(id: string, data: { name: string, location?: string }) {
+  try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    
+    // Check ownership
+    const existing = await prisma.warehouse.findUnique({ where: { id } });
+    if (!existing || existing.companyId !== session.user.companyId) {
+      return { success: false, error: "Non autorisé" };
+    }
+    
+    const warehouse = await prisma.warehouse.update({
+      where: { id },
+      data: { name: data.name, location: data.location }
+    });
+    
+    revalidatePath("/dashboard/boutiques");
+    revalidatePath("/dashboard/settings");
+    return { success: true, data: warehouse };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function deleteWarehouse(id: string) {
+  try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    
+    // Check ownership
+    const existing = await prisma.warehouse.findUnique({ where: { id } });
+    if (!existing || existing.companyId !== session.user.companyId) {
+      return { success: false, error: "Non autorisé" };
+    }
+    
+    await prisma.warehouse.delete({ where: { id } });
+    
+    revalidatePath("/dashboard/boutiques");
+    revalidatePath("/dashboard/settings");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
