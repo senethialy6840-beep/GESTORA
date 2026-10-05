@@ -1,17 +1,19 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Settings, Save, Building2, Globe, FileText, Users, UploadCloud, Image as ImageIcon, Loader2, Check, X, Phone, Mail, MapPin, Trash2 } from 'lucide-react';
+import { Settings, Save, Building2, Globe, FileText, Users, UploadCloud, Image as ImageIcon, Loader2, Check, X, Phone, Mail, MapPin, Trash2, Store, Plus, Edit2, ChevronRight } from 'lucide-react';
 import { getSettings, saveSettings } from '../../actions/settingsActions';
 import { SkeletonForm } from '../../../components/Skeletons';
 import { useSession } from 'next-auth/react';
 import { EmployeeModal } from '../../../components/EmployeeModal';
 import { getEmployees, createEmployee, updateEmployee, deleteEmployee } from '@/app/actions/hrActions';
-import { getWarehouses, createWarehouse } from '@/app/actions/inventoryActions';
-import { Store, Plus } from 'lucide-react';
+import { getWarehouses, createWarehouse, updateWarehouse, deleteWarehouse } from '@/app/actions/inventoryActions';
+import { useRouter } from 'next/navigation';
+import Cookies from 'js-cookie';
 
 export default function SettingsPage() {
   const { data: session, status } = useSession();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('profil');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
@@ -42,6 +44,8 @@ export default function SettingsPage() {
   const [isBoutiqueModalOpen, setIsBoutiqueModalOpen] = useState(false);
   const [newBoutiqueName, setNewBoutiqueName] = useState('');
   const [newBoutiqueLocation, setNewBoutiqueLocation] = useState('');
+  const [isBoutiqueEditing, setIsBoutiqueEditing] = useState(false);
+  const [currentBoutiqueId, setCurrentBoutiqueId] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -124,20 +128,62 @@ export default function SettingsPage() {
     }
   };
 
+  const handleOpenBoutiqueModal = (warehouse?: any) => {
+    if (warehouse) {
+      setIsBoutiqueEditing(true);
+      setCurrentBoutiqueId(warehouse.id);
+      setNewBoutiqueName(warehouse.name);
+      setNewBoutiqueLocation(warehouse.location || '');
+    } else {
+      setIsBoutiqueEditing(false);
+      setCurrentBoutiqueId(null);
+      setNewBoutiqueName('');
+      setNewBoutiqueLocation('');
+    }
+    setIsBoutiqueModalOpen(true);
+  };
+
   const handleCreateBoutique = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newBoutiqueName.trim()) return;
     
-    const res = await createWarehouse({ name: newBoutiqueName, location: newBoutiqueLocation });
-    if (res.success && res.data) {
-      setWarehouses(prev => [...prev, res.data]);
-      setIsBoutiqueModalOpen(false);
-      setNewBoutiqueName('');
-      setNewBoutiqueLocation('');
-      alert("Boutique ajoutée avec succès !");
+    if (isBoutiqueEditing && currentBoutiqueId) {
+      const res = await updateWarehouse(currentBoutiqueId, { name: newBoutiqueName, location: newBoutiqueLocation });
+      if (res.success && res.data) {
+        setWarehouses(prev => prev.map(w => w.id === currentBoutiqueId ? res.data : w));
+        setIsBoutiqueModalOpen(false);
+      } else {
+        alert(res.error || "Erreur lors de la modification de la boutique.");
+      }
     } else {
-      alert(res.error || "Erreur lors de l'ajout de la boutique.");
+      const res = await createWarehouse({ name: newBoutiqueName, location: newBoutiqueLocation });
+      if (res.success && res.data) {
+        setWarehouses(prev => [...prev, res.data]);
+        setIsBoutiqueModalOpen(false);
+        setNewBoutiqueName('');
+        setNewBoutiqueLocation('');
+        alert("Boutique ajoutée avec succès !");
+      } else {
+        alert(res.error || "Erreur lors de l'ajout de la boutique.");
+      }
     }
+  };
+
+  const handleDeleteBoutique = async (e: React.MouseEvent, id: string, name: string) => {
+    e.stopPropagation();
+    if (confirm(`Voulez-vous vraiment supprimer la boutique "${name}" ?`)) {
+      const res = await deleteWarehouse(id);
+      if (res.success) {
+        setWarehouses(prev => prev.filter(w => w.id !== id));
+      } else {
+        alert(res.error || "Erreur lors de la suppression.");
+      }
+    }
+  };
+
+  const handleEnterBoutique = (id: string) => {
+    Cookies.set('activeBoutiqueId', id, { expires: 7 });
+    router.push('/dashboard');
   };
 
   const tabs = [
@@ -427,11 +473,11 @@ export default function SettingsPage() {
                     </div>
                     <div>
                       <h2 className="text-lg font-bold text-gray-900 dark:text-white">Mes Boutiques (Points de Vente)</h2>
-                      <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Gérez vos différentes boutiques selon votre forfait.</p>
+                      <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Gérez vos différentes boutiques selon votre forfait et accédez à leurs fonctionnalités.</p>
                     </div>
                   </div>
                   <button 
-                    onClick={() => setIsBoutiqueModalOpen(true)}
+                    onClick={() => handleOpenBoutiqueModal()}
                     className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm"
                   >
                     <Plus className="w-4 h-4 mr-2" />
@@ -439,58 +485,93 @@ export default function SettingsPage() {
                   </button>
                 </div>
                 
-                <div className="border border-gray-100 dark:border-slate-800 rounded-xl overflow-hidden">
-                  <table className="w-full text-sm text-left">
-                    <thead className="bg-gray-50 dark:bg-slate-800/50 text-gray-500 dark:text-slate-400">
-                      <tr>
-                        <th className="px-4 py-3 font-medium">Nom de la boutique</th>
-                        <th className="px-4 py-3 font-medium">Adresse / Localisation</th>
-                        <th className="px-4 py-3 font-medium">Créée le</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100 dark:divide-slate-800/60">
-                      {warehouses.map(wh => (
-                        <tr key={wh.id} className="bg-white dark:bg-[#162032] hover:bg-gray-50 dark:hover:bg-slate-800/30">
-                          <td className="px-4 py-3 font-medium text-gray-900 dark:text-white flex items-center">
-                            <Store className="w-4 h-4 mr-2 text-gray-400" />
-                            {wh.name}
-                            {wh.isDefault && <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-[10px] uppercase font-bold rounded">Principal</span>}
-                          </td>
-                          <td className="px-4 py-3 text-gray-600 dark:text-slate-300">
-                            {wh.location || '-'}
-                          </td>
-                          <td className="px-4 py-3 text-gray-500">
-                            {new Date(wh.createdAt).toLocaleDateString('fr-FR')}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {warehouses.map((warehouse) => (
+                    <div 
+                      key={warehouse.id}
+                      onClick={() => handleEnterBoutique(warehouse.id)}
+                      className="group relative bg-gray-50 dark:bg-[#0A1226] rounded-xl border border-gray-200 dark:border-slate-700/50 p-5 hover:shadow-md hover:border-blue-300 dark:hover:border-blue-500/50 transition-all cursor-pointer flex flex-col"
+                    >
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                          <Store className="w-5 h-5" />
+                        </div>
+                        <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
+                          <button 
+                            onClick={() => handleOpenBoutiqueModal(warehouse)}
+                            className="p-1.5 text-gray-400 hover:text-blue-600 bg-white hover:bg-blue-50 dark:bg-slate-800 dark:hover:bg-blue-500/10 rounded-md transition-colors"
+                            title="Modifier"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button 
+                            onClick={(e) => handleDeleteBoutique(e, warehouse.id, warehouse.name)}
+                            className="p-1.5 text-gray-400 hover:text-red-600 bg-white hover:bg-red-50 dark:bg-slate-800 dark:hover:bg-red-500/10 rounded-md transition-colors"
+                            title="Supprimer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="flex-1">
+                        <h3 className="text-[15px] font-bold text-gray-900 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                          {warehouse.name}
+                          {warehouse.isDefault && (
+                            <span className="ml-2 px-2 py-0.5 bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 text-[10px] uppercase font-bold rounded-full align-middle">
+                              Principale
+                            </span>
+                          )}
+                        </h3>
+                        <div className="flex items-center text-gray-500 dark:text-slate-400 text-xs mt-2">
+                          <MapPin className="w-3 h-3 mr-1 shrink-0" />
+                          <span className="truncate">{warehouse.location || "Aucune adresse"}</span>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 pt-3 border-t border-gray-200 dark:border-slate-700/50 flex items-center justify-between text-blue-600 dark:text-blue-400 font-medium text-xs">
+                        <span>Accéder à la boutique</span>
+                        <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {warehouses.length === 0 && (
+                    <div className="col-span-full py-8 text-center bg-gray-50 dark:bg-[#0A1226] rounded-xl border border-gray-200 dark:border-slate-700/50">
+                      <Store className="w-8 h-8 text-gray-300 dark:text-slate-600 mx-auto mb-3" />
+                      <p className="text-sm text-gray-500 dark:text-slate-400">Vous n'avez pas encore ajouté de boutique.</p>
+                    </div>
+                  )}
                 </div>
               </div>
               
-              {/* Modal Ajout Boutique */}
+              {/* Modal Ajout/Modif Boutique */}
               {isBoutiqueModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-                  <div className="w-full max-w-md bg-white dark:bg-[#162032] rounded-2xl shadow-2xl overflow-hidden">
+                  <div className="w-full max-w-md bg-white dark:bg-[#162032] rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                     <div className="px-6 py-4 border-b border-gray-200 dark:border-slate-700/50 flex justify-between items-center bg-gray-50/50 dark:bg-[#1E293B]/50">
-                      <h2 className="text-xl font-bold text-gray-900 dark:text-white">Nouvelle Boutique</h2>
-                      <button onClick={() => setIsBoutiqueModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+                      <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                        {isBoutiqueEditing ? 'Modifier la boutique' : 'Nouvelle Boutique'}
+                      </h2>
+                      <button onClick={() => setIsBoutiqueModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
                         <X className="w-5 h-5" />
                       </button>
                     </div>
+                    
                     <form onSubmit={handleCreateBoutique} className="p-6 space-y-4">
-                      <div>
-                        <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Nom de la boutique *</label>
-                        <input type="text" required value={newBoutiqueName} onChange={e => setNewBoutiqueName(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700/50 bg-gray-50 dark:bg-[#0A1226] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" placeholder="Ex: GESTORA Point E" />
+                      <div className="space-y-1.5">
+                        <label className="block text-sm font-bold text-gray-700 dark:text-slate-300">Nom de la boutique *</label>
+                        <input type="text" required value={newBoutiqueName} onChange={e => setNewBoutiqueName(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700/50 bg-gray-50 dark:bg-[#0A1226] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Ex: GESTORA Point E" />
                       </div>
-                      <div>
-                        <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Localisation (Optionnel)</label>
-                        <input type="text" value={newBoutiqueLocation} onChange={e => setNewBoutiqueLocation(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700/50 bg-gray-50 dark:bg-[#0A1226] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" placeholder="Ex: Point E, Rue de Thiès" />
+                      <div className="space-y-1.5">
+                        <label className="block text-sm font-bold text-gray-700 dark:text-slate-300">Localisation (Optionnel)</label>
+                        <input type="text" value={newBoutiqueLocation} onChange={e => setNewBoutiqueLocation(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700/50 bg-gray-50 dark:bg-[#0A1226] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Ex: Point E, Rue de Thiès" />
                       </div>
-                      <div className="pt-4 flex justify-end gap-3">
-                        <button type="button" onClick={() => setIsBoutiqueModalOpen(false)} className="px-4 py-2 text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg">Annuler</button>
-                        <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold">Créer la boutique</button>
+                      <div className="pt-4 flex justify-end gap-3 mt-4 border-t border-gray-100 dark:border-slate-800/60 pt-6">
+                        <button type="button" onClick={() => setIsBoutiqueModalOpen(false)} className="px-4 py-2 text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg font-medium">Annuler</button>
+                        <button type="submit" className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold transition-colors">
+                          {isBoutiqueEditing ? 'Enregistrer' : 'Créer'}
+                        </button>
                       </div>
                     </form>
                   </div>

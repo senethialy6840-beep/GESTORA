@@ -294,15 +294,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </Link>
               </li>
 
-              {(isPlatformOwner || userRole === 'ADMIN' || userRole === 'MANAGER' || userRole === 'COMMERCIAL') && (
-                <li>
-                  <Link href="/dashboard/boutiques" className={getLinkClass('/dashboard/boutiques')} title="Mes Boutiques">
-                    {isActive('/dashboard/boutiques') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
-                    <Store className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/boutiques') ? 'text-blue-400' : ''}`} />
-                    {!isSidebarCollapsed && <span className="truncate">Mes Boutiques</span>}
-                  </Link>
-                </li>
-              )}
 
               {hasAccess('STARTUP') && (
                 <>
