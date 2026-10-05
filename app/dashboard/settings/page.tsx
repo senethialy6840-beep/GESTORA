@@ -35,6 +35,7 @@ export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [activeBoutiqueIdState, setActiveBoutiqueIdState] = useState<string | null>(null);
 
   const [employees, setEmployees] = useState<any[]>([]);
   const [isEmployeeModalOpen, setIsEmployeeModalOpen] = useState(false);
@@ -48,6 +49,8 @@ export default function SettingsPage() {
   const [currentBoutiqueId, setCurrentBoutiqueId] = useState<string | null>(null);
 
   useEffect(() => {
+    setActiveBoutiqueIdState(Cookies.get('activeBoutiqueId') || null);
+
     async function load() {
       if (session?.user?.companyId) {
         const res = await getSettings(session.user.companyId);
@@ -183,6 +186,7 @@ export default function SettingsPage() {
 
   const handleEnterBoutique = (id: string) => {
     Cookies.set('activeBoutiqueId', id, { expires: 7 });
+    setActiveBoutiqueIdState(id);
     router.push('/dashboard');
   };
 
@@ -486,11 +490,13 @@ export default function SettingsPage() {
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  {warehouses.map((warehouse) => (
+                  {warehouses.map((warehouse) => {
+                    const isActive = warehouse.id === activeBoutiqueIdState;
+                    return (
                     <div 
                       key={warehouse.id}
                       onClick={() => handleEnterBoutique(warehouse.id)}
-                      className="group relative bg-gray-50 dark:bg-[#0A1226] rounded-xl border border-gray-200 dark:border-slate-700/50 p-5 hover:shadow-md hover:border-blue-300 dark:hover:border-blue-500/50 transition-all cursor-pointer flex flex-col"
+                      className={`group relative rounded-xl border ${isActive ? 'bg-blue-50/50 dark:bg-blue-900/10 border-blue-500 shadow-sm' : 'bg-gray-50 dark:bg-[#0A1226] border-gray-200 dark:border-slate-700/50 hover:border-blue-300 dark:hover:border-blue-500/50'} p-5 hover:shadow-md transition-all cursor-pointer flex flex-col`}
                     >
                       <div className="flex justify-between items-start mb-3">
                         <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400">
@@ -517,7 +523,12 @@ export default function SettingsPage() {
                       <div className="flex-1">
                         <h3 className="text-[15px] font-bold text-gray-900 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                           {warehouse.name}
-                          {warehouse.isDefault && (
+                          {isActive && (
+                            <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 text-[10px] uppercase font-bold rounded-full align-middle">
+                              Active
+                            </span>
+                          )}
+                          {warehouse.isDefault && !isActive && (
                             <span className="ml-2 px-2 py-0.5 bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 text-[10px] uppercase font-bold rounded-full align-middle">
                               Principale
                             </span>
@@ -530,11 +541,11 @@ export default function SettingsPage() {
                       </div>
 
                       <div className="mt-4 pt-3 border-t border-gray-200 dark:border-slate-700/50 flex items-center justify-between text-blue-600 dark:text-blue-400 font-medium text-xs">
-                        <span>Accéder à la boutique</span>
-                        <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        <span>{isActive ? 'Actuellement sélectionnée' : 'Accéder à la boutique'}</span>
+                        {!isActive && <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
                       </div>
                     </div>
-                  ))}
+                  )})}
                   
                   {warehouses.length === 0 && (
                     <div className="col-span-full py-8 text-center bg-gray-50 dark:bg-[#0A1226] rounded-xl border border-gray-200 dark:border-slate-700/50">
