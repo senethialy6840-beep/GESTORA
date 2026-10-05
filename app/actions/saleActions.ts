@@ -4,6 +4,7 @@ import { prisma, ensureCompanyExists } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { SaleSchema } from '@/lib/validations';
 import { auth } from '@/auth';
+import { cookies } from 'next/headers';
 import { sendLowStockAlert } from '@/lib/mailer';
 
 export type CreateSaleData = {
@@ -55,6 +56,9 @@ export async function createSale(data: CreateSaleData) {
       if (product.stock < product.quantity) return { success: false, error: `Stock insuffisant pour ${product.name}.` };
     }
 
+    const cookieStore = await cookies();
+    const activeBoutiqueId = cookieStore.get('activeBoutiqueId')?.value || null;
+
     const sale = await prisma.$transaction(async (transaction) => {
       const createdSale = await transaction.sale.create({
         data: {
@@ -63,6 +67,7 @@ export async function createSale(data: CreateSaleData) {
           status: data.status || 'COMPLETED',
           customerId: data.customerId,
           companyId: data.companyId,
+          warehouseId: activeBoutiqueId,
           items: data.items ? {
             create: data.items.map(i => ({ description: i.description, quantity: i.quantity, price: i.price }))
           } : undefined,
@@ -146,8 +151,14 @@ export async function getSales(_companyId?: string) {
     if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
     const companyId = session.user.companyId as string;
     
+    const cookieStore = await cookies();
+    const activeBoutiqueId = cookieStore.get('activeBoutiqueId')?.value || null;
+    
     const sales = await prisma.sale.findMany({
-      where: { companyId },
+      where: { 
+        companyId,
+        warehouseId: activeBoutiqueId
+      },
       include: {
         customer: true,
         items: true,

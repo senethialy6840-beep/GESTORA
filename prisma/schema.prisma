@@ -99,6 +99,14 @@ model Warehouse {
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  products     Product[]
+  customers    Customer[]
+  sales        Sale[]
+  purchases    Purchase[]
+  employees    Employee[]
+  transactions AccountingTransaction[]
+  stockMovements StockMovement[]
 }
 
 model Product {
@@ -116,6 +124,10 @@ model Product {
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  warehouseId String?
+  warehouse   Warehouse? @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  
   stockMovements StockMovement[]
 }
 
@@ -133,6 +145,9 @@ model StockMovement {
 
   companyId   String
   company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  warehouseId String?
+  warehouse   Warehouse? @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
 }
 
 // -----------------------------------------------------------------------------
@@ -152,6 +167,10 @@ model Customer {
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  warehouseId String?
+  warehouse   Warehouse? @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  
   sales     Sale[]
 }
 
@@ -165,6 +184,9 @@ model Sale {
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  warehouseId String?
+  warehouse   Warehouse? @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
 
   customerId String?
   customer   Customer? @relation(fields: [customerId], references: [id])
@@ -211,6 +233,9 @@ model Purchase {
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
+  warehouseId String?
+  warehouse   Warehouse? @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+
   supplierId String?
   supplier   Supplier? @relation(fields: [supplierId], references: [id])
 
@@ -247,6 +272,9 @@ model Employee {
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  warehouseId String?
+  warehouse   Warehouse? @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
 }
 
 // -----------------------------------------------------------------------------
@@ -266,6 +294,9 @@ model AccountingTransaction {
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  warehouseId String?
+  warehouse   Warehouse? @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
 }
 
 // -----------------------------------------------------------------------------

@@ -3,7 +3,9 @@
 import { prisma } from '@/lib/prisma';
 import { subDays, startOfMonth, subMonths, endOfDay, startOfDay, format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { fr } from 'date-fns/locale';
 import { auth } from '@/auth';
+import { cookies } from 'next/headers';
 
 export type DashboardStats = {
   revenue: number;
@@ -29,11 +31,14 @@ export async function getDashboardStats(_companyId: string, startDate?: string, 
     // For AreaChart: past 7 months including current
     const sevenMonthsAgo = startOfMonth(subMonths(end, 6));
 
-    // Fetch aggregations concurrently to fix "lenteurs de l'application"
+    const cookieStore = await cookies();
+    const activeBoutiqueId = cookieStore.get('activeBoutiqueId')?.value || null;
+
     const [revenueAggr, expensesAggr, purchasesAggr, allProducts] = await Promise.all([
       prisma.sale.aggregate({
         where: {
           companyId,
+          warehouseId: activeBoutiqueId,
           status: 'COMPLETED',
           createdAt: { gte: start, lte: end }
         },
@@ -42,6 +47,7 @@ export async function getDashboardStats(_companyId: string, startDate?: string, 
       prisma.accountingTransaction.aggregate({
         where: {
           companyId,
+          warehouseId: activeBoutiqueId,
           type: 'EXPENSE',
           date: { gte: start, lte: end }
         },
@@ -50,12 +56,16 @@ export async function getDashboardStats(_companyId: string, startDate?: string, 
       prisma.purchase.aggregate({
         where: {
           companyId,
+          warehouseId: activeBoutiqueId,
           createdAt: { gte: start, lte: end }
         },
         _sum: { totalAmount: true }
       }),
       prisma.product.findMany({
-        where: { companyId },
+        where: { 
+          companyId,
+          warehouseId: activeBoutiqueId
+        },
         select: { id: true, name: true, stock: true, stockAlert: true }
       })
     ]);
@@ -84,6 +94,7 @@ export async function getDashboardStats(_companyId: string, startDate?: string, 
       prisma.sale.findMany({
         where: {
           companyId,
+          warehouseId: activeBoutiqueId,
           status: 'COMPLETED',
           createdAt: { gte: sevenMonthsAgo, lte: end }
         },
@@ -91,7 +102,11 @@ export async function getDashboardStats(_companyId: string, startDate?: string, 
       }),
       prisma.saleItem.findMany({
         where: {
-          sale: { companyId, createdAt: { gte: start, lte: end } }
+          sale: { 
+            companyId, 
+            warehouseId: activeBoutiqueId,
+            createdAt: { gte: start, lte: end } 
+          }
         },
         select: { description: true, quantity: true }
       })
