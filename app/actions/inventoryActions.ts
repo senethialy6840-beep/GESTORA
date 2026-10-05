@@ -8,7 +8,7 @@ import { auth } from "@/auth";
 export async function getStockMovements(_companyId?: string) {
   try {
     const session = await auth();
-    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisÃ©" };
     const companyId = session.user.companyId as string;
     
     const movements = await prisma.stockMovement.findMany({
@@ -31,21 +31,21 @@ export async function createStockMovement(data: {
 }) {
   try {
     const session = await auth();
-    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisÃ©" };
     
     data.companyId = session.user.companyId as string;
     await ensureCompanyExists(data.companyId);
     
     const validated = StockMovementSchema.safeParse(data);
     if (!validated.success) {
-      return { success: false, error: "Données de mouvement de stock invalides." };
+      return { success: false, error: "DonnÃ©es de mouvement de stock invalides." };
     }
     data = validated.data as any;
     const product = await prisma.product.findFirst({
       where: { id: data.productId, companyId: data.companyId },
       select: { id: true, stock: true },
     });
-    if (!product) return { success: false, error: "Produit introuvable ou non autorisé." };
+    if (!product) return { success: false, error: "Produit introuvable ou non autorisÃ©." };
     if (data.type === 'OUT' && product.stock < data.quantity) {
       return { success: false, error: "Stock insuffisant pour cette sortie." };
     }
@@ -78,12 +78,12 @@ export async function createStockMovement(data: {
 export async function deleteStockMovement(id: string) {
   try {
     const session = await auth();
-    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisÃ©" };
     
-    // Sécurité: Vérifier que le mouvement appartient bien à l'entreprise
+    // SÃ©curitÃ©: VÃ©rifier que le mouvement appartient bien Ã  l'entreprise
     const existing = await prisma.stockMovement.findUnique({ where: { id } });
     if (!existing || existing.companyId !== session.user.companyId) {
-      return { success: false, error: "Non autorisé" };
+      return { success: false, error: "Non autorisÃ©" };
     }
 
     const movement = await prisma.$transaction(async (transaction) => {
@@ -108,12 +108,12 @@ export async function deleteStockMovement(id: string) {
 export async function createWarehouse(data: { name: string, location?: string }) {
   try {
     const session = await auth();
-    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisÃ©" };
     
     const companyId = session.user.companyId as string;
     await ensureCompanyExists(companyId);
     
-    // Vérification des limites selon le forfait
+    // VÃ©rification des limites selon le forfait
     const company = await prisma.company.findUnique({
       where: { id: companyId },
       select: { plan: true, _count: { select: { warehouses: true } } }
@@ -150,7 +150,7 @@ export async function createWarehouse(data: { name: string, location?: string })
 export async function getWarehouses(_companyId?: string) {
   try {
     const session = await auth();
-    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisÃ©" };
     const companyId = session.user.companyId as string;
     
     const warehouses = await prisma.warehouse.findMany({
@@ -166,12 +166,12 @@ export async function getWarehouses(_companyId?: string) {
 export async function updateWarehouse(id: string, data: { name: string, location?: string }) {
   try {
     const session = await auth();
-    if (!session?.user?.companyId) return { success: false, error: "Non autoris�" };
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
     
     // Check ownership
     const existing = await prisma.warehouse.findUnique({ where: { id } });
     if (!existing || existing.companyId !== session.user.companyId) {
-      return { success: false, error: "Non autoris�" };
+      return { success: false, error: "Non autorisé" };
     }
     
     const warehouse = await prisma.warehouse.update({
@@ -190,12 +190,12 @@ export async function updateWarehouse(id: string, data: { name: string, location
 export async function deleteWarehouse(id: string) {
   try {
     const session = await auth();
-    if (!session?.user?.companyId) return { success: false, error: "Non autoris�" };
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
     
     // Check ownership
     const existing = await prisma.warehouse.findUnique({ where: { id } });
     if (!existing || existing.companyId !== session.user.companyId) {
-      return { success: false, error: "Non autoris�" };
+      return { success: false, error: "Non autorisé" };
     }
     
     await prisma.warehouse.delete({ where: { id } });
