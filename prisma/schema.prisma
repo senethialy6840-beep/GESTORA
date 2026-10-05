@@ -85,6 +85,18 @@ model Warehouse {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Paramètres de la boutique (indépendants de la compagnie)
+  logoUrl        String?
+  taxNumber      String?
+  address        String?
+  phone          String?
+  email          String?
+  currency       String?
+  timezone       String?
+  dateFormat     String?
+  invoicePrefix  String?
+  invoiceFooter  String?
+
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 }

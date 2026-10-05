@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@supabase/supabase-js';
 import { SettingsSchema } from '@/lib/validations';
 import { auth } from '@/auth';
+import { cookies } from 'next/headers';
 
 const getSupabase = () => createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
@@ -32,6 +33,32 @@ export async function getSettings(requestedCompanyId?: string) {
     
     // FORCER l'utilisation du companyId de la session (IDOR Fix)
     const companyId = session.user.companyId as string;
+    
+    const activeBoutiqueId = cookies().get('activeBoutiqueId')?.value;
+    
+    if (activeBoutiqueId) {
+      const warehouse = await prisma.warehouse.findUnique({
+        where: { id: activeBoutiqueId }
+      });
+      if (warehouse && warehouse.companyId === companyId) {
+        return { 
+          success: true, 
+          settings: {
+            companyName: warehouse.name,
+            companyId: warehouse.taxNumber || defaultSettings.companyId,
+            address: warehouse.address || defaultSettings.address,
+            email: warehouse.email || defaultSettings.email,
+            phone: warehouse.phone || defaultSettings.phone,
+            logo: warehouse.logoUrl || defaultSettings.logo,
+            currency: warehouse.currency || defaultSettings.currency,
+            timezone: warehouse.timezone || defaultSettings.timezone,
+            dateFormat: warehouse.dateFormat || defaultSettings.dateFormat,
+            invoicePrefix: warehouse.invoicePrefix || defaultSettings.invoicePrefix,
+            invoiceFooter: warehouse.invoiceFooter || defaultSettings.invoiceFooter
+          } 
+        };
+      }
+    }
     
     const company = await prisma.company.findUnique({
       where: { id: companyId }
@@ -128,6 +155,48 @@ export async function saveSettings(requestedCompanyId: string, data: any) {
       } catch (err) {
         console.error("Error processing logo upload:", err);
         logoUrl = null;
+      }
+    }
+    
+    const activeBoutiqueId = cookies().get('activeBoutiqueId')?.value;
+    
+    if (activeBoutiqueId) {
+      const warehouse = await prisma.warehouse.findUnique({
+        where: { id: activeBoutiqueId }
+      });
+      
+      if (warehouse && warehouse.companyId === dbCompanyId) {
+        const updatedWarehouse = await prisma.warehouse.update({
+          where: { id: activeBoutiqueId },
+          data: {
+            name: data.companyName,
+            taxNumber: data.companyId,
+            address: data.address,
+            email: data.email,
+            phone: data.phone,
+            logoUrl: logoUrl,
+            currency: data.currency,
+            timezone: data.timezone,
+            dateFormat: data.dateFormat,
+            invoicePrefix: data.invoicePrefix,
+            invoiceFooter: data.invoiceFooter
+          }
+        });
+        
+        revalidatePath('/dashboard/settings');
+        return { success: true, settings: {
+            companyName: updatedWarehouse.name,
+            companyId: updatedWarehouse.taxNumber,
+            address: updatedWarehouse.address,
+            email: updatedWarehouse.email,
+            phone: updatedWarehouse.phone,
+            logo: updatedWarehouse.logoUrl,
+            currency: updatedWarehouse.currency,
+            timezone: updatedWarehouse.timezone,
+            dateFormat: updatedWarehouse.dateFormat,
+            invoicePrefix: updatedWarehouse.invoicePrefix,
+            invoiceFooter: updatedWarehouse.invoiceFooter
+        }};
       }
     }
     
