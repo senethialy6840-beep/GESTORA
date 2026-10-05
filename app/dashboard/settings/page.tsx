@@ -99,6 +99,8 @@ export default function SettingsPage() {
       });
       if (res.success && res.data) {
         setEmployees(prev => prev.map(p => p.id === editingEmployee.id ? res.data : p));
+      } else {
+        alert(res.error || "Erreur lors de la modification de l'employé.");
       }
     } else {
       const res = await createEmployee({
@@ -115,6 +117,8 @@ export default function SettingsPage() {
       });
       if (res.success && res.data) {
         setEmployees(prev => [res.data, ...prev]);
+      } else {
+        alert(res.error || "Erreur lors de l'ajout de l'employé.");
       }
     }
   };
@@ -617,8 +621,12 @@ export default function SettingsPage() {
                     <div className="space-y-1.5">
                       <label className="text-sm font-semibold text-gray-700 dark:text-slate-300">Fuseau horaire</label>
                       <select name="timezone" value={formData.timezone} onChange={handleInputChange as any} className="w-full bg-gray-50 dark:bg-[#0A1226] border border-gray-200 dark:border-slate-700/50 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50">
-                        <option value="GMT">GMT (Dakar)</option>
-                        <option value="CET">CET (Paris)</option>
+                        <option value="GMT">GMT (Dakar, Abidjan, Londres)</option>
+                        <option value="CET">CET (Paris, Berlin, Rome)</option>
+                        <option value="EST">EST (New York, Montréal)</option>
+                        <option value="PST">PST (Los Angeles, Vancouver)</option>
+                        <option value="WAT">WAT (Lagos, Kinshasa)</option>
+                        <option value="EAT">EAT (Nairobi, Addis-Abeba)</option>
                       </select>
                     </div>
                     <div className="space-y-1.5">
