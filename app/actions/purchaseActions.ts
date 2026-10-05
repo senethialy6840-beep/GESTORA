@@ -5,6 +5,7 @@ import { prisma, ensureCompanyExists } from "@/lib/prisma";
 import { Purchase, Supplier, PurchaseItem } from "@prisma/client";
 import { PurchaseSchema, SupplierSchema } from "@/lib/validations";
 import { auth } from "@/auth";
+import { cookies } from "next/headers";
 
 // --- Suppliers ---
 
@@ -109,8 +110,14 @@ export async function getPurchases(_companyId?: string) {
     if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
     const companyId = session.user.companyId as string;
     
+    const cookieStore = await cookies();
+    const activeBoutiqueId = cookieStore.get('activeBoutiqueId')?.value || null;
+
     const purchases = await prisma.purchase.findMany({
-      where: { companyId },
+      where: { 
+        companyId,
+        warehouseId: activeBoutiqueId
+      },
       include: {
         supplier: true,
         items: true,
@@ -125,7 +132,7 @@ export async function getPurchases(_companyId?: string) {
 }
 
 export async function createPurchase(
-  data: Omit<Purchase, "id" | "createdAt" | "updatedAt">,
+  data: Omit<Purchase, "id" | "createdAt" | "updatedAt" | "warehouseId">,
   items: Omit<PurchaseItem, "id" | "purchaseId">[]
 ) {
   try {
@@ -140,9 +147,13 @@ export async function createPurchase(
       return { success: false, error: "Données d'achat invalides." };
     }
     data = validated.data as any;
+    const cookieStore = await cookies();
+    const activeBoutiqueId = cookieStore.get('activeBoutiqueId')?.value || null;
+
     const purchase = await prisma.purchase.create({
       data: {
         ...data,
+        warehouseId: activeBoutiqueId,
         items: {
           create: items,
         },

@@ -5,6 +5,7 @@ import { prisma, ensureCompanyExists } from "@/lib/prisma";
 import { Employee } from "@prisma/client";
 import { EmployeeSchema } from "@/lib/validations";
 import { auth } from "@/auth";
+import { cookies } from "next/headers";
 import { sendEmployeeWelcomeEmail } from "@/lib/mailer";
 
 export async function getEmployees(_companyId?: string) {
@@ -12,9 +13,14 @@ export async function getEmployees(_companyId?: string) {
     const session = await auth();
     if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
     const companyId = session.user.companyId as string;
-    
+    const cookieStore = await cookies();
+    const activeBoutiqueId = cookieStore.get('activeBoutiqueId')?.value || null;
+
     const employees = await prisma.employee.findMany({
-      where: { companyId },
+      where: { 
+        companyId,
+        warehouseId: activeBoutiqueId
+      },
       orderBy: { createdAt: "desc" },
     });
     return { success: true, data: employees };
@@ -24,7 +30,7 @@ export async function getEmployees(_companyId?: string) {
   }
 }
 
-export async function createEmployee(data: Omit<Employee, "id" | "createdAt" | "updatedAt">) {
+export async function createEmployee(data: Omit<Employee, "id" | "createdAt" | "updatedAt" | "warehouseId">) {
   try {
     const session = await auth();
     if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
@@ -86,8 +92,14 @@ export async function createEmployee(data: Omit<Employee, "id" | "createdAt" | "
       }
     }
 
+    const cookieStore = await cookies();
+    const activeBoutiqueId = cookieStore.get('activeBoutiqueId')?.value || null;
+
     const employee = await prisma.employee.create({
-      data,
+      data: {
+        ...data,
+        warehouseId: activeBoutiqueId,
+      },
     });
     revalidatePath("/dashboard/hr");
     return { success: true, data: employee };

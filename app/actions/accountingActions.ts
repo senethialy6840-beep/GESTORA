@@ -5,15 +5,21 @@ import { prisma, ensureCompanyExists } from "@/lib/prisma";
 import { AccountingTransaction } from "@prisma/client";
 import { TransactionSchema } from "@/lib/validations";
 import { auth } from "@/auth";
+import { cookies } from "next/headers";
 
 export async function getTransactions(_companyId?: string) {
   try {
     const session = await auth();
     if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
     const companyId = session.user.companyId as string;
-    
+    const cookieStore = await cookies();
+    const activeBoutiqueId = cookieStore.get('activeBoutiqueId')?.value || null;
+
     const transactions = await prisma.accountingTransaction.findMany({
-      where: { companyId },
+      where: { 
+        companyId,
+        warehouseId: activeBoutiqueId
+      },
       orderBy: { date: "desc" },
     });
     return { success: true, data: transactions };
@@ -23,7 +29,7 @@ export async function getTransactions(_companyId?: string) {
   }
 }
 
-export async function createTransaction(data: Omit<AccountingTransaction, "id" | "createdAt" | "updatedAt">) {
+export async function createTransaction(data: Omit<AccountingTransaction, "id" | "createdAt" | "updatedAt" | "warehouseId">) {
   try {
     const session = await auth();
     if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
@@ -35,9 +41,14 @@ export async function createTransaction(data: Omit<AccountingTransaction, "id" |
     if (!validated.success) {
       return { success: false, error: "Données de transaction invalides." };
     }
-    data = validated.data as any;
+    const cookieStore = await cookies();
+    const activeBoutiqueId = cookieStore.get('activeBoutiqueId')?.value || null;
+
     const transaction = await prisma.accountingTransaction.create({
-      data,
+      data: {
+        ...data,
+        warehouseId: activeBoutiqueId,
+      },
     });
     revalidatePath("/dashboard/accounting");
     return { success: true, data: transaction };
