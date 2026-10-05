@@ -22,7 +22,7 @@ model Company {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   isActive  Boolean  @default(true)
-  plan      String   @default("GRATUIT") // GRATUIT, STARTUP, BUSINESS, ENTREPRISE
+  plan      String   @default("STARTUP") // STARTUP, BUSINESS, ENTREPRISE
   subscriptionStatus String @default("PENDING") // ACTIVE, PENDING, EXPIRED, CANCELLED
   subscriptionExpiresAt DateTime?
 

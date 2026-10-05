@@ -68,7 +68,7 @@ export const authOptions: NextAuthOptions = {
           companyId: user.companyId,
           role: user.role,
           subscriptionStatus: currentStatus,
-          plan: user.company?.plan || "GRATUIT"
+          plan: user.company?.plan || "STARTUP"
         } as any;
       },
     }),

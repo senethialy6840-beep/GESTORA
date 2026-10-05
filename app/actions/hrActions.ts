@@ -45,14 +45,13 @@ export async function createEmployee(data: Omit<Employee, "id" | "createdAt" | "
     });
     
     if (company) {
-      const plan = company.plan || 'GRATUIT';
+      const plan = company.plan || 'STARTUP';
       const employeeCount = company._count.employees;
       
       let maxEmployees = 0;
       if (plan === 'STARTUP') maxEmployees = 0; // Seul le proprio
       else if (plan === 'BUSINESS') maxEmployees = 5;
       else if (plan === 'ENTREPRISE') maxEmployees = 9999;
-      else maxEmployees = 0; // GRATUIT
       
       if (employeeCount >= maxEmployees) {
         return { success: false, error: `Limite atteinte. Votre forfait ${plan} permet un maximum de ${maxEmployees} utilisateur(s) supplémentaire(s).` };

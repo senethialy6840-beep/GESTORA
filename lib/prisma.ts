@@ -29,7 +29,7 @@ export async function ensureCompanyExists(companyId: string, companyName?: strin
         data: {
           id: companyId,
           name: companyName || "Mon Entreprise",
-          plan: "GRATUIT",
+          plan: "STARTUP",
           subscriptionStatus: "ACTIVE",
           isActive: true,
         },

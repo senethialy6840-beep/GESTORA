@@ -123,7 +123,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   };
 
   const userRole = (session?.user as any)?.role || 'USER';
-  const userPlan = (session?.user as any)?.plan || 'GRATUIT';
+  const userPlan = (session?.user as any)?.plan || 'STARTUP';
   const sessionEmail = (session?.user as any)?.email || '';
 
   const isPlatformOwner = sessionEmail.trim().toLowerCase() === 'gestorame112@gmail.com' || userRole === 'SUPER_ADMIN';
