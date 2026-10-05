@@ -34,7 +34,8 @@ export async function getSettings(requestedCompanyId?: string) {
     // FORCER l'utilisation du companyId de la session (IDOR Fix)
     const companyId = session.user.companyId as string;
     
-    const activeBoutiqueId = cookies().get('activeBoutiqueId')?.value;
+    const cookieStore = await cookies();
+    const activeBoutiqueId = cookieStore.get('activeBoutiqueId')?.value;
     
     if (activeBoutiqueId) {
       const warehouse = await prisma.warehouse.findUnique({
@@ -158,7 +159,8 @@ export async function saveSettings(requestedCompanyId: string, data: any) {
       }
     }
     
-    const activeBoutiqueId = cookies().get('activeBoutiqueId')?.value;
+    const cookieStore = await cookies();
+    const activeBoutiqueId = cookieStore.get('activeBoutiqueId')?.value;
     
     if (activeBoutiqueId) {
       const warehouse = await prisma.warehouse.findUnique({
