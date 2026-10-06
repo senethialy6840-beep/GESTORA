@@ -42,6 +42,7 @@ export default function SettingsPage() {
   const [editingEmployee, setEditingEmployee] = useState<any>(null);
 
   const [warehouses, setWarehouses] = useState<any[]>([]);
+  const [companyPlan, setCompanyPlan] = useState<string>('');
   const [isBoutiqueModalOpen, setIsBoutiqueModalOpen] = useState(false);
   const [newBoutiqueName, setNewBoutiqueName] = useState('');
   const [newBoutiqueLocation, setNewBoutiqueLocation] = useState('');
@@ -76,6 +77,9 @@ export default function SettingsPage() {
         const whRes = await getWarehouses(session.user.companyId);
         if (whRes.success && whRes.data) {
           setWarehouses(whRes.data);
+          if (whRes.plan) {
+            setCompanyPlan(whRes.plan);
+          }
         }
       }
       setIsLoading(false);
@@ -484,13 +488,15 @@ export default function SettingsPage() {
                       <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Gérez vos différentes boutiques selon votre forfait et accédez à leurs fonctionnalités.</p>
                     </div>
                   </div>
-                  <button 
-                    onClick={() => handleOpenBoutiqueModal()}
-                    className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Ajouter
-                  </button>
+                  {companyPlan !== 'STARTUP' && (
+                    <button 
+                      onClick={() => handleOpenBoutiqueModal()}
+                      className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Ajouter
+                    </button>
+                  )}
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

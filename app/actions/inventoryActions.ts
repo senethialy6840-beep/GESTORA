@@ -151,14 +151,19 @@ export async function createWarehouse(data: { name: string, location?: string })
 export async function getWarehouses(_companyId?: string) {
   try {
     const session = await auth();
-    if (!session?.user?.companyId) return { success: false, error: "Non autorisÃ©" };
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
     const companyId = session.user.companyId as string;
+    
+    const company = await prisma.company.findUnique({
+      where: { id: companyId },
+      select: { plan: true }
+    });
     
     const warehouses = await prisma.warehouse.findMany({
       where: { companyId },
       orderBy: { createdAt: 'asc' }
     });
-    return { success: true, data: warehouses };
+    return { success: true, data: warehouses, plan: company?.plan };
   } catch (error: any) {
     return { success: false, error: error.message };
   }
