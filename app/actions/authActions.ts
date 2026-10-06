@@ -52,7 +52,7 @@ export async function forgotPassword(email: string) {
 
     // Envoyer l'email
     await transporter.sendMail({
-      from: process.env.SMTP_FROM || '"GESTORA" <noreply@gestora.com>',
+      from: process.env.SMTP_FROM || `"GESTORA" <${process.env.SMTP_USER}>`,
       to: email,
       subject: "Réinitialisation de votre mot de passe GESTORA",
       html: `
