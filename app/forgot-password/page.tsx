@@ -9,6 +9,7 @@ export default function ForgotPasswordPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,6 +21,9 @@ export default function ForgotPasswordPage() {
     
     if (res.success) {
       setIsSubmitted(true);
+      setError('');
+    } else {
+      setError(res.error || 'Une erreur est survenue.');
     }
   };
 
@@ -50,6 +54,11 @@ export default function ForgotPasswordPage() {
             </div>
           ) : (
             <form className="space-y-6" onSubmit={handleSubmit}>
+              {error && (
+                <div className="p-4 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/20 rounded-xl text-sm font-medium">
+                  {error}
+                </div>
+              )}
               <div>
                 <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Adresse email</label>
                 <input 
@@ -58,6 +67,8 @@ export default function ForgotPasswordPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="vous@entreprise.com"
+                  pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
+                  title="Veuillez entrer une adresse e-mail valide (ex: nom@domaine.com)"
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700/50 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] transition-all bg-gray-50 dark:bg-[#162032] text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-slate-500"
                 />
               </div>

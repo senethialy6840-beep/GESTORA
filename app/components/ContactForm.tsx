@@ -134,6 +134,8 @@ export default function ContactForm({ variant = 'landing' }: ContactFormProps) {
             name="email"
             value={formData.email}
             onChange={handleChange}
+            pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
+            title="Veuillez entrer une adresse e-mail valide (ex: nom@domaine.com)"
             className={`w-full px-4 py-3 ${inputBg} text-gray-900 dark:text-white border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#2563EB] outline-none transition-all`}
             placeholder="Adresse e-mail"
             required
