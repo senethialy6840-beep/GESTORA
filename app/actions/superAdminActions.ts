@@ -21,6 +21,9 @@ export async function getAllCompanies() {
         none: {
           role: 'COMMERCIAL'
         }
+      },
+      subscriptionStatus: {
+        not: 'PENDING'
       }
     },
     include: {
