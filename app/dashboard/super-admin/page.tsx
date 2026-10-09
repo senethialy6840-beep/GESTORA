@@ -8,7 +8,7 @@ import { getAllCompanies, updateCompanySubscription, deleteCompany } from '@/app
 
 const PLATFORM_OWNER_EMAIL = 'gestorame112@gmail.com';
 const PLANS = ['STARTUP', 'BUSINESS', 'ENTREPRISE'];
-const STATUSES = ['ACTIVE', 'EXPIRED', 'CANCELLED'];
+const STATUSES = ['ACTIVE', 'PENDING', 'EXPIRED', 'CANCELLED'];
 
 // Composant séparé pour chaque ligne d'entreprise (évite les hooks dans .map)
 function CompanyRow({ company, onUpdate, onDelete, isUpdating }: {
@@ -143,14 +143,19 @@ export default function SuperAdminPage() {
 
   if (session?.user?.email !== PLATFORM_OWNER_EMAIL) return null;
 
-  const activeCount = companies.filter(c => c.subscriptionStatus === 'ACTIVE').length;
+  const isPaid = (c: any) => c.subscriptionPayments && c.subscriptionPayments.length > 0;
+
+  const activeCount = companies.filter(c => c.subscriptionStatus === 'ACTIVE' && isPaid(c)).length;
+  const pendingCount = companies.filter(c => c.subscriptionStatus === 'PENDING' || (c.subscriptionStatus === 'ACTIVE' && !isPaid(c))).length;
   const expiredCount = companies.filter(c => ['EXPIRED', 'CANCELLED'].includes(c.subscriptionStatus)).length;
 
   const filteredCompanies = statusFilter === 'ALL' 
     ? companies 
     : statusFilter === 'EXPIRED' 
       ? companies.filter(c => ['EXPIRED', 'CANCELLED'].includes(c.subscriptionStatus))
-      : companies.filter(c => c.subscriptionStatus === statusFilter);
+      : statusFilter === 'ACTIVE'
+        ? companies.filter(c => c.subscriptionStatus === 'ACTIVE' && isPaid(c))
+        : companies.filter(c => c.subscriptionStatus === 'PENDING' || (c.subscriptionStatus === 'ACTIVE' && !isPaid(c)));
 
   return (
     <div className="w-full max-w-7xl mx-auto space-y-6">
@@ -171,7 +176,7 @@ export default function SuperAdminPage() {
       </div>
 
       {/* KPIs - Clickable for filtering */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div 
           onClick={() => setStatusFilter('ALL')}
           className={`cursor-pointer rounded-2xl p-5 border shadow-sm transition-all ${statusFilter === 'ALL' ? 'bg-blue-50 border-blue-500 dark:bg-blue-900/20 dark:border-blue-500/50' : 'bg-white dark:bg-[#162032] border-gray-200 dark:border-slate-700/50 hover:border-blue-300'}`}
@@ -185,6 +190,13 @@ export default function SuperAdminPage() {
         >
           <p className="text-xs text-gray-500 dark:text-slate-400 font-medium mb-1">Abonnements Actifs (Déjà payé)</p>
           <p className="text-3xl font-black text-emerald-600 dark:text-emerald-400">{activeCount}</p>
+        </div>
+        <div 
+          onClick={() => setStatusFilter('PENDING')}
+          className={`cursor-pointer rounded-2xl p-5 border shadow-sm transition-all ${statusFilter === 'PENDING' ? 'bg-amber-50 border-amber-500 dark:bg-amber-900/20 dark:border-amber-500/50' : 'bg-white dark:bg-[#162032] border-gray-200 dark:border-slate-700/50 hover:border-amber-300'}`}
+        >
+          <p className="text-xs text-gray-500 dark:text-slate-400 font-medium mb-1">En attente paiement</p>
+          <p className="text-3xl font-black text-amber-600 dark:text-amber-400">{pendingCount}</p>
         </div>
         <div 
           onClick={() => setStatusFilter('EXPIRED')}
@@ -201,7 +213,7 @@ export default function SuperAdminPage() {
           <div className="flex items-center gap-3">
             <Building2 className="w-5 h-5 text-gray-600 dark:text-slate-400" />
             <h2 className="font-bold text-gray-900 dark:text-white">
-              Boutiques {statusFilter === 'ACTIVE' ? 'ayant déjà payé' : statusFilter === 'EXPIRED' ? 'expirées' : 'inscrites'} ({filteredCompanies.length})
+              Boutiques {statusFilter === 'ACTIVE' ? 'ayant déjà payé' : statusFilter === 'PENDING' ? 'en attente' : statusFilter === 'EXPIRED' ? 'expirées' : 'inscrites'} ({filteredCompanies.length})
             </h2>
           </div>
         </div>

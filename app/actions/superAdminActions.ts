@@ -21,9 +21,6 @@ export async function getAllCompanies() {
         none: {
           role: 'COMMERCIAL'
         }
-      },
-      subscriptionStatus: {
-        not: 'PENDING'
       }
     },
     include: {
@@ -32,6 +29,10 @@ export async function getAllCompanies() {
         take: 1,
         orderBy: { createdAt: 'asc' }
       },
+      subscriptionPayments: {
+        where: { statut: 'CONFIRMED' },
+        take: 1
+      }
     },
     orderBy: { createdAt: 'desc' },
   });
