@@ -98,6 +98,19 @@ export default function HrPage() {
             Commercial
           </span>
         );
+      case 'INVITE':
+      case 'GUEST':
+        return (
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-500/10 dark:text-amber-400">
+            Invité(e)
+          </span>
+        );
+      case 'EMPLOYEE':
+        return (
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800 dark:bg-cyan-500/10 dark:text-cyan-400">
+            Employé(e)
+          </span>
+        );
       case 'CASHIER':
       default:
         return (

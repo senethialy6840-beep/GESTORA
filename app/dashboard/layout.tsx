@@ -122,11 +122,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       : `${baseClass} text-slate-400 hover:text-white hover:bg-slate-800/50`;
   };
 
-  const userRole = (session?.user as any)?.role || 'USER';
+  const userRole = ((session?.user as any)?.role || 'USER').toUpperCase().trim();
   const userPlan = (session?.user as any)?.plan || 'STARTUP';
   const sessionEmail = (session?.user as any)?.email || '';
 
   const isPlatformOwner = sessionEmail.trim().toLowerCase() === 'gestorame112@gmail.com' || userRole === 'SUPER_ADMIN';
+  const isGuestOrInvite = userRole === 'INVITE' || userRole === 'GUEST' || userRole === 'INVITÉ';
+  const canViewReports = !isGuestOrInvite && (isPlatformOwner || ['ADMIN', 'SUPER_ADMIN', 'MANAGER', 'COMMERCIAL'].includes(userRole));
 
   const hasAccess = (requiredPlan: string) => {
     // Le PROPRIETAIRE a toujours accès à tout
@@ -162,7 +164,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // 2. Restriction par Rôle Utilisateur
   let isRoleRestricted = false;
   
-  if (!isPlatformOwner && userRole !== 'ADMIN') {
+  if (!isPlatformOwner && userRole !== 'ADMIN' && userRole !== 'SUPER_ADMIN') {
     if (userRole === 'CASHIER' || userRole === 'SELLER') {
       // Caissier : POS et Ventes uniquement (+ le dashboard d'accueil et profil)
       const allowedPaths = ['/dashboard/pos', '/dashboard/sales', '/dashboard/profile'];
@@ -178,8 +180,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       }
     } else if (userRole === 'EMPLOYEE') {
       // Employé standard : on bloque les trucs sensibles par défaut
-      const restrictedForEmployee = ['/dashboard/settings', '/dashboard/accounting', '/dashboard/hr', '/dashboard/reports', '/dashboard/super-admin'];
+      const restrictedForEmployee = ['/dashboard/settings', '/dashboard/accounting', '/dashboard/hr', '/dashboard/reports', '/dashboard/super-admin', '/dashboard/ai'];
       if (restrictedForEmployee.some(p => pathname.startsWith(p))) {
+        isRoleRestricted = true;
+      }
+    } else if (isGuestOrInvite || userRole === 'USER') {
+      // Invité / Rôle restreint : pas d'accès à la partie rapports et analyses, paramètres, compta, RH
+      const restrictedForGuest = ['/dashboard/reports', '/dashboard/settings', '/dashboard/accounting', '/dashboard/hr', '/dashboard/super-admin', '/dashboard/ai', '/dashboard/purchases', '/dashboard/invoices'];
+      if (restrictedForGuest.some(p => pathname.startsWith(p))) {
         isRoleRestricted = true;
       }
     }
@@ -322,22 +330,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               )}
 
               {hasAccess('BUSINESS') && (
-                <>
-                  <li>
-                    <Link href="/dashboard/inventory" className={getLinkClass('/dashboard/inventory')} title="Stock Avancé">
-                      {isActive('/dashboard/inventory') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
-                      <Box className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/inventory') ? 'text-blue-400' : ''}`} />
-                      {!isSidebarCollapsed && <span className="truncate">Stock Avancé</span>}
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/dashboard/reports" className={getLinkClass('/dashboard/reports')} title="Rapports & Analyses">
-                      {isActive('/dashboard/reports') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
-                      <BarChart3 className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/reports') ? 'text-blue-400' : ''}`} />
-                      {!isSidebarCollapsed && <span className="truncate">Rapports & Analyses</span>}
-                    </Link>
-                  </li>
-                </>
+                <li>
+                  <Link href="/dashboard/inventory" className={getLinkClass('/dashboard/inventory')} title="Stock Avancé">
+                    {isActive('/dashboard/inventory') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
+                    <Box className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/inventory') ? 'text-blue-400' : ''}`} />
+                    {!isSidebarCollapsed && <span className="truncate">Stock Avancé</span>}
+                  </Link>
+                </li>
+              )}
+
+              {hasAccess('BUSINESS') && canViewReports && (
+                <li>
+                  <Link href="/dashboard/reports" className={getLinkClass('/dashboard/reports')} title="Rapports & Analyses">
+                    {isActive('/dashboard/reports') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
+                    <BarChart3 className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/reports') ? 'text-blue-400' : ''}`} />
+                    {!isSidebarCollapsed && <span className="truncate">Rapports & Analyses</span>}
+                  </Link>
+                </li>
               )}
 
               {hasAccess('BUSINESS') && userRole !== 'CASHIER' && userRole !== 'SELLER' && (

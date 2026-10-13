@@ -150,6 +150,7 @@ export function EmployeeModal({ isOpen, onClose, onSave, initialData }: Employee
                   <option value="MANAGER">Gérant</option>
                   <option value="CASHIER">Caissier(e)</option>
                   <option value="EMPLOYEE">Employé(e)</option>
+                  <option value="INVITE">Invité(e)</option>
                 </select>
               </div>
               <div>

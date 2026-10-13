@@ -7,7 +7,8 @@ import { useTheme } from "next-themes";
 import { useSession } from 'next-auth/react';
 import { getSales } from '../../actions/saleActions';
 import { getPurchases } from '../../actions/purchaseActions';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Lock } from 'lucide-react';
+import Link from 'next/link';
 
 export default function ReportsPage() {
   const { theme } = useTheme();
@@ -18,11 +19,17 @@ export default function ReportsPage() {
   const [purchases, setPurchases] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const userRole = ((session?.user as any)?.role || 'USER').toUpperCase().trim();
+  const sessionEmail = (session?.user as any)?.email || '';
+  const isPlatformOwner = sessionEmail.trim().toLowerCase() === 'gestorame112@gmail.com' || userRole === 'SUPER_ADMIN';
+  const isGuestOrInvite = userRole === 'INVITE' || userRole === 'GUEST' || userRole === 'INVITÉ';
+  const canViewReports = !isGuestOrInvite && (isPlatformOwner || ['ADMIN', 'SUPER_ADMIN', 'MANAGER', 'COMMERCIAL'].includes(userRole));
+
   useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     const fetchData = async () => {
-      if (session?.user?.companyId) {
+      if (session?.user?.companyId && canViewReports) {
         setIsLoading(true);
         const [salesRes, purchasesRes] = await Promise.all([
           getSales(session.user.companyId),
@@ -31,10 +38,12 @@ export default function ReportsPage() {
         if (salesRes.success) setSales(salesRes.data || []);
         if (purchasesRes.success) setPurchases(purchasesRes.data || []);
         setIsLoading(false);
+      } else if (!canViewReports && status !== 'loading') {
+        setIsLoading(false);
       }
     };
     fetchData();
-  }, [session?.user?.companyId]);
+  }, [session?.user?.companyId, canViewReports, status]);
 
   const isDark = mounted ? theme === 'dark' : true;
   
@@ -111,6 +120,28 @@ export default function ReportsPage() {
           <SkeletonKPICard />
         </div>
         <SkeletonChart />
+      </div>
+    );
+  }
+
+  if (!canViewReports) {
+    return (
+      <div className="w-full max-w-7xl mx-auto space-y-6 pt-6">
+        <div className="bg-white dark:bg-[#162032] rounded-2xl border border-gray-200 dark:border-slate-700/50 p-12 text-center shadow-sm">
+          <div className="w-16 h-16 bg-orange-100 dark:bg-orange-500/10 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Lock className="w-8 h-8" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Accès Restreint</h2>
+          <p className="text-gray-500 dark:text-slate-400 max-w-md mx-auto mb-6">
+            La section Rapports &amp; Analyses est réservée aux administrateurs et responsables. En tant qu&apos;invité, vous n&apos;avez pas l&apos;autorisation d&apos;accéder à ces informations financières.
+          </p>
+          <Link 
+            href="/dashboard"
+            className="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors shadow-sm"
+          >
+            Retour au tableau de bord
+          </Link>
+        </div>
       </div>
     );
   }

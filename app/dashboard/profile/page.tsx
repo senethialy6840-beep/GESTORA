@@ -37,7 +37,7 @@ export default async function ProfilePage() {
 
   const firstName = userProfile.firstName || 'Utilisateur';
   const fullName = `${userProfile.firstName} ${userProfile.lastName}`;
-  const roleDisplay = userProfile.role === "SUPER_ADMIN" ? "Super Administrateur" : userProfile.role === "ADMIN" ? "Administrateur" : userProfile.role;
+  const roleDisplay = userProfile.role === "SUPER_ADMIN" ? "Super Administrateur" : userProfile.role === "ADMIN" ? "Administrateur" : userProfile.role === "MANAGER" ? "Gérant" : userProfile.role === "EMPLOYEE" ? "Employé(e)" : userProfile.role === "CASHIER" ? "Caissier(e)" : (userProfile.role === "INVITE" || userProfile.role === "GUEST") ? "Invité(e)" : userProfile.role;
   const joinedDate = userProfile.createdAt ? format(new Date(userProfile.createdAt), "MMMM yyyy", { locale: fr }) : "Inconnu";
   
   // Capitalize first letter of month
