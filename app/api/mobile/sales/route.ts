@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { verifyMobileAuth } from '@/lib/mobileAuth';
 import { prisma } from '@/lib/prisma';
+import { sendLowStockAlert } from '@/lib/mailer';
 
 export async function POST(request: Request) {
   const authResult = await verifyMobileAuth(request);
@@ -26,6 +27,7 @@ export async function POST(request: Request) {
     // Calculer le total et préparer les items
     let totalAmount = 0;
     const saleItemsData: { description: string; quantity: number; price: number }[] = [];
+    const itemsSnapshot: { name: string; stock: number; stockAlert: number; quantity: number }[] = [];
     
     // On fait tout dans une transaction pour éviter les incohérences de stock
     const result = await prisma.$transaction(async (tx) => {
@@ -43,6 +45,13 @@ export async function POST(request: Request) {
           description: product.name,
           quantity: item.quantity,
           price: item.price
+        });
+
+        itemsSnapshot.push({
+          name: product.name,
+          stock: product.stock,
+          stockAlert: product.stockAlert || 0,
+          quantity: item.quantity,
         });
 
         // Décrémenter le stock
@@ -79,12 +88,20 @@ export async function POST(request: Request) {
         }
       });
 
-      return sale;
+      return { sale, itemsSnapshot };
     });
+
+    // Envoyer les alertes stock bas si seuil atteint
+    for (const snap of result.itemsSnapshot) {
+      const remainingStock = snap.stock - snap.quantity;
+      if (remainingStock <= (snap.stockAlert || 0)) {
+        sendLowStockAlert(snap.name, remainingStock, companyId).catch(console.error);
+      }
+    }
 
     return NextResponse.json({
       success: true,
-      data: result,
+      data: result.sale,
       message: 'Vente enregistrée avec succès'
     });
 

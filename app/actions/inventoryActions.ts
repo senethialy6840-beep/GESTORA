@@ -4,6 +4,7 @@ import { prisma, ensureCompanyExists } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { StockMovementSchema } from "@/lib/validations";
 import { auth } from "@/auth";
+import { sendLowStockAlert } from "@/lib/mailer";
 
 export async function getStockMovements(_companyId?: string) {
   try {
@@ -43,9 +44,9 @@ export async function createStockMovement(data: {
     data = validated.data as any;
     const product = await prisma.product.findFirst({
       where: { id: data.productId, companyId: data.companyId },
-      select: { id: true, stock: true },
+      select: { id: true, name: true, stock: true, stockAlert: true },
     });
-    if (!product) return { success: false, error: "Produit introuvable ou non autorisÃ©." };
+    if (!product) return { success: false, error: "Produit introuvable ou non autorisé." };
     if (data.type === 'OUT' && product.stock < data.quantity) {
       return { success: false, error: "Stock insuffisant pour cette sortie." };
     }
@@ -66,6 +67,13 @@ export async function createStockMovement(data: {
       });
       return createdMovement;
     });
+
+    if (data.type === 'OUT') {
+      const remainingStock = product.stock - data.quantity;
+      if (remainingStock <= (product.stockAlert || 0)) {
+        sendLowStockAlert(product.name, remainingStock, data.companyId).catch(console.error);
+      }
+    }
 
     revalidatePath("/dashboard/inventory");
     revalidatePath("/dashboard/products");
