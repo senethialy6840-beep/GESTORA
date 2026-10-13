@@ -6,6 +6,7 @@ import { SaleSchema } from '@/lib/validations';
 import { auth } from '@/auth';
 import { cookies } from 'next/headers';
 import { sendLowStockAlert } from '@/lib/mailer';
+import { getActiveWarehouseId, getWarehouseFilter } from '@/lib/warehouseHelper';
 
 export type CreateSaleData = {
   invoiceNo: string;
@@ -52,12 +53,8 @@ export async function createSale(data: CreateSaleData) {
       if (!product) return { success: false, error: "Produit introuvable ou non autorisé." };
       products.set(product.id, { quantity: item.quantity, name: product.name, stock: product.stock, stockAlert: product.stockAlert });
     }
-    for (const product of products.values()) {
-      if (product.stock < product.quantity) return { success: false, error: `Stock insuffisant pour ${product.name}.` };
-    }
 
-    const cookieStore = await cookies();
-    const activeBoutiqueId = cookieStore.get('activeBoutiqueId')?.value || null;
+    const activeBoutiqueId = await getActiveWarehouseId(data.companyId, session.user.email);
 
     const sale = await prisma.$transaction(async (transaction) => {
       const createdSale = await transaction.sale.create({
@@ -151,13 +148,13 @@ export async function getSales(_companyId?: string) {
     if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
     const companyId = session.user.companyId as string;
     
-    const cookieStore = await cookies();
-    const activeBoutiqueId = cookieStore.get('activeBoutiqueId')?.value || null;
+    const activeWarehouseId = await getActiveWarehouseId(companyId, session.user.email);
+    const warehouseFilter = getWarehouseFilter(activeWarehouseId);
     
     const sales = await prisma.sale.findMany({
       where: { 
         companyId,
-        warehouseId: activeBoutiqueId
+        ...warehouseFilter,
       },
       include: {
         customer: true,

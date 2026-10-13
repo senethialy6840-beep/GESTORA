@@ -32,9 +32,6 @@ export async function POST(request: Request) {
       for (const item of items) {
         const product = await tx.product.findUnique({ where: { id: item.productId } });
         if (!product) throw new Error(`Produit introuvable: ${item.productId}`);
-        if (product.stock < item.quantity) {
-          throw new Error(`Stock insuffisant pour ${product.name}`);
-        }
         
         const lineTotal = item.quantity * item.price;
         totalAmount += lineTotal;

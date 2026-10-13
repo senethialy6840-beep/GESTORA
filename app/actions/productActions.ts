@@ -4,7 +4,7 @@ import { prisma, ensureCompanyExists } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { ProductSchema } from '@/lib/validations';
 import { auth } from '@/auth';
-import { cookies } from 'next/headers';
+import { getActiveWarehouseId, getWarehouseFilter } from '@/lib/warehouseHelper';
 
 export type CreateProductData = {
   name: string;
@@ -31,8 +31,7 @@ export async function createProduct(data: CreateProductData) {
       const errorMsg = validated.error.issues[0]?.message || "Données du produit invalides.";
       return { success: false, error: errorMsg };
     }
-    const cookieStore = await cookies();
-    const activeBoutiqueId = cookieStore.get('activeBoutiqueId')?.value || null;
+    const activeBoutiqueId = await getActiveWarehouseId(data.companyId, session.user.email);
 
     data = validated.data as CreateProductData;
     const product = await prisma.product.create({
@@ -66,13 +65,13 @@ export async function getProducts(_companyId?: string) {
     if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
     const companyId = session.user.companyId as string;
     
-    const cookieStore = await cookies();
-    const activeBoutiqueId = cookieStore.get('activeBoutiqueId')?.value || null;
+    const activeWarehouseId = await getActiveWarehouseId(companyId, session.user.email);
+    const warehouseFilter = getWarehouseFilter(activeWarehouseId);
     
     const products = await prisma.product.findMany({
       where: { 
         companyId,
-        warehouseId: activeBoutiqueId
+        ...warehouseFilter,
       },
       orderBy: { createdAt: 'desc' },
     });
