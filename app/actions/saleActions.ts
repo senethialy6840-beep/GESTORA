@@ -72,7 +72,7 @@ export async function createSale(data: CreateSaleData) {
             create: data.items.map(i => ({ description: i.description, quantity: i.quantity, price: i.price }))
           } : undefined,
         },
-        include: { items: true },
+        include: { items: true, customer: true },
       });
       for (const [productId, product] of products) {
         await transaction.product.update({ where: { id: productId }, data: { stock: { decrement: product.quantity } } });
