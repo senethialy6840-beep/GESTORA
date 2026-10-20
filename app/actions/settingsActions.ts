@@ -130,32 +130,27 @@ export async function saveSettings(requestedCompanyId: string, data: any) {
           const filename = `${dbCompanyId}-${Date.now()}.${type}`;
           
           const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-          if (supabaseUrl === 'https://placeholder.supabase.co') {
-             throw new Error("Supabase n'est pas configuré. Upload ignoré pour éviter de bloquer.");
+          if (supabaseUrl && supabaseUrl !== 'https://placeholder.supabase.co') {
+            const { data: uploadData, error } = await getSupabase()
+              .storage
+              .from('logos')
+              .upload(filename, buffer, {
+                contentType: `image/${type}`,
+                upsert: true
+              });
+              
+            if (error) {
+              console.error("Supabase upload error, using compressed base64 fallback:", error);
+            } else {
+              const { data: publicUrlData } = getSupabase().storage.from('logos').getPublicUrl(filename);
+              if (publicUrlData?.publicUrl) {
+                logoUrl = publicUrlData.publicUrl;
+              }
+            }
           }
-
-          const { data: uploadData, error } = await getSupabase()
-            .storage
-            .from('logos')
-            .upload(filename, buffer, {
-              contentType: `image/${type}`,
-              upsert: true
-            });
-            
-          if (error) {
-            console.error("Supabase upload error:", error);
-            // Empêcher la sauvegarde du base64 complet dans la base
-            logoUrl = null;
-          } else {
-            const { data: publicUrlData } = getSupabase().storage.from('logos').getPublicUrl(filename);
-            logoUrl = publicUrlData.publicUrl;
-          }
-        } else {
-           logoUrl = null;
         }
       } catch (err) {
         console.error("Error processing logo upload:", err);
-        logoUrl = null;
       }
     }
     

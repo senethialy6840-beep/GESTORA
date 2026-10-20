@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { Building2, Save, MapPin, Phone, Mail, FileText, Camera } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Building2, Save, MapPin, Phone, Mail, FileText, Camera, Loader2, UploadCloud } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { getCompany, updateCompany } from '@/app/actions/companyActions';
+import { compressImage } from '@/lib/imageUtils';
 
 export default function CompanyPage() {
   const { data: session } = useSession();
@@ -17,6 +18,9 @@ export default function CompanyPage() {
     description: ''
   });
   
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [isCompressingLogo, setIsCompressingLogo] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -36,6 +40,9 @@ export default function CompanyPage() {
             address: res.data.address || '',
             description: ''
           });
+          if (res.data.logoUrl) {
+            setLogoUrl(res.data.logoUrl);
+          }
         }
       }
       setIsLoaded(true);
@@ -49,6 +56,23 @@ export default function CompanyPage() {
     setSaveSuccess(false);
   };
 
+  const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setIsCompressingLogo(true);
+      try {
+        const compressedBase64 = await compressImage(file, 800, 0.85);
+        setLogoUrl(compressedBase64);
+        setSaveSuccess(false);
+      } catch (err) {
+        console.error("Erreur compression logo:", err);
+        alert("Impossible de traiter cette image. Veuillez sélectionner un format valide.");
+      } finally {
+        setIsCompressingLogo(false);
+      }
+    }
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!session?.user?.companyId) return;
@@ -60,7 +84,8 @@ export default function CompanyPage() {
       email: formData.email,
       phone: formData.phone,
       address: formData.address,
-      taxNumber: formData.ninea, // mapping ninea to taxNumber
+      taxNumber: formData.ninea,
+      logoUrl: logoUrl || undefined,
     });
 
     setIsSaving(false);
@@ -90,14 +115,46 @@ export default function CompanyPage() {
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Logo & Identité</h3>
             
             <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-200 dark:border-slate-700/50 rounded-xl bg-gray-50 dark:bg-[#0A1226] mb-6">
-              <div className="w-24 h-24 bg-white dark:bg-[#1E293B] rounded-full shadow-sm flex items-center justify-center mb-4 relative group cursor-pointer border border-gray-100 dark:border-slate-600">
-                <Building2 className="w-10 h-10 text-gray-300 dark:text-slate-500" />
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleLogoChange}
+                accept="image/*"
+                className="hidden"
+              />
+              <div 
+                onClick={() => fileInputRef.current?.click()}
+                className="w-24 h-24 bg-white dark:bg-[#1E293B] rounded-full shadow-sm flex items-center justify-center mb-4 relative group cursor-pointer border border-gray-100 dark:border-slate-600 overflow-hidden"
+              >
+                {logoUrl ? (
+                  <img src={logoUrl} alt="Logo" className="w-full h-full object-contain p-1" />
+                ) : (
+                  <Building2 className="w-10 h-10 text-gray-300 dark:text-slate-500" />
+                )}
                 <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Camera className="w-6 h-6 text-white" />
+                  {isCompressingLogo ? (
+                    <Loader2 className="w-6 h-6 text-white animate-spin" />
+                  ) : (
+                    <Camera className="w-6 h-6 text-white" />
+                  )}
                 </div>
               </div>
-              <p className="text-sm font-medium text-blue-600 dark:text-blue-400 cursor-pointer hover:underline">Changer le logo</p>
-              <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">PNG, JPG jusqu'à 5MB</p>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isCompressingLogo}
+                className="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1.5 disabled:opacity-50"
+              >
+                {isCompressingLogo ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Optimisation...</span>
+                  </>
+                ) : (
+                  <span>Changer le logo</span>
+                )}
+              </button>
+              <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">Photos automatiquement allégées</p>
             </div>
             
             <div className="space-y-3">

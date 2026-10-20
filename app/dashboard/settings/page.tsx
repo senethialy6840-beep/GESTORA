@@ -10,6 +10,7 @@ import { getEmployees, createEmployee, updateEmployee, deleteEmployee } from '@/
 import { getWarehouses, createWarehouse, updateWarehouse, deleteWarehouse } from '@/app/actions/inventoryActions';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
+import { compressImage } from '@/lib/imageUtils';
 
 export default function SettingsPage() {
   const { data: session, status } = useSession();
@@ -17,6 +18,7 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('profil');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [isCompressingLogo, setIsCompressingLogo] = useState(false);
   
   const [formData, setFormData] = useState({
     companyName: '',
@@ -206,21 +208,21 @@ export default function SettingsPage() {
     { id: 'equipe', label: 'Équipe & Accès', icon: Users },
   ];
 
-  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Vérifier la taille (max 2MB)
-      if (file.size > 2 * 1024 * 1024) {
-        alert("Le logo est trop volumineux. La taille maximale est de 2 Mo.");
-        return;
+      setIsCompressingLogo(true);
+      try {
+        // Optimisation et compression automatique côté client (supporte n'importe quelle taille de photo)
+        const compressedBase64 = await compressImage(file, 800, 0.85);
+        setLogoPreview(compressedBase64);
+        setFormData(prev => ({ ...prev, logo: compressedBase64 }));
+      } catch (err: any) {
+        console.error("Erreur compression logo:", err);
+        alert("Impossible de traiter cette image. Veuillez sélectionner un format valide (PNG, JPG, WEBP).");
+      } finally {
+        setIsCompressingLogo(false);
       }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = reader.result as string;
-        setLogoPreview(base64);
-        setFormData(prev => ({ ...prev, logo: base64 }));
-      };
-      reader.readAsDataURL(file);
     }
   };
 
@@ -360,12 +362,24 @@ export default function SettingsPage() {
                     />
                     <button 
                       onClick={() => fileInputRef.current?.click()}
-                      className="px-4 py-2 bg-white dark:bg-[#162032] border border-gray-200 dark:border-slate-700/50 rounded-lg text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800/30 transition-colors flex items-center gap-2 shadow-sm"
+                      disabled={isCompressingLogo}
+                      className="px-4 py-2 bg-white dark:bg-[#162032] border border-gray-200 dark:border-slate-700/50 rounded-lg text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800/30 transition-colors flex items-center gap-2 shadow-sm disabled:opacity-50"
                     >
-                      <UploadCloud className="w-4 h-4" />
-                      Importer un logo
+                      {isCompressingLogo ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+                          <span>Optimisation de l'image...</span>
+                        </>
+                      ) : (
+                        <>
+                          <UploadCloud className="w-4 h-4" />
+                          <span>Importer un logo</span>
+                        </>
+                      )}
                     </button>
-                    <p className="text-xs text-gray-500 mt-2">Format recommandé : PNG ou JPG, fond transparent. Max 2MB.</p>
+                    <p className="text-xs text-gray-500 mt-2">
+                      Format recommandé : PNG ou JPG. Les photos de smartphone sont automatiquement allégées et optimisées.
+                    </p>
                   </div>
                 </div>
               </div>

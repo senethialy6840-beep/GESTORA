@@ -28,6 +28,7 @@ export type UpdateCompanyData = {
   phone?: string;
   email?: string;
   taxNumber?: string;
+  logoUrl?: string;
 };
 
 const CompanyUpdateSchema = z.object({
@@ -37,6 +38,7 @@ const CompanyUpdateSchema = z.object({
   phone: z.string().optional(),
   email: z.union([z.literal(""), z.string().email()]).optional(),
   taxNumber: z.string().optional(),
+  logoUrl: z.string().optional(),
 });
 
 export async function updateCompany(_requestedCompanyId: string, data: UpdateCompanyData) {
@@ -59,6 +61,7 @@ export async function updateCompany(_requestedCompanyId: string, data: UpdateCom
         phone: safeData.phone,
         email: safeData.email,
         taxNumber: safeData.taxNumber,
+        ...(safeData.logoUrl !== undefined ? { logoUrl: safeData.logoUrl } : {}),
       },
     });
 
