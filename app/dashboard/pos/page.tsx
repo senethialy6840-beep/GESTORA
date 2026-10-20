@@ -22,7 +22,8 @@ import {
   Download, 
   Sparkles,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  Zap
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createSale, getSales } from '../../actions/saleActions';
@@ -191,11 +192,21 @@ export default function POSPage() {
     return list.slice(0, 5);
   }, [total]);
 
-  // Confirm Sale & Generate Receipt
-  const handleConfirmSale = async () => {
+  // Core Sale Execution (supports fast sale without receipt or sale with receipt)
+  const executeSale = async ({
+    generateReceipt,
+    method,
+    received,
+    customerId,
+  }: {
+    generateReceipt: boolean;
+    method: string;
+    received: number;
+    customerId?: string;
+  }) => {
     if (cart.length === 0 || !session?.user?.companyId || isSubmitting) return;
 
-    if (paymentMethod === 'Espèces' && parsedReceived < total) {
+    if (method === 'Espèces' && received < total) {
       setErrorMessage("Le montant reçu en espèces est inférieur au total de la vente.");
       return;
     }
@@ -204,14 +215,14 @@ export default function POSPage() {
     setErrorMessage(null);
 
     try {
-      const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
+      const selectedCustomer = customers.find(c => c.id === customerId);
       const generatedInvoiceNo = `VTE-${Date.now().toString().slice(-8)}`;
 
       const saleData = {
         invoiceNo: generatedInvoiceNo,
         totalAmount: total,
         status: 'COMPLETED',
-        customerId: selectedCustomerId || undefined,
+        customerId: customerId || undefined,
         companyId: session.user.companyId,
         items: cart.map(item => ({
           description: item.name,
@@ -229,6 +240,8 @@ export default function POSPage() {
         return;
       }
 
+      const calculatedChange = Math.max(0, received - total);
+
       // Préparer les données pour le ticket de caisse
       const completedReceiptData = {
         invoiceNo: generatedInvoiceNo,
@@ -241,9 +254,9 @@ export default function POSPage() {
           price: item.price
         })),
         customer: selectedCustomer || { name: 'Client Comptant' },
-        paymentMethod: paymentMethod,
-        amountReceived: paymentMethod === 'Espèces' ? parsedReceived : total,
-        changeDue: paymentMethod === 'Espèces' ? changeDue : 0,
+        paymentMethod: method,
+        amountReceived: received,
+        changeDue: calculatedChange,
         cashierName: session.user.name || 'Caisse',
       };
 
@@ -256,9 +269,9 @@ export default function POSPage() {
           createdAt: new Date().toISOString(),
           customer: selectedCustomer,
           items: completedReceiptData.items,
-          paymentMethod: paymentMethod,
-          amountReceived: completedReceiptData.amountReceived,
-          changeDue: completedReceiptData.changeDue
+          paymentMethod: method,
+          amountReceived: received,
+          changeDue: calculatedChange
         },
         ...prev.slice(0, 14)
       ]);
@@ -276,19 +289,43 @@ export default function POSPage() {
       setCart([]);
       setShowCheckoutModal(false);
 
-      // Ouvrir automatiquement le ticket de caisse !
+      // Garder les données du ticket disponible (pour le bouton "Dernier ticket" et le toast)
       setReceiptSaleData(completedReceiptData);
-      setShowReceiptModal(true);
 
-      // Notification toast
-      setShowSuccessToast(true);
-      setTimeout(() => setShowSuccessToast(false), 3000);
+      if (generateReceipt) {
+        // Le client demande un ticket -> Ouvrir le modal du ticket de caisse
+        setShowReceiptModal(true);
+      } else {
+        // Le client ne veut pas de ticket -> Vente rapide terminée immédiatement, sans aucune interruption !
+        setShowSuccessToast(true);
+        setTimeout(() => setShowSuccessToast(false), 4000);
+      }
     } catch (err: any) {
       console.error("Erreur finalisation vente:", err);
       setErrorMessage(err.message || "Erreur inconnue lors de l'encaissement.");
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Vente rapide 1-clic (Sans ticket, direct en espèces)
+  const handleQuickSale = async () => {
+    await executeSale({
+      generateReceipt: false,
+      method: 'Espèces',
+      received: total,
+      customerId: undefined,
+    });
+  };
+
+  // Validation depuis le modal (avec ou sans ticket)
+  const handleConfirmSale = async (generateReceipt: boolean = true) => {
+    await executeSale({
+      generateReceipt,
+      method: paymentMethod,
+      received: paymentMethod === 'Espèces' ? parsedReceived : total,
+      customerId: selectedCustomerId || undefined,
+    });
   };
 
   // Open receipt for a past sale
@@ -630,15 +667,30 @@ export default function POSPage() {
               </div>
             </div>
 
-            <button
-              onClick={handleOpenCheckout}
-              disabled={cart.length === 0}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-sm py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-blue-500/20 active:scale-[0.98]"
-            >
-              <Banknote className="w-4 h-4" />
-              <span>Encaisser & Émettre le ticket</span>
-              <ArrowRight className="w-4 h-4 ml-auto" />
-            </button>
+            <div className="space-y-2 pt-1">
+              {/* Option 1: Vente Rapide en 1 clic sans ticket */}
+              <button
+                onClick={handleQuickSale}
+                disabled={cart.length === 0 || isSubmitting}
+                className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-xs sm:text-sm py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm active:scale-[0.98]"
+                title="Valider immédiatement la vente en espèces sans ouvrir de ticket"
+              >
+                <Zap className="w-4 h-4 text-emerald-200 fill-emerald-200" />
+                <span>Vente rapide (Sans ticket)</span>
+              </button>
+
+              {/* Option 2: Encaisser avec Ticket & Choix mode de paiement */}
+              <button
+                onClick={handleOpenCheckout}
+                disabled={cart.length === 0 || isSubmitting}
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-xs sm:text-sm py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-blue-500/20 active:scale-[0.98]"
+                title="Choisir le mode de paiement et générer le ticket de caisse"
+              >
+                <Receipt className="w-4 h-4" />
+                <span>Encaisser avec ticket</span>
+                <ArrowRight className="w-4 h-4 ml-auto" />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -829,22 +881,36 @@ export default function POSPage() {
 
               </div>
 
-              {/* Footer Actions */}
-              <div className="p-4 border-t border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/40 flex justify-end gap-3">
+              {/* Footer Actions avec choix Ticket ou Sans ticket */}
+              <div className="p-4 border-t border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/40 flex flex-wrap items-center justify-end gap-2.5">
                 <button
                   type="button"
                   onClick={() => setShowCheckoutModal(false)}
                   disabled={isSubmitting}
-                  className="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
+                  className="px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
                 >
                   Annuler
                 </button>
 
+                {/* Bouton pour ceux qui ne veulent pas de ticket */}
                 <button
                   type="button"
-                  onClick={handleConfirmSale}
+                  onClick={() => handleConfirmSale(false)}
                   disabled={isSubmitting || (paymentMethod === 'Espèces' && parsedReceived < total)}
-                  className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-xs sm:text-sm py-2.5 px-5 rounded-xl flex items-center gap-2 transition-all shadow-md shadow-emerald-500/20 active:scale-95"
+                  className="bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-800 dark:text-slate-200 border border-gray-200/80 dark:border-slate-700 font-bold text-xs sm:text-sm py-2.5 px-4 rounded-xl flex items-center gap-2 transition-all active:scale-95"
+                  title="Enregistrer la vente sans ouvrir de ticket de caisse"
+                >
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                  <span>Valider sans ticket</span>
+                </button>
+
+                {/* Bouton pour ceux qui ont besoin d'un ticket */}
+                <button
+                  type="button"
+                  onClick={() => handleConfirmSale(true)}
+                  disabled={isSubmitting || (paymentMethod === 'Espèces' && parsedReceived < total)}
+                  className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold text-xs sm:text-sm py-2.5 px-4 rounded-xl flex items-center gap-2 transition-all shadow-md shadow-blue-500/20 active:scale-95"
+                  title="Enregistrer la vente et ouvrir le ticket de caisse"
                 >
                   {isSubmitting ? (
                     <>
@@ -853,8 +919,8 @@ export default function POSPage() {
                     </>
                   ) : (
                     <>
-                      <CheckCircle2 className="w-4 h-4" />
-                      <span>Valider & Émettre le ticket</span>
+                      <Receipt className="w-4 h-4" />
+                      <span>Valider & Émettre ticket</span>
                     </>
                   )}
                 </button>
@@ -963,17 +1029,27 @@ export default function POSPage() {
         }}
       />
 
-      {/* TOAST SUCCÈS */}
+      {/* TOAST SUCCÈS (AVEC ACCÈS RAPIDE AU TICKET SI DEMANDÉ) */}
       <AnimatePresence>
         {showSuccessToast && (
           <motion.div
             initial={{ opacity: 0, y: 50, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 50, scale: 0.9 }}
-            className="fixed bottom-6 right-6 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-xl flex items-center gap-2.5 z-50 text-xs font-bold"
+            className="fixed bottom-6 right-6 bg-emerald-600 text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-3 z-50 text-xs font-bold"
           >
-            <CheckCircle2 className="w-4 h-4" />
-            <span>Vente enregistrée & Ticket généré avec succès !</span>
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
+            <span>Vente enregistrée avec succès !</span>
+            {receiptSaleData && (
+              <button
+                onClick={() => setShowReceiptModal(true)}
+                className="bg-white/20 hover:bg-white/30 text-white px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors ml-1"
+                title="Imprimer ou afficher le ticket si le client le demande"
+              >
+                <Receipt className="w-3.5 h-3.5" />
+                <span>Ticket</span>
+              </button>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
