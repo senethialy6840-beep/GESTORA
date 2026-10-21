@@ -4,7 +4,7 @@ import { useState, Suspense, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Box, LayoutDashboard, LineChart, ShoppingCart, Eye, EyeOff, Loader2 } from 'lucide-react';
-import { registerUser, getCommercialByRef } from '../actions/authActions';
+import { registerUser, getCommercialByRef, isGoogleAuthConfigured } from '../actions/authActions';
 import { signIn } from 'next-auth/react';
 
 function RegisterForm() {
@@ -53,6 +53,12 @@ function RegisterForm() {
     setErrorMsg('');
     setIsGoogleLoading(true);
     try {
+      const isConfigured = await isGoogleAuthConfigured();
+      if (!isConfigured) {
+        setErrorMsg("L'inscription avec Google n'est pas encore configurée : les identifiants Google OAuth doivent être renseignés dans les variables d'environnement. Veuillez remplir le formulaire ci-dessous pour créer votre compte.");
+        setIsGoogleLoading(false);
+        return;
+      }
       const ref = refParam || (typeof window !== 'undefined' ? localStorage.getItem('gestora_ref') : null);
       if (ref) {
         document.cookie = `gestora_ref=${ref}; path=/; max-age=604800; SameSite=Lax`;

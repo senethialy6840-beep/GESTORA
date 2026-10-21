@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Box, LayoutDashboard, LineChart, ShoppingCart, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { signIn } from 'next-auth/react';
+import { isGoogleAuthConfigured } from '@/app/actions/authActions';
 
 function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -54,6 +55,12 @@ function LoginForm() {
     setErrorMsg('');
     setIsGoogleLoading(true);
     try {
+      const isConfigured = await isGoogleAuthConfigured();
+      if (!isConfigured) {
+        setErrorMsg("La connexion avec Google n'est pas encore configurée : les identifiants Google OAuth (GOOGLE_CLIENT_ID) doivent être renseignés dans les variables d'environnement. Veuillez utiliser votre email et mot de passe en attendant.");
+        setIsGoogleLoading(false);
+        return;
+      }
       await signIn("google", { callbackUrl: "/dashboard" });
     } catch (err: any) {
       setErrorMsg("Une erreur est survenue lors de la connexion Google.");

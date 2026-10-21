@@ -184,6 +184,14 @@ export async function registerUser(data: { prenom: string, nom: string, entrepri
   }
 }
 
+export async function isGoogleAuthConfigured(): Promise<boolean> {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const isIdValid = Boolean(clientId && clientId.trim() !== "" && clientId !== "GOOGLE_CLIENT_ID_PLACEHOLDER");
+  const isSecretValid = Boolean(clientSecret && clientSecret.trim() !== "" && clientSecret !== "GOOGLE_CLIENT_SECRET_PLACEHOLDER");
+  return isIdValid && isSecretValid;
+}
+
 export async function getCommercialByRef(ref: string) {
   try {
     const commercial = await prisma.commercial.findUnique({
