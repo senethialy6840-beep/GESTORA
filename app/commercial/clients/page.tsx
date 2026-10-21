@@ -49,7 +49,8 @@ export default async function CommercialClients() {
                 <th className="pb-3 px-4 text-sm font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Client / Entreprise</th>
                 <th className="pb-3 px-4 text-sm font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Téléphone</th>
                 <th className="pb-3 px-4 text-sm font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Plan</th>
-                <th className="pb-3 px-4 text-sm font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Statut Abonnement</th>
+                <th className="pb-3 px-4 text-sm font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Statut</th>
+                <th className="pb-3 px-4 text-sm font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Renouvellement (30j)</th>
                 <th className="pb-3 px-4 text-sm font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Date Inscription</th>
                 <th className="pb-3 px-4 text-sm font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider text-right">Commission Générée</th>
               </tr>
@@ -83,11 +84,31 @@ export default async function CommercialClients() {
                         </span>
                       ) : (
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-orange-100 text-orange-800 dark:bg-orange-500/20 dark:text-orange-300">
-                          {company.subscriptionStatus}
+                          {company.subscriptionStatus === 'EXPIRED' ? 'Expiré' : company.subscriptionStatus}
                         </span>
                       )}
                     </td>
                     <td className="py-4 px-4 text-gray-700 dark:text-slate-300">
+                      {company.subscriptionExpiresAt ? (
+                        <div>
+                          <div className="font-medium text-gray-900 dark:text-white text-xs">
+                            {format(new Date(company.subscriptionExpiresAt), 'dd MMM yyyy', { locale: fr })}
+                          </div>
+                          <div className="text-xs mt-0.5">
+                            {(() => {
+                              const daysLeft = Math.ceil((new Date(company.subscriptionExpiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                              if (daysLeft > 5) return <span className="text-emerald-600 dark:text-emerald-400 font-medium">Dans {daysLeft}j</span>;
+                              if (daysLeft > 0) return <span className="text-orange-600 dark:text-orange-400 font-bold">Expire dans {daysLeft}j</span>;
+                              if (daysLeft === 0) return <span className="text-red-600 dark:text-red-400 font-bold">Expire aujourd'hui</span>;
+                              return <span className="text-red-500 dark:text-red-400 font-medium">Expiré</span>;
+                            })()}
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-gray-400 text-xs">-</span>
+                      )}
+                    </td>
+                    <td className="py-4 px-4 text-gray-700 dark:text-slate-300 text-xs">
                       {format(new Date(referral.dateAttribution), 'dd MMM yyyy', { locale: fr })}
                     </td>
                     <td className="py-4 px-4 text-right font-bold text-[#2563EB]">
@@ -98,7 +119,7 @@ export default async function CommercialClients() {
               })}
               {referrals.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-gray-500 dark:text-slate-400">
+                  <td colSpan={7} className="py-8 text-center text-gray-500 dark:text-slate-400">
                     Vous n'avez pas encore de clients.
                   </td>
                 </tr>
