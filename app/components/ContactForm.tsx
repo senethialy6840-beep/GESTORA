@@ -62,11 +62,11 @@ export default function ContactForm({ variant = 'landing' }: ContactFormProps) {
   };
 
   const inputBg = variant === 'landing'
-    ? 'bg-white dark:bg-[#0A1226]'
+    ? 'bg-gray-50/70 dark:bg-slate-900/50'
     : 'bg-gray-50 dark:bg-[#0A1226]';
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className={variant === 'landing' ? 'space-y-4' : 'space-y-6'}>
       {/* Success Message */}
       {status === 'success' && (
         <div className="flex items-center gap-3 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50 rounded-xl animate-in fade-in slide-in-from-top-2">
@@ -85,50 +85,50 @@ export default function ContactForm({ variant = 'landing' }: ContactFormProps) {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className={`grid grid-cols-1 md:grid-cols-2 ${variant === 'landing' ? 'gap-4' : 'gap-6'}`}>
         <div>
-          <label className="block text-sm font-bold text-gray-900 dark:text-white mb-2">Prénom *</label>
+          <label className={`block text-sm font-bold text-gray-900 dark:text-white ${variant === 'landing' ? 'mb-1.5' : 'mb-2'}`}>Prénom *</label>
           <input
             type="text"
             name="firstName"
             value={formData.firstName}
             onChange={handleChange}
-            className={`w-full px-4 py-3 ${inputBg} text-gray-900 dark:text-white border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#2563EB] outline-none transition-all`}
+            className={`w-full px-4 ${variant === 'landing' ? 'py-2.5 text-sm' : 'py-3'} ${inputBg} text-gray-900 dark:text-white border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#2563EB] outline-none transition-all`}
             placeholder="Votre prénom"
             required
             disabled={status === 'loading'}
           />
         </div>
         <div>
-          <label className="block text-sm font-bold text-gray-900 dark:text-white mb-2">Nom *</label>
+          <label className={`block text-sm font-bold text-gray-900 dark:text-white ${variant === 'landing' ? 'mb-1.5' : 'mb-2'}`}>Nom *</label>
           <input
             type="text"
             name="lastName"
             value={formData.lastName}
             onChange={handleChange}
-            className={`w-full px-4 py-3 ${inputBg} text-gray-900 dark:text-white border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#2563EB] outline-none transition-all`}
+            className={`w-full px-4 ${variant === 'landing' ? 'py-2.5 text-sm' : 'py-3'} ${inputBg} text-gray-900 dark:text-white border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#2563EB] outline-none transition-all`}
             placeholder="Votre nom"
             required
             disabled={status === 'loading'}
           />
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className={`grid grid-cols-1 md:grid-cols-2 ${variant === 'landing' ? 'gap-4' : 'gap-6'}`}>
         <div>
-          <label className="block text-sm font-bold text-gray-900 dark:text-white mb-2">Téléphone *</label>
+          <label className={`block text-sm font-bold text-gray-900 dark:text-white ${variant === 'landing' ? 'mb-1.5' : 'mb-2'}`}>Téléphone *</label>
           <input
             type="tel"
             name="phone"
             value={formData.phone}
             onChange={handleChange}
-            className={`w-full px-4 py-3 ${inputBg} text-gray-900 dark:text-white border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#2563EB] outline-none transition-all`}
+            className={`w-full px-4 ${variant === 'landing' ? 'py-2.5 text-sm' : 'py-3'} ${inputBg} text-gray-900 dark:text-white border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#2563EB] outline-none transition-all`}
             placeholder="Votre numéro de téléphone"
             required
             disabled={status === 'loading'}
           />
         </div>
         <div>
-          <label className="block text-sm font-bold text-gray-900 dark:text-white mb-2">Email *</label>
+          <label className={`block text-sm font-bold text-gray-900 dark:text-white ${variant === 'landing' ? 'mb-1.5' : 'mb-2'}`}>Email *</label>
           <input
             type="email"
             name="email"
@@ -136,7 +136,7 @@ export default function ContactForm({ variant = 'landing' }: ContactFormProps) {
             onChange={handleChange}
             pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
             title="Veuillez entrer une adresse e-mail valide (ex: nom@domaine.com)"
-            className={`w-full px-4 py-3 ${inputBg} text-gray-900 dark:text-white border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#2563EB] outline-none transition-all`}
+            className={`w-full px-4 ${variant === 'landing' ? 'py-2.5 text-sm' : 'py-3'} ${inputBg} text-gray-900 dark:text-white border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#2563EB] outline-none transition-all`}
             placeholder="Adresse e-mail"
             required
             disabled={status === 'loading'}
@@ -144,12 +144,12 @@ export default function ContactForm({ variant = 'landing' }: ContactFormProps) {
         </div>
       </div>
       <div>
-        <label className="block text-sm font-bold text-gray-900 dark:text-white mb-2">Sujet de la demande *</label>
+        <label className={`block text-sm font-bold text-gray-900 dark:text-white ${variant === 'landing' ? 'mb-1.5' : 'mb-2'}`}>Sujet de la demande *</label>
         <select
           name="subject"
           value={formData.subject}
           onChange={handleChange}
-          className={`w-full px-4 py-3 ${inputBg} text-gray-900 dark:text-white border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#2563EB] outline-none transition-all appearance-none`}
+          className={`w-full px-4 ${variant === 'landing' ? 'py-2.5 text-sm' : 'py-3'} ${inputBg} text-gray-900 dark:text-white border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#2563EB] outline-none transition-all appearance-none`}
           required
           disabled={status === 'loading'}
         >
@@ -162,13 +162,13 @@ export default function ContactForm({ variant = 'landing' }: ContactFormProps) {
         </select>
       </div>
       <div>
-        <label className="block text-sm font-bold text-gray-900 dark:text-white mb-2">Message *</label>
+        <label className={`block text-sm font-bold text-gray-900 dark:text-white ${variant === 'landing' ? 'mb-1.5' : 'mb-2'}`}>Message *</label>
         <textarea
-          rows={6}
+          rows={variant === 'landing' ? 3 : 6}
           name="message"
           value={formData.message}
           onChange={handleChange}
-          className={`w-full px-4 py-3 ${inputBg} text-gray-900 dark:text-white border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#2563EB] outline-none transition-all resize-none`}
+          className={`w-full px-4 ${variant === 'landing' ? 'py-2.5 text-sm' : 'py-3'} ${inputBg} text-gray-900 dark:text-white border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#2563EB] outline-none transition-all resize-none`}
           placeholder="Votre message ici..."
           required
           disabled={status === 'loading'}
@@ -177,7 +177,7 @@ export default function ContactForm({ variant = 'landing' }: ContactFormProps) {
       <button
         type="submit"
         disabled={status === 'loading'}
-        className="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all shadow-md hover:shadow-lg hover:-translate-y-1 disabled:hover:translate-y-0 disabled:hover:shadow-md flex justify-center items-center gap-2"
+        className={`w-full ${variant === 'landing' ? 'py-3' : 'py-4'} bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 disabled:hover:translate-y-0 disabled:hover:shadow-md flex justify-center items-center gap-2`}
       >
         {status === 'loading' ? (
           <>
