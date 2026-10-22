@@ -711,9 +711,8 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* DROITE : FORMULAIRE DE CONTACT & CARTE */}
-            <div className="space-y-8">
-              {/* Formulaire dans son conteneur d'origine intact */}
+            {/* DROITE : FORMULAIRE DE CONTACT */}
+            <div>
               <div className="bg-white dark:bg-[#162032] p-8 md:p-10 rounded-[2rem] border border-gray-100 dark:border-slate-700/50 shadow-sm">
                 <div className="mb-8">
                   <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-4">
@@ -724,20 +723,6 @@ export default function LandingPage() {
                   </p>
                 </div>
                 <ContactForm variant="landing" />
-              </div>
-
-              {/* Carte géographique dans son conteneur d'origine intact */}
-              <div className="rounded-3xl overflow-hidden shadow-lg border border-gray-100 dark:border-slate-800">
-                <iframe 
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d123616.71181862414!2d-17.545300096238686!3d14.73976527582236!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1121d5a73e6d2be1%3A0x6b6d51c367cefc73!2sDakar%2C%20S%C3%A9n%C3%A9gal!5e0!3m2!1sfr!2sfr!4v1714152562416!5m2!1sfr!2sfr" 
-                  width="100%" 
-                  height="360" 
-                  style={{ border: 0 }} 
-                  allowFullScreen={true} 
-                  loading="lazy" 
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title="Carte de Dakar, Sénégal"
-                ></iframe>
               </div>
             </div>
 
