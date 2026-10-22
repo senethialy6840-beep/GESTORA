@@ -3,9 +3,24 @@
 import React from 'react';
 import Link from 'next/link';
 import { 
-  HelpCircle, Mail, Phone, MessageCircle, 
-  FileText, Video, LifeBuoy, Users, ChevronRight, BookOpen, Globe
+  HelpCircle, Mail, Phone, 
+  Video, Users, ChevronRight, ChevronDown, BookOpen, Globe, Send, MessageSquare
 } from 'lucide-react';
+import ContactForm from '@/app/components/ContactForm';
+
+function FaqItem({ question, answer }: { question: string, answer: string }) {
+  return (
+    <details className="group bg-white dark:bg-[#162032] border border-gray-200 dark:border-slate-700/50 rounded-2xl open:shadow-md transition-all">
+      <summary className="flex items-center justify-between cursor-pointer p-6 font-bold text-gray-900 dark:text-white">
+        {question}
+        <ChevronDown className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" />
+      </summary>
+      <div className="px-6 pb-6 text-gray-500 dark:text-slate-400 font-medium leading-relaxed">
+        {answer}
+      </div>
+    </details>
+  );
+}
 
 export default function SupportPage() {
   const teamMembers = [
@@ -26,20 +41,20 @@ export default function SupportPage() {
   ];
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-8">
+    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-10">
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">Aide et Assistance</h1>
           <p className="text-gray-500 dark:text-slate-400 mt-1">Comment pouvons-nous vous aider aujourd'hui ?</p>
         </div>
-        <Link 
-          href="/dashboard/support/contact"
+        <a 
+          href="#contact"
           className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-blue-500/30 transition-all hover:-translate-y-0.5"
         >
           <Mail className="w-5 h-5" />
           Contacter le support
-        </Link>
+        </a>
       </div>
 
       {/* QUICK CHANNELS */}
@@ -66,16 +81,16 @@ export default function SupportPage() {
           </div>
         </a>
 
-        <Link href="/dashboard/support/faq" className="bg-white dark:bg-[#162032] p-6 rounded-2xl border border-gray-200 dark:border-slate-700/50 shadow-sm hover:shadow-md transition-all group">
+        <a href="#faq" className="bg-white dark:bg-[#162032] p-6 rounded-2xl border border-gray-200 dark:border-slate-700/50 shadow-sm hover:shadow-md transition-all group">
           <div className="w-12 h-12 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
             <HelpCircle className="w-6 h-6" />
           </div>
           <h3 className="font-bold text-gray-900 dark:text-white mb-2">FAQ</h3>
           <p className="text-sm text-gray-500 dark:text-slate-400 mb-4">Les réponses aux questions les plus fréquemment posées par nos utilisateurs.</p>
           <div className="text-purple-600 dark:text-purple-400 text-sm font-bold flex items-center gap-1 group-hover:gap-2 transition-all">
-            Consulter la FAQ <ChevronRight className="w-4 h-4" />
+            Consulter la FAQ ci-dessous <ChevronRight className="w-4 h-4" />
           </div>
-        </Link>
+        </a>
       </div>
 
       {/* TEAM SECTION */}
@@ -118,6 +133,102 @@ export default function SupportPage() {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* CONTACT FORM SECTION */}
+      <div id="contact" className="scroll-mt-6 bg-white dark:bg-[#162032] p-8 md:p-10 rounded-2xl border border-gray-200 dark:border-slate-700/50 shadow-sm space-y-6">
+        <div className="flex items-center gap-3 pb-6 border-b border-gray-100 dark:border-slate-800/60">
+          <div className="w-12 h-12 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center">
+            <MessageSquare className="w-6 h-6" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Formulaire de contact direct</h2>
+            <p className="text-gray-500 dark:text-slate-400 text-sm mt-0.5">
+              Une question, un besoin spécifique ou un souci technique ? Envoyez-nous un message directement ici.
+            </p>
+          </div>
+        </div>
+        <ContactForm variant="dashboard" />
+      </div>
+
+      {/* FAQ SECTION */}
+      <div id="faq" className="scroll-mt-6 space-y-6">
+        <div className="bg-white dark:bg-[#162032] p-6 rounded-2xl border border-gray-200 dark:border-slate-700/50 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-xl flex items-center justify-center">
+              <HelpCircle className="w-6 h-6" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Foire aux questions (FAQ)</h2>
+              <p className="text-gray-500 dark:text-slate-400 text-sm mt-0.5">
+                Tout ce que vous devez savoir sur GESTORA, nos offres et nos fonctionnalités.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <FaqItem 
+            question="1. Qu'est-ce que GESTORA ?" 
+            answer="GESTORA est une plateforme ERP qui permet de gérer vos ventes, stocks, produits, clients, achats et autres opérations depuis un seul endroit." 
+          />
+          <FaqItem 
+            question="2. À qui s'adresse GESTORA ?" 
+            answer="GESTORA est conçu pour les petits commerces, boutiques, PME et entreprises ayant plusieurs points de vente." 
+          />
+          <FaqItem 
+            question="3. Puis-je essayer GESTORA avant de m'abonner ?" 
+            answer="Oui, vous pouvez créer un compte et découvrir la plateforme avant de choisir l'offre adaptée à votre entreprise." 
+          />
+          <FaqItem 
+            question="4. Puis-je changer d'offre à tout moment ?" 
+            answer="Oui. Vous pouvez passer à une offre supérieure ou modifier votre abonnement selon l'évolution de vos besoins." 
+          />
+          <FaqItem 
+            question="5. Puis-je gérer plusieurs boutiques ?" 
+            answer="Oui. L'offre Starter permet de gérer 1 boutique, Business jusqu'à 3 boutiques et Entreprise un nombre illimité de boutiques." 
+          />
+          <FaqItem 
+            question="6. Combien d'utilisateurs puis-je ajouter ?" 
+            answer="Cela dépend de votre offre : Starter (1 utilisateur), Business (jusqu'à 5 utilisateurs), Entreprise (utilisateurs illimités)." 
+          />
+          <FaqItem 
+            question="7. Mes données sont-elles sécurisées ?" 
+            answer="GESTORA met en place des mesures de sécurité pour protéger les données de votre entreprise et contrôler les accès des utilisateurs." 
+          />
+          <FaqItem 
+            question="8. Puis-je accéder à GESTORA depuis mon téléphone ?" 
+            answer="Oui. GESTORA est conçu pour fonctionner sur ordinateur, tablette et smartphone." 
+          />
+          <FaqItem 
+            question="9. Que se passe-t-il si je dépasse les limites de mon offre ?" 
+            answer="Vous serez invité à passer à une offre supérieure afin de continuer à utiliser les fonctionnalités ou capacités supplémentaires." 
+          />
+          <FaqItem 
+            question="10. Puis-je résilier mon abonnement ?" 
+            answer="Oui. Vous pouvez demander l'arrêt ou la modification de votre abonnement selon les conditions applicables à votre formule." 
+          />
+          <FaqItem 
+            question="11. Quels moyens de paiement sont acceptés ?" 
+            answer="Les moyens de paiement disponibles sont affichés au moment du paiement et peuvent varier selon votre pays et votre mode d'abonnement." 
+          />
+          <FaqItem 
+            question="12. L'intelligence artificielle est-elle disponible pour toutes les offres ?" 
+            answer="L'assistant intelligent YEYA AI est inclus dans l'offre Entreprise." 
+          />
+          <FaqItem 
+            question="13. Puis-je obtenir de l'aide en cas de problème ?" 
+            answer="Oui. GESTORA propose une assistance pour accompagner les utilisateurs dans l'utilisation de la plateforme." 
+          />
+          <FaqItem 
+            question="14. Que se passe-t-il avec mes données si je change d'offre ?" 
+            answer="Vos données restent associées à votre entreprise. Le changement d'offre modifie principalement les fonctionnalités et limites disponibles." 
+          />
+          <FaqItem 
+            question="15. Comment commencer avec GESTORA ?" 
+            answer="Créez votre compte, configurez votre entreprise et choisissez l'offre adaptée à vos besoins pour commencer à gérer votre activité." 
+          />
         </div>
       </div>
 

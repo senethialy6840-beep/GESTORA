@@ -44,11 +44,11 @@ export function MobileMenu() {
           </Link>
           <hr className="border-gray-100 dark:border-slate-800" />
           <Link 
-            href="#support" 
+            href="#contact" 
             onClick={() => setIsOpen(false)} 
             className="text-lg font-bold text-gray-800 dark:text-gray-200 hover:text-[#2563EB] dark:hover:text-[#3b82f6] transition-colors"
           >
-            Contactez-nous
+            Contact
           </Link>
           
           <Link 
