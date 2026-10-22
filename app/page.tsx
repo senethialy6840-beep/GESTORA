@@ -21,7 +21,6 @@ export default function LandingPage() {
               <Link href="#fonctionnalites" className="hover:text-[#2563EB] transition-colors">Fonctionnalités</Link>
               <Link href="#tarification" className="hover:text-[#2563EB] transition-colors">Tarification</Link>
               <Link href="#faq" className="hover:text-[#2563EB] transition-colors">FAQ</Link>
-              <Link href="#contact" className="hover:text-[#2563EB] transition-colors">Contact</Link>
               <ThemeToggle />
             </nav>
             <div className="hidden lg:flex items-center space-x-6">
@@ -642,196 +641,116 @@ export default function LandingPage() {
       {/* -------------------- PRICING SECTION -------------------- */}
       <PricingSection />
 
-      {/* -------------------- FAQ SECTION -------------------- */}
-      <section id="faq" className="py-24 bg-[#FAFBFF] dark:bg-[#050B14] transition-colors duration-300">
-        <div className="max-w-4xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-4">
-              Une question ? Nous avons la réponse.
-            </h2>
-            <p className="text-lg text-gray-500 dark:text-gray-400 font-medium">
-              Tout ce que vous devez savoir sur les offres et fonctionnalités de GESTORA avant de commencer.
-            </p>
-          </div>
-          
-          <div className="space-y-4">
-            <FaqItem 
-              question="1. Qu'est-ce que GESTORA ?" 
-              answer="GESTORA est une plateforme ERP qui permet de gérer vos ventes, stocks, produits, clients, achats et autres opérations depuis un seul endroit." 
-            />
-            <FaqItem 
-              question="2. À qui s'adresse GESTORA ?" 
-              answer="GESTORA est conçu pour les petits commerces, boutiques, PME et entreprises ayant plusieurs points de vente." 
-            />
-            <FaqItem 
-              question="3. Puis-je essayer GESTORA avant de m'abonner ?" 
-              answer="Oui, vous pouvez créer un compte et découvrir la plateforme avant de choisir l'offre adaptée à votre entreprise." 
-            />
-            <FaqItem 
-              question="4. Puis-je changer d'offre à tout moment ?" 
-              answer="Oui. Vous pouvez passer à une offre supérieure ou modifier votre abonnement selon l'évolution de vos besoins." 
-            />
-            <FaqItem 
-              question="5. Puis-je gérer plusieurs boutiques ?" 
-              answer="Oui. L'offre Starter permet de gérer 1 boutique, Business jusqu'à 3 boutiques et Entreprise un nombre illimité de boutiques." 
-            />
-            <FaqItem 
-              question="6. Combien d'utilisateurs puis-je ajouter ?" 
-              answer="Cela dépend de votre offre : Starter (1 utilisateur), Business (jusqu'à 5 utilisateurs), Entreprise (utilisateurs illimités)." 
-            />
-            <FaqItem 
-              question="7. Mes données sont-elles sécurisées ?" 
-              answer="GESTORA met en place des mesures de sécurité pour protéger les données de votre entreprise et contrôler les accès des utilisateurs." 
-            />
-            <FaqItem 
-              question="8. Puis-je accéder à GESTORA depuis mon téléphone ?" 
-              answer="Oui. GESTORA est conçu pour fonctionner sur ordinateur, tablette et smartphone." 
-            />
-            <FaqItem 
-              question="9. Que se passe-t-il si je dépasse les limites de mon offre ?" 
-              answer="Vous serez invité à passer à une offre supérieure afin de continuer à utiliser les fonctionnalités ou capacités supplémentaires." 
-            />
-            <FaqItem 
-              question="10. Puis-je résilier mon abonnement ?" 
-              answer="Oui. Vous pouvez demander l'arrêt ou la modification de votre abonnement selon les conditions applicables à votre formule." 
-            />
-            <FaqItem 
-              question="11. Quels moyens de paiement sont acceptés ?" 
-              answer="Les moyens de paiement disponibles sont affichés au moment du paiement et peuvent varier selon votre pays et votre mode d'abonnement." 
-            />
-            <FaqItem 
-              question="12. L'intelligence artificielle est-elle disponible pour toutes les offres ?" 
-              answer="L'assistant intelligent YEYA AI est inclus dans l'offre Entreprise." 
-            />
-            <FaqItem 
-              question="13. Puis-je obtenir de l'aide en cas de problème ?" 
-              answer="Oui. GESTORA propose une assistance pour accompagner les utilisateurs dans l'utilisation de la plateforme." 
-            />
-            <FaqItem 
-              question="14. Que se passe-t-il avec mes données si je change d'offre ?" 
-              answer="Vos données restent associées à votre entreprise. Le changement d'offre modifie principalement les fonctionnalités et limites disponibles." 
-            />
-            <FaqItem 
-              question="15. Comment commencer avec GESTORA ?" 
-              answer="Créez votre compte, configurez votre entreprise et choisissez l'offre adaptée à vos besoins pour commencer à gérer votre activité." 
-            />
-          </div>
-
-          {/* FAQ to Contact CTA Card */}
-          <div className="mt-12 bg-white dark:bg-[#162032] p-6 sm:p-8 rounded-2xl border border-gray-200 dark:border-slate-700/50 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
-            <div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
-                Une question non abordée dans cette FAQ ?
-              </h3>
-              <p className="text-sm text-gray-500 dark:text-slate-400">
-                Notre équipe est à votre écoute pour vous conseiller et vous accompagner dans votre projet.
-              </p>
-            </div>
-            <a
-              href="#contact"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md transition-all shrink-0 hover:-translate-y-0.5"
-            >
-              <Mail className="w-4 h-4" />
-              <span>Nous contacter</span>
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* -------------------- CONTACT & SUPPORT SECTION -------------------- */}
-      <section id="contact" className="relative py-24 bg-white dark:bg-[#0A1226] transition-colors duration-300 scroll-mt-20">
-        <div id="support" className="absolute -top-20"></div>
+      {/* -------------------- FAQ & CONTACT (CÔTE À CÔTE) -------------------- */}
+      <section id="faq" className="relative py-24 bg-[#FAFBFF] dark:bg-[#050B14] transition-colors duration-300 scroll-mt-20">
+        <div id="contact" className="absolute -top-24"></div>
+        <div id="support" className="absolute -top-24"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-3.5 py-1.5 rounded-full inline-block mb-3 border border-blue-100 dark:border-blue-500/20">
-              Support & Contact Direct
-            </span>
-            <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-4">
-              Contactez-nous & Échangeons
-            </h2>
-            <p className="text-lg text-gray-500 dark:text-gray-400 font-medium">
-              Une question sur la plateforme, une demande de démonstration ou besoin d&apos;assistance ? Notre équipe basée à Dakar vous répond rapidement.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
             
-            {/* Left Column (5 cols): Coordonnées directes et carte */}
-            <div className="lg:col-span-5 space-y-6">
+            {/* GAUCHE : FAQ */}
+            <div>
+              <div className="mb-10">
+                <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-4">
+                  Une question ? Nous avons la réponse.
+                </h2>
+                <p className="text-lg text-gray-500 dark:text-gray-400 font-medium">
+                  Tout ce que vous devez savoir sur les offres et fonctionnalités de GESTORA avant de commencer.
+                </p>
+              </div>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Email */}
-                <div className="bg-gray-50 dark:bg-[#162032] p-5 rounded-2xl border border-gray-200 dark:border-slate-700/50 shadow-sm hover:shadow-md transition-all">
-                  <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-3">
-                    <Mail className="w-5 h-5" />
-                  </div>
-                  <h4 className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">Email</h4>
-                  <a href="mailto:gestorame112@gmail.com" className="text-sm font-bold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 break-all transition-colors">
-                    gestorame112@gmail.com
-                  </a>
-                  <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-1">Réponse sous 24h</p>
-                </div>
+              <div className="space-y-4">
+                <FaqItem 
+                  question="1. Qu'est-ce que GESTORA ?" 
+                  answer="GESTORA est une plateforme ERP qui permet de gérer vos ventes, stocks, produits, clients, achats et autres opérations depuis un seul endroit." 
+                />
+                <FaqItem 
+                  question="2. À qui s'adresse GESTORA ?" 
+                  answer="GESTORA est conçu pour les petits commerces, boutiques, PME et entreprises ayant plusieurs points de vente." 
+                />
+                <FaqItem 
+                  question="3. Puis-je essayer GESTORA avant de m'abonner ?" 
+                  answer="Oui, vous pouvez créer un compte et découvrir la plateforme avant de choisir l'offre adaptée à votre entreprise." 
+                />
+                <FaqItem 
+                  question="4. Puis-je changer d'offre à tout moment ?" 
+                  answer="Oui. Vous pouvez passer à une offre supérieure ou modifier votre abonnement selon l'évolution de vos besoins." 
+                />
+                <FaqItem 
+                  question="5. Puis-je gérer plusieurs boutiques ?" 
+                  answer="Oui. L'offre Starter permet de gérer 1 boutique, Business jusqu'à 3 boutiques et Entreprise un nombre illimité de boutiques." 
+                />
+                <FaqItem 
+                  question="6. Combien d'utilisateurs puis-je ajouter ?" 
+                  answer="Cela dépend de votre offre : Starter (1 utilisateur), Business (jusqu'à 5 utilisateurs), Entreprise (utilisateurs illimités)." 
+                />
+                <FaqItem 
+                  question="7. Mes données sont-elles sécurisées ?" 
+                  answer="GESTORA met en place des mesures de sécurité pour protéger les données de votre entreprise et contrôler les accès des utilisateurs." 
+                />
+                <FaqItem 
+                  question="8. Puis-je accéder à GESTORA depuis mon téléphone ?" 
+                  answer="Oui. GESTORA est conçu pour fonctionner sur ordinateur, tablette et smartphone." 
+                />
+                <FaqItem 
+                  question="9. Que se passe-t-il si je dépasse les limites de mon offre ?" 
+                  answer="Vous serez invité à passer à une offre supérieure afin de continuer à utiliser les fonctionnalités ou capacités supplémentaires." 
+                />
+                <FaqItem 
+                  question="10. Puis-je résilier mon abonnement ?" 
+                  answer="Oui. Vous pouvez demander l'arrêt ou la modification de votre abonnement selon les conditions applicables à votre formule." 
+                />
+                <FaqItem 
+                  question="11. Quels moyens de paiement sont acceptés ?" 
+                  answer="Les moyens de paiement disponibles sont affichés au moment du paiement et peuvent varier selon votre pays et votre mode d'abonnement." 
+                />
+                <FaqItem 
+                  question="12. L'intelligence artificielle est-elle disponible pour toutes les offres ?" 
+                  answer="L'assistant intelligent YEYA AI est inclus dans l'offre Entreprise." 
+                />
+                <FaqItem 
+                  question="13. Puis-je obtenir de l'aide en cas de problème ?" 
+                  answer="Oui. GESTORA propose une assistance pour accompagner les utilisateurs dans l'utilisation de la plateforme." 
+                />
+                <FaqItem 
+                  question="14. Que se passe-t-il avec mes données si je change d'offre ?" 
+                  answer="Vos données restent associées à votre entreprise. Le changement d'offre modifie principalement les fonctionnalités et limites disponibles." 
+                />
+                <FaqItem 
+                  question="15. Comment commencer avec GESTORA ?" 
+                  answer="Créez votre compte, configurez votre entreprise et choisissez l'offre adaptée à vos besoins pour commencer à gérer votre activité." 
+                />
+              </div>
+            </div>
 
-                {/* Téléphone / WhatsApp */}
-                <div className="bg-gray-50 dark:bg-[#162032] p-5 rounded-2xl border border-gray-200 dark:border-slate-700/50 shadow-sm hover:shadow-md transition-all">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-3">
-                    <Phone className="w-5 h-5" />
-                  </div>
-                  <h4 className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">WhatsApp & Tel</h4>
-                  <a href="https://wa.me/221777042509" target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-gray-900 dark:text-white hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
-                    +221 77 704 25 09
-                  </a>
-                  <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-1">Disponible 7j/7</p>
+            {/* DROITE : FORMULAIRE DE CONTACT & CARTE */}
+            <div className="space-y-8">
+              {/* Formulaire dans son conteneur d'origine intact */}
+              <div className="bg-white dark:bg-[#162032] p-8 md:p-10 rounded-[2rem] border border-gray-100 dark:border-slate-700/50 shadow-sm">
+                <div className="mb-8">
+                  <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-4">
+                    Contactez-nous
+                  </h2>
+                  <p className="text-lg text-gray-500 dark:text-gray-400 font-medium">
+                    Avez-vous des questions ou besoin d’aide ? Nous sommes juste à un message.
+                  </p>
                 </div>
-
-                {/* Localisation */}
-                <div className="bg-gray-50 dark:bg-[#162032] p-5 rounded-2xl border border-gray-200 dark:border-slate-700/50 shadow-sm hover:shadow-md transition-all">
-                  <div className="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-500/10 flex items-center justify-center text-purple-600 dark:text-purple-400 mb-3">
-                    <MapPin className="w-5 h-5" />
-                  </div>
-                  <h4 className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">Siège</h4>
-                  <p className="text-sm font-bold text-gray-900 dark:text-white">Dakar, Sénégal</p>
-                  <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-1">Afrique de l&apos;Ouest</p>
-                </div>
-
-                {/* Disponibilité */}
-                <div className="bg-gray-50 dark:bg-[#162032] p-5 rounded-2xl border border-gray-200 dark:border-slate-700/50 shadow-sm hover:shadow-md transition-all">
-                  <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-500/10 flex items-center justify-center text-amber-600 dark:text-amber-400 mb-3">
-                    <Clock className="w-5 h-5" />
-                  </div>
-                  <h4 className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">Horaires</h4>
-                  <p className="text-sm font-bold text-gray-900 dark:text-white">8h00 – 20h00</p>
-                  <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-1">Du lundi au samedi</p>
-                </div>
+                <ContactForm variant="landing" />
               </div>
 
-              {/* Map embedded */}
-              <div className="rounded-2xl overflow-hidden shadow-sm border border-gray-200 dark:border-slate-700/50 h-56">
+              {/* Carte géographique dans son conteneur d'origine intact */}
+              <div className="rounded-3xl overflow-hidden shadow-lg border border-gray-100 dark:border-slate-800">
                 <iframe 
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d123616.71181862414!2d-17.545300096238686!3d14.73976527582236!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1121d5a73e6d2be1%3A0x6b6d51c367cefc73!2sDakar%2C%20S%C3%A9n%C3%A9gal!5e0!3m2!1sfr!2sfr!4v1714152562416!5m2!1sfr!2sfr" 
                   width="100%" 
-                  height="100%" 
+                  height="360" 
                   style={{ border: 0 }} 
                   allowFullScreen={true} 
                   loading="lazy" 
                   referrerPolicy="no-referrer-when-downgrade"
-                  title="Localisation GESTORA Dakar, Sénégal"
+                  title="Carte de Dakar, Sénégal"
                 ></iframe>
               </div>
-            </div>
-
-            {/* Right Column (7 cols): Formulaire de contact */}
-            <div className="lg:col-span-7 bg-gray-50 dark:bg-[#162032] p-6 sm:p-8 md:p-10 rounded-2xl border border-gray-200 dark:border-slate-700/50 shadow-sm">
-              <div className="mb-6 pb-6 border-b border-gray-200 dark:border-slate-700/60">
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                  Envoyez-nous un message
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-slate-400">
-                  Remplissez ce formulaire et notre équipe commerciale &amp; support vous recontactera rapidement.
-                </p>
-              </div>
-              <ContactForm variant="landing" />
             </div>
 
           </div>
@@ -958,31 +877,17 @@ export default function LandingPage() {
 
       {/* -------------------- FOOTER -------------------- */}
       <footer className="bg-gray-900 text-gray-400 py-12 border-t border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6 pb-8 border-b border-gray-800">
-            <a href="/" className="flex items-center">
-              <span className="text-2xl font-display font-black tracking-tight text-[#2563EB]">GEST</span>
-              <span className="text-2xl font-display font-black tracking-tight text-white">ORA.</span>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center">
+          <div className="flex items-center mb-4 md:mb-0">
+            <a href="https://wa.me/221777042509?text=Bonjour%2C%20je%20souhaite%20en%20savoir%20plus%20sur%20GESTORA" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2 bg-[#2563EB] hover:bg-blue-600 text-white px-6 py-2.5 rounded-full font-bold transition-all shadow-md hover:shadow-lg hover:-translate-y-1">
+              <Phone className="w-4 h-4" />
+              <span>Appeler / WhatsApp GESTORA</span>
             </a>
-            <nav className="flex flex-wrap justify-center gap-6 text-sm font-medium text-gray-400">
-              <Link href="#fonctionnalites" className="hover:text-white transition-colors">Fonctionnalités</Link>
-              <Link href="#tarification" className="hover:text-white transition-colors">Tarification</Link>
-              <Link href="#faq" className="hover:text-white transition-colors">FAQ</Link>
-              <Link href="#contact" className="hover:text-white transition-colors">Contact</Link>
-            </nav>
-            <div className="flex items-center">
-              <a href="https://wa.me/221777042509?text=Bonjour%2C%20je%20souhaite%20en%20savoir%20plus%20sur%20GESTORA" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2 bg-[#2563EB] hover:bg-blue-600 text-white px-6 py-2.5 rounded-full font-bold transition-all shadow-md hover:shadow-lg hover:-translate-y-1">
-                <Phone className="w-4 h-4" />
-                <span>WhatsApp GESTORA</span>
-              </a>
-            </div>
           </div>
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm font-medium">
-            <p>&copy; 2026 GESTORA. Tous droits réservés.</p>
-            <div className="space-x-6">
-              <Link href="/privacy" className="hover:text-white transition-colors">Confidentialité</Link>
-              <Link href="/terms" className="hover:text-white transition-colors">Conditions d&apos;utilisation</Link>
-            </div>
+          <p className="text-sm font-medium">&copy; 2026 GESTORA. Tous droits réservés.</p>
+          <div className="space-x-6 mt-4 md:mt-0 text-sm font-medium">
+            <Link href="/privacy" className="hover:text-white transition-colors">Confidentialité</Link>
+            <Link href="/terms" className="hover:text-white transition-colors">Conditions</Link>
           </div>
         </div>
       </footer>

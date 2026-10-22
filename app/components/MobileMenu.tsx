@@ -48,7 +48,7 @@ export function MobileMenu() {
             onClick={() => setIsOpen(false)} 
             className="text-lg font-bold text-gray-800 dark:text-gray-200 hover:text-[#2563EB] dark:hover:text-[#3b82f6] transition-colors"
           >
-            Contact
+            Contactez-nous
           </Link>
           
           <Link 
