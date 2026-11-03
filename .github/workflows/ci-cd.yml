@@ -34,5 +34,11 @@ jobs:
       - name: Deploy to Vercel
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
-          npx vercel --prod --token $VERCEL_TOKEN --confirm
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "::warning::Le secret VERCEL_TOKEN n'est pas renseigné dans GitHub Actions Secrets. Étape de déploiement CLI ignorée (si votre dépôt est connecté directement sur vercel.com, Vercel déploie automatiquement sur chaque git push)."
+          else
+            npx vercel --prod --token "$VERCEL_TOKEN" --confirm
+          fi
