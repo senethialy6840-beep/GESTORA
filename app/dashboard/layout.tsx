@@ -371,12 +371,33 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 );
               })}
 
+              {/* SECTION SUPER ADMIN & COMMERCIAUX */}
               {isPlatformOwner && (
+                <>
+                  <li>
+                    <Link href="/dashboard/super-admin" className={getLinkClass('/dashboard/super-admin')} title="Super Admin">
+                      {isActive('/dashboard/super-admin') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-purple-500 rounded-r-full" />}
+                      <Shield className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/super-admin') ? 'text-purple-400' : 'text-purple-400/70'}`} />
+                      {!isSidebarCollapsed && <span className="truncate text-purple-400">Super Admin</span>}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/dashboard/super-admin/commercials" className={getLinkClass('/dashboard/super-admin/commercials')} title="Commerciaux">
+                      {isActive('/dashboard/super-admin/commercials') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-purple-500 rounded-r-full" />}
+                      <Users className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/super-admin/commercials') ? 'text-purple-400' : 'text-purple-400/70'}`} />
+                      {!isSidebarCollapsed && <span className="truncate text-purple-400">Commerciaux</span>}
+                    </Link>
+                  </li>
+                </>
+              )}
+
+              {/* LIEN ESPACE COMMERCIAL SI L'UTILISATEUR EST UN COMMERCIAL */}
+              {userRole === 'COMMERCIAL' && (
                 <li>
-                  <Link href="/dashboard/super-admin" className={getLinkClass('/dashboard/super-admin')} title="Super Admin">
-                    {isActive('/dashboard/super-admin') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-purple-500 rounded-r-full"></div>}
-                    <Shield className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/super-admin') ? 'text-purple-400' : 'text-purple-400/70'}`} />
-                    {!isSidebarCollapsed && <span className="truncate text-purple-400">Super Admin</span>}
+                  <Link href="/commercial/dashboard" className={getLinkClass('/commercial/dashboard')} title="Espace Commercial">
+                    {isActive('/commercial/dashboard') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full" />}
+                    <Users className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/commercial/dashboard') ? 'text-blue-400' : 'text-slate-400'}`} />
+                    {!isSidebarCollapsed && <span className="truncate text-blue-400">Espace Commercial</span>}
                   </Link>
                 </li>
               )}
@@ -385,42 +406,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           {/* Sidebar Bottom Profile & Logout */}
           <div className={`p-4 border-t border-slate-800/60 mt-auto flex flex-col gap-2 shrink-0 ${isSidebarCollapsed ? 'px-2' : 'px-3'}`}>
-            
-            {/* Plan Status Widget */}
-            {!isSidebarCollapsed ? (
-              <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800/80 mb-1">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Forfait</span>
-                  <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full ${
-                    userPlan === 'ENTERPRISE' 
-                      ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' 
-                      : userPlan === 'BUSINESS' 
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' 
-                        : 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
-                  }`}>
-                    {PLAN_DISPLAY_NAMES[userPlan?.toUpperCase()] || userPlan}
-                  </span>
-                </div>
-                {userPlan !== 'ENTERPRISE' && !isPlatformOwner && (
-                  <Link 
-                    href="/dashboard/subscription" 
-                    className="text-[11px] font-semibold text-blue-400 hover:text-blue-300 flex items-center justify-between group pt-1 transition-colors"
-                  >
-                    <span>Changer de forfait</span>
-                    <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                  </Link>
-                )}
-              </div>
-            ) : (
-              <Link
-                href="/dashboard/subscription"
-                title={`Forfait : ${PLAN_DISPLAY_NAMES[userPlan?.toUpperCase()] || userPlan} - Mettre à niveau`}
-                className="flex items-center justify-center p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/50 mb-1 transition-colors"
-              >
-                <CreditCard className="w-5 h-5 text-blue-400" />
-              </Link>
-            )}
-
             <button 
               onClick={handleLogout} 
               title="Déconnexion"
