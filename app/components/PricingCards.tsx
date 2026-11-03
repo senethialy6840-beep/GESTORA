@@ -191,7 +191,7 @@ export function PricingCards({ onSelectPlan, loadingPlan, currentPlan }: Pricing
                     ? 'bg-blue-600 hover:bg-blue-700'
                     : plan.popular 
                       ? 'bg-emerald-600 hover:bg-emerald-700' 
-                      : plan.id === 'ENTERPRISE' 
+                      : (plan.id === 'ENTERPRISE' || (plan.id as string) === 'ENTREPRISE')
                         ? 'bg-purple-600 hover:bg-purple-700'
                         : 'bg-blue-600 hover:bg-blue-700'
                   } disabled:opacity-70 disabled:cursor-not-allowed`}

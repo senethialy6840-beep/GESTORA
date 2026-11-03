@@ -11,6 +11,8 @@ Variables / Secrets à ajouter (GitHub Actions secrets, Vercel environment varia
 - `DIRECT_URL` (si utilisé pour accès direct)
 - `NEXTAUTH_SECRET`
 - `AUTH_SECRET`
+- `GOOGLE_CLIENT_ID` (Google Cloud Console OAuth 2.0 Client ID)
+- `GOOGLE_CLIENT_SECRET` (Google Cloud Console OAuth 2.0 Client Secret)
 - `SASPAY_SECRET_KEY` et `SASPAY_WEBHOOK_SECRET` (paiements)
 - `NEXT_PUBLIC_SUPABASE_URL` (client)
 - `NEXT_PUBLIC_APP_URL`

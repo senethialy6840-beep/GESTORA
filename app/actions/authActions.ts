@@ -52,7 +52,7 @@ export async function forgotPassword(email: string) {
 
     // Envoyer l'email
     await transporter.sendMail({
-      from: process.env.SMTP_FROM || '"GESTORA" <noreply@gestora.com>',
+      from: process.env.SMTP_FROM || `"GESTORA" <${process.env.SMTP_USER}>`,
       to: email,
       subject: "Réinitialisation de votre mot de passe GESTORA",
       html: `
@@ -120,13 +120,13 @@ export async function resetPassword(token: string, newPassword: string) {
   }
 }
 
-export async function registerUser(data: { prenom: string, nom: string, entreprise: string, email: string, motDePasse: string }) {
+export async function registerUser(data: { prenom: string, nom: string, entreprise: string, email: string, motDePasse: string, referralCode?: string }) {
   try {
     const validated = RegisterUserSchema.safeParse(data);
     if (!validated.success) {
       return { success: false, error: validated.error.issues[0].message };
     }
-    const { prenom, nom, entreprise, email, motDePasse } = validated.data;
+    const { prenom, nom, entreprise, email, motDePasse, referralCode } = validated.data;
     const existingUser = await prisma.user.findUnique({
       where: { email }
     });
@@ -143,6 +143,14 @@ export async function registerUser(data: { prenom: string, nom: string, entrepri
       }
     });
 
+    await prisma.warehouse.create({
+      data: {
+        name: entreprise,
+        isDefault: true,
+        companyId: newCompany.id,
+      }
+    });
+
     const newUser = await prisma.user.create({
       data: {
         firstName: prenom,
@@ -154,6 +162,21 @@ export async function registerUser(data: { prenom: string, nom: string, entrepri
       }
     });
 
+    if (referralCode) {
+      const commercial = await prisma.commercial.findUnique({
+        where: { codeAffiliation: referralCode }
+      });
+      if (commercial) {
+        await prisma.referral.create({
+          data: {
+            commercialId: commercial.id,
+            customerId: newCompany.id,
+            codeAffiliation: referralCode,
+          }
+        });
+      }
+    }
+
     return { success: true, companyId: newCompany.id };
   } catch (error: any) {
     console.error("Register user error", error);
@@ -161,3 +184,24 @@ export async function registerUser(data: { prenom: string, nom: string, entrepri
   }
 }
 
+export async function isGoogleAuthConfigured(): Promise<boolean> {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const isIdValid = Boolean(clientId && clientId.trim() !== "" && clientId !== "GOOGLE_CLIENT_ID_PLACEHOLDER");
+  const isSecretValid = Boolean(clientSecret && clientSecret.trim() !== "" && clientSecret !== "GOOGLE_CLIENT_SECRET_PLACEHOLDER");
+  return isIdValid && isSecretValid;
+}
+
+export async function getCommercialByRef(ref: string) {
+  try {
+    const commercial = await prisma.commercial.findUnique({
+      where: { codeAffiliation: ref }
+    });
+    if (commercial) {
+      return { success: true, name: `${commercial.prenom} ${commercial.nom}` };
+    }
+    return { success: false };
+  } catch (error) {
+    return { success: false };
+  }
+}

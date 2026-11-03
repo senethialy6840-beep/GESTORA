@@ -4,11 +4,12 @@ import { prisma, ensureCompanyExists } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { StockMovementSchema } from "@/lib/validations";
 import { auth } from "@/auth";
+import { sendLowStockAlert } from "@/lib/mailer";
 
 export async function getStockMovements(_companyId?: string) {
   try {
     const session = await auth();
-    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisÃ©" };
     const companyId = session.user.companyId as string;
     
     const movements = await prisma.stockMovement.findMany({
@@ -31,19 +32,19 @@ export async function createStockMovement(data: {
 }) {
   try {
     const session = await auth();
-    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisÃ©" };
     
     data.companyId = session.user.companyId as string;
     await ensureCompanyExists(data.companyId);
     
     const validated = StockMovementSchema.safeParse(data);
     if (!validated.success) {
-      return { success: false, error: "Données de mouvement de stock invalides." };
+      return { success: false, error: "DonnÃ©es de mouvement de stock invalides." };
     }
     data = validated.data as any;
     const product = await prisma.product.findFirst({
       where: { id: data.productId, companyId: data.companyId },
-      select: { id: true, stock: true },
+      select: { id: true, name: true, stock: true, stockAlert: true },
     });
     if (!product) return { success: false, error: "Produit introuvable ou non autorisé." };
     if (data.type === 'OUT' && product.stock < data.quantity) {
@@ -67,6 +68,13 @@ export async function createStockMovement(data: {
       return createdMovement;
     });
 
+    if (data.type === 'OUT') {
+      const remainingStock = product.stock - data.quantity;
+      if (remainingStock <= (product.stockAlert || 0)) {
+        sendLowStockAlert(product.name, remainingStock, data.companyId).catch(console.error);
+      }
+    }
+
     revalidatePath("/dashboard/inventory");
     revalidatePath("/dashboard/products");
     return { success: true, data: movement };
@@ -78,12 +86,12 @@ export async function createStockMovement(data: {
 export async function deleteStockMovement(id: string) {
   try {
     const session = await auth();
-    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisÃ©" };
     
-    // Sécurité: Vérifier que le mouvement appartient bien à l'entreprise
+    // SÃ©curitÃ©: VÃ©rifier que le mouvement appartient bien Ã  l'entreprise
     const existing = await prisma.stockMovement.findUnique({ where: { id } });
     if (!existing || existing.companyId !== session.user.companyId) {
-      return { success: false, error: "Non autorisé" };
+      return { success: false, error: "Non autorisÃ©" };
     }
 
     const movement = await prisma.$transaction(async (transaction) => {
@@ -99,6 +107,115 @@ export async function deleteStockMovement(id: string) {
 
     revalidatePath("/dashboard/inventory");
     revalidatePath("/dashboard/products");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function createWarehouse(data: { name: string, location?: string }) {
+  try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisÃ©" };
+    
+    const companyId = session.user.companyId as string;
+    await ensureCompanyExists(companyId);
+    
+    // VÃ©rification des limites selon le forfait
+    const company = await prisma.company.findUnique({
+      where: { id: companyId },
+      select: { plan: true, _count: { select: { warehouses: true } } }
+    });
+    
+    if (company) {
+      const plan = company.plan || 'STARTUP';
+      const warehouseCount = company._count.warehouses;
+      
+      let maxWarehouses = 0;
+      if (plan === 'STARTUP') maxWarehouses = 1;
+      else if (plan === 'BUSINESS') maxWarehouses = 3;
+      else if (plan === 'ENTREPRISE') maxWarehouses = 9999;
+      
+      if (warehouseCount >= maxWarehouses) {
+        return { success: false, error: `Limite atteinte. Votre forfait ${plan} permet un maximum de ${maxWarehouses} boutique(s).` };
+      }
+    }
+    
+    const warehouse = await prisma.warehouse.create({
+      data: {
+        name: data.name,
+        location: data.location,
+        companyId
+      }
+    });
+    
+    revalidatePath("/dashboard/settings");
+    return { success: true, data: warehouse };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function getWarehouses(_companyId?: string) {
+  try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    const companyId = session.user.companyId as string;
+    
+    const company = await prisma.company.findUnique({
+      where: { id: companyId },
+      select: { plan: true }
+    });
+    
+    const warehouses = await prisma.warehouse.findMany({
+      where: { companyId },
+      orderBy: { createdAt: 'asc' }
+    });
+    return { success: true, data: warehouses, plan: company?.plan };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function updateWarehouse(id: string, data: { name: string, location?: string }) {
+  try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    
+    // Check ownership
+    const existing = await prisma.warehouse.findUnique({ where: { id } });
+    if (!existing || existing.companyId !== session.user.companyId) {
+      return { success: false, error: "Non autorisé" };
+    }
+    
+    const warehouse = await prisma.warehouse.update({
+      where: { id },
+      data: { name: data.name, location: data.location }
+    });
+    
+    revalidatePath("/dashboard/boutiques");
+    revalidatePath("/dashboard/settings");
+    return { success: true, data: warehouse };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function deleteWarehouse(id: string) {
+  try {
+    const session = await auth();
+    if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
+    
+    // Check ownership
+    const existing = await prisma.warehouse.findUnique({ where: { id } });
+    if (!existing || existing.companyId !== session.user.companyId) {
+      return { success: false, error: "Non autorisé" };
+    }
+    
+    await prisma.warehouse.delete({ where: { id } });
+    
+    revalidatePath("/dashboard/boutiques");
+    revalidatePath("/dashboard/settings");
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };

@@ -52,7 +52,7 @@ export function PricingSection() {
     },
     {
       name: "Enterprise",
-      planId: "ENTERPRISE",
+      planId: "ENTREPRISE",
       monthlyPrice: "25 900 FCFA",
       annualPrice: "259 000 FCFA",
       period: billingCycle === 'monthly' ? "/ mois" : "/ an",

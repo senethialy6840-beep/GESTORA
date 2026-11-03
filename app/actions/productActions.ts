@@ -4,6 +4,7 @@ import { prisma, ensureCompanyExists } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { ProductSchema } from '@/lib/validations';
 import { auth } from '@/auth';
+import { cookies } from 'next/headers';
 
 export type CreateProductData = {
   name: string;
@@ -30,6 +31,9 @@ export async function createProduct(data: CreateProductData) {
       const errorMsg = validated.error.issues[0]?.message || "Données du produit invalides.";
       return { success: false, error: errorMsg };
     }
+    const cookieStore = await cookies();
+    const activeBoutiqueId = cookieStore.get('activeBoutiqueId')?.value || null;
+
     data = validated.data as CreateProductData;
     const product = await prisma.product.create({
       data: {
@@ -42,6 +46,7 @@ export async function createProduct(data: CreateProductData) {
         stock: data.stock,
         stockAlert: data.stockAlert || 0,
         companyId: data.companyId,
+        warehouseId: activeBoutiqueId,
       },
     });
 
@@ -61,8 +66,14 @@ export async function getProducts(_companyId?: string) {
     if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
     const companyId = session.user.companyId as string;
     
+    const cookieStore = await cookies();
+    const activeBoutiqueId = cookieStore.get('activeBoutiqueId')?.value || null;
+    
     const products = await prisma.product.findMany({
-      where: { companyId },
+      where: { 
+        companyId,
+        warehouseId: activeBoutiqueId
+      },
       orderBy: { createdAt: 'desc' },
     });
     return { success: true, data: products };

@@ -4,6 +4,7 @@ import { prisma, ensureCompanyExists } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { CustomerSchema } from '@/lib/validations';
 import { auth } from '@/auth';
+import { cookies } from 'next/headers';
 
 // Type pour la création d'un client
 export type CreateCustomerData = {
@@ -29,6 +30,9 @@ export async function createCustomer(data: CreateCustomerData) {
     if (!validated.success) {
       return { success: false, error: "Données du client invalides." };
     }
+    const cookieStore = await cookies();
+    const activeBoutiqueId = cookieStore.get('activeBoutiqueId')?.value || null;
+
     data = validated.data as CreateCustomerData;
     const customer = await prisma.customer.create({
       data: {
@@ -39,6 +43,7 @@ export async function createCustomer(data: CreateCustomerData) {
         mensualite: data.mensualite || 0,
         balance: data.balance || 0,
         companyId: data.companyId,
+        warehouseId: activeBoutiqueId,
       },
     });
 
@@ -57,8 +62,14 @@ export async function getCustomers(_companyId?: string) {
     if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
     const companyId = session.user.companyId as string;
     
+    const cookieStore = await cookies();
+    const activeBoutiqueId = cookieStore.get('activeBoutiqueId')?.value || null;
+    
     const customers = await prisma.customer.findMany({
-      where: { companyId },
+      where: { 
+        companyId,
+        warehouseId: activeBoutiqueId
+      },
       orderBy: { createdAt: 'desc' },
     });
     return { success: true, data: customers };

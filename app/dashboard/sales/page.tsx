@@ -7,6 +7,9 @@ import {
   Search, Plus, Filter, Eye, Trash2, CheckCircle2, ShoppingCart, X, Receipt
 } from 'lucide-react';
 import { getSales, deleteSale } from '../../actions/saleActions';
+import { getSettings } from '../../actions/settingsActions';
+import ReceiptModal from '@/components/ReceiptModal';
+import { Printer } from 'lucide-react';
 
 const fmt = (num: number) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', maximumFractionDigits: 0 }).format(num);
 
@@ -22,23 +25,31 @@ import { useSession } from 'next-auth/react';
 export default function SalesPage() {
   const { data: session } = useSession();
   const [sales, setSales] = useState<any[]>([]);
+  const [settings, setSettings] = useState<any>(null);
   const [activeMenu, setActiveMenu] = useState<number | null>(null);
 
   // States for actions
   const [selectedSale, setSelectedSale] = useState<any>(null);
+  const [receiptSale, setReceiptSale] = useState<any>(null);
   const [saleToDelete, setSaleToDelete] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchSales = async () => {
+    const fetchData = async () => {
       if (session?.user?.companyId) {
-        const res = await getSales(session.user.companyId);
-        if (res.data) {
-          setSales(res.data);
+        const [salesRes, settRes] = await Promise.all([
+          getSales(session.user.companyId),
+          getSettings(session.user.companyId)
+        ]);
+        if (salesRes.data) {
+          setSales(salesRes.data);
+        }
+        if (settRes.settings) {
+          setSettings(settRes.settings);
         }
       }
     };
-    fetchSales();
+    fetchData();
   }, [session?.user?.companyId]);
 
   useEffect(() => {
@@ -141,6 +152,13 @@ export default function SalesPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-right">
                     <div className="flex items-center justify-end gap-2">
                       <button 
+                        onClick={(e) => { e.stopPropagation(); setReceiptSale(sale); }}
+                        className="p-2 text-gray-400 hover:text-emerald-600 bg-gray-50 hover:bg-emerald-50 dark:bg-slate-800 dark:hover:bg-emerald-500/10 rounded-lg transition-colors"
+                        title="Ticket de caisse (Imprimer / Télécharger)"
+                      >
+                        <Receipt className="w-4 h-4 text-emerald-500" />
+                      </button>
+                      <button 
                         onClick={(e) => { e.stopPropagation(); handleViewDetails(sale); }}
                         className="p-2 text-gray-400 hover:text-blue-600 bg-gray-50 hover:bg-blue-50 dark:bg-slate-800 dark:hover:bg-blue-500/10 rounded-lg transition-colors"
                         title="Voir les détails"
@@ -185,6 +203,14 @@ export default function SalesPage() {
               </div>
 
               <div className="flex justify-end gap-2 mt-2">
+                <button 
+                  onClick={(e) => { e.stopPropagation(); setReceiptSale(sale); }}
+                  className="p-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 rounded-lg transition-colors flex items-center gap-1 text-xs font-bold"
+                  title="Ticket de caisse"
+                >
+                  <Receipt className="w-4 h-4" />
+                  <span>Ticket</span>
+                </button>
                 <button 
                   onClick={(e) => { e.stopPropagation(); handleViewDetails(sale); }}
                   className="p-2 text-gray-500 hover:text-blue-600 bg-gray-50 hover:bg-blue-50 dark:bg-slate-800 dark:hover:bg-blue-500/10 rounded-lg transition-colors"
@@ -285,7 +311,7 @@ export default function SalesPage() {
                     </div>
                   </div>
 
-                  <div className="bg-gray-900 dark:bg-black rounded-2xl p-6 text-white shadow-xl relative overflow-hidden">
+                  <div className="bg-gray-900 dark:bg-black rounded-2xl p-6 text-white shadow-xl relative overflow-hidden mb-6">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500 rounded-full blur-3xl opacity-20 -mr-10 -mt-10"></div>
                     <div className="flex justify-between items-end relative z-10">
                       <div>
@@ -294,6 +320,20 @@ export default function SalesPage() {
                       </div>
                       <CheckCircle2 className="w-8 h-8 text-emerald-400 mb-1" />
                     </div>
+                  </div>
+
+                  <div className="flex justify-end gap-3">
+                    <button
+                      onClick={() => {
+                        const s = selectedSale;
+                        setSelectedSale(null);
+                        setReceiptSale(s);
+                      }}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-blue-500/20 active:scale-95"
+                    >
+                      <Receipt className="w-4 h-4" />
+                      <span>Ouvrir le Ticket de caisse (Imprimer / Télécharger)</span>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -358,6 +398,14 @@ export default function SalesPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* RECEIPT MODAL */}
+      <ReceiptModal
+        isOpen={!!receiptSale}
+        onClose={() => setReceiptSale(null)}
+        sale={receiptSale}
+        companyInfo={settings}
+      />
 
     </div>
   );

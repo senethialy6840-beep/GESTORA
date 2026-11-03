@@ -17,6 +17,7 @@ export const RegisterUserSchema = z.object({
   entreprise: z.string().min(2, "Le nom de l'entreprise est requis."),
   email: z.string().email("Veuillez fournir une adresse email valide."),
   motDePasse: z.string().min(8, "Le mot de passe doit contenir au moins 8 caractères."),
+  referralCode: z.string().optional(),
 });
 
 // --- Paramètres / Entreprise ---

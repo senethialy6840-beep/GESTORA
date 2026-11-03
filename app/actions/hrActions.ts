@@ -5,15 +5,22 @@ import { prisma, ensureCompanyExists } from "@/lib/prisma";
 import { Employee } from "@prisma/client";
 import { EmployeeSchema } from "@/lib/validations";
 import { auth } from "@/auth";
+import { cookies } from "next/headers";
+import { sendEmployeeWelcomeEmail } from "@/lib/mailer";
 
 export async function getEmployees(_companyId?: string) {
   try {
     const session = await auth();
     if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
     const companyId = session.user.companyId as string;
-    
+    const cookieStore = await cookies();
+    const activeBoutiqueId = cookieStore.get('activeBoutiqueId')?.value || null;
+
     const employees = await prisma.employee.findMany({
-      where: { companyId },
+      where: { 
+        companyId,
+        warehouseId: activeBoutiqueId
+      },
       orderBy: { createdAt: "desc" },
     });
     return { success: true, data: employees };
@@ -23,7 +30,7 @@ export async function getEmployees(_companyId?: string) {
   }
 }
 
-export async function createEmployee(data: Omit<Employee, "id" | "createdAt" | "updatedAt">) {
+export async function createEmployee(data: Omit<Employee, "id" | "createdAt" | "updatedAt" | "warehouseId">) {
   try {
     const session = await auth();
     if (!session?.user?.companyId) return { success: false, error: "Non autorisé" };
@@ -31,13 +38,68 @@ export async function createEmployee(data: Omit<Employee, "id" | "createdAt" | "
     data.companyId = session.user.companyId as string;
     await ensureCompanyExists(data.companyId);
     
+    // Vérification des limites selon le forfait
+    const company = await prisma.company.findUnique({
+      where: { id: data.companyId },
+      select: { name: true, plan: true, _count: { select: { employees: true } } }
+    });
+    
+    if (company) {
+      const plan = company.plan || 'STARTUP';
+      const employeeCount = company._count.employees;
+      
+      let maxEmployees = 0;
+      if (plan === 'STARTUP') maxEmployees = 0; // Seul le proprio
+      else if (plan === 'BUSINESS') maxEmployees = 5;
+      else if (plan === 'ENTREPRISE') maxEmployees = 9999;
+      
+      if (employeeCount >= maxEmployees) {
+        return { success: false, error: `Limite atteinte. Votre forfait ${plan} permet un maximum de ${maxEmployees} utilisateur(s) supplémentaire(s).` };
+      }
+    }
+    
     const validated = EmployeeSchema.safeParse(data);
     if (!validated.success) {
       return { success: false, error: "Données de l'employé invalides." };
     }
     data = validated.data as any;
+
+    // Synchronisation avec la table User pour permettre la connexion
+    if (data.email) {
+      const existingUser = await prisma.user.findUnique({ where: { email: data.email } });
+      if (existingUser) {
+        return { success: false, error: "Cet email est déjà utilisé par un autre compte." };
+      }
+
+      const { hash } = require("bcryptjs");
+      const hashedPassword = await hash("Gestora2026", 10); // Mot de passe par défaut
+
+      await prisma.user.create({
+        data: {
+          email: data.email,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          password: hashedPassword,
+          role: data.role,
+          companyId: data.companyId,
+          isActive: data.status === 'ACTIVE'
+        }
+      });
+
+      // Envoi de l'email de bienvenue
+      if (company && company.name) {
+        await sendEmployeeWelcomeEmail(data.email, data.firstName, company.name);
+      }
+    }
+
+    const cookieStore = await cookies();
+    const activeBoutiqueId = cookieStore.get('activeBoutiqueId')?.value || null;
+
     const employee = await prisma.employee.create({
-      data,
+      data: {
+        ...data,
+        warehouseId: activeBoutiqueId,
+      },
     });
     revalidatePath("/dashboard/hr");
     return { success: true, data: employee };
@@ -65,6 +127,24 @@ export async function updateEmployee(id: string, data: Partial<Employee>) {
       return { success: false, error: "Données de l'employé invalides." };
     }
     data = validated.data as Partial<Employee>;
+
+    // Synchronisation avec la table User
+    if (existing.email) {
+      const user = await prisma.user.findUnique({ where: { email: existing.email } });
+      if (user) {
+        await prisma.user.update({
+          where: { email: existing.email },
+          data: {
+            email: data.email || user.email,
+            firstName: data.firstName || user.firstName,
+            lastName: data.lastName || user.lastName,
+            role: data.role || user.role,
+            isActive: data.status ? data.status === 'ACTIVE' : user.isActive
+          }
+        });
+      }
+    }
+
     const employee = await prisma.employee.update({
       where: { id },
       data,
@@ -86,6 +166,14 @@ export async function deleteEmployee(id: string) {
     const existing = await prisma.employee.findUnique({ where: { id } });
     if (!existing || existing.companyId !== session.user.companyId) {
       return { success: false, error: "Non autorisé" };
+    }
+
+    // Supprimer aussi le User associé
+    if (existing.email) {
+      const user = await prisma.user.findUnique({ where: { email: existing.email } });
+      if (user) {
+        await prisma.user.delete({ where: { email: existing.email } });
+      }
     }
 
     await prisma.employee.delete({

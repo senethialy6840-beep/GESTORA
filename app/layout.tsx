@@ -15,6 +15,7 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   title: "GESTORA | Logiciel de gestion de caisse et de stocks",
   description: "GESTORA est la solution de gestion de stock et de caisse intuitive pour propulser votre entreprise. Suivez vos ventes, gérez votre équipe et pilotez votre activité en temps réel.",
+  manifest: "/manifest.json",
   keywords: ["gestion de stock", "logiciel de caisse", "point de vente", "ERP", "Sénégal", "Afrique", "GESTORA", "PME", "commerce"],
   authors: [{ name: "GESTORA" }],
   openGraph: {
@@ -38,6 +39,8 @@ export const metadata: Metadata = {
 
 import { ThemeProvider } from "./components/ThemeProvider";
 import NextAuthSessionProvider from "./components/SessionProvider";
+import ReferralTracker from "./components/ReferralTracker";
+import { Suspense } from "react";
 
 export default function RootLayout({
   children,
@@ -56,6 +59,9 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <NextAuthSessionProvider>
+            <Suspense fallback={null}>
+              <ReferralTracker />
+            </Suspense>
             {children}
           </NextAuthSessionProvider>
         </ThemeProvider>

@@ -44,6 +44,9 @@ export default function HrPage() {
       });
       if (res.success && res.data) {
         setEmployees(prev => prev.map(p => p.id === editingItem.id ? res.data : p));
+        alert("Employé mis à jour avec succès.");
+      } else {
+        alert(res.error || "Erreur lors de la mise à jour.");
       }
     } else {
       // Create
@@ -61,6 +64,9 @@ export default function HrPage() {
       });
       if (res.success && res.data) {
         setEmployees(prev => [res.data, ...prev]);
+        alert("Employé ajouté avec succès.");
+      } else {
+        alert(res.error || "Erreur lors de l'ajout.");
       }
     }
   };
@@ -90,6 +96,19 @@ export default function HrPage() {
         return (
           <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-400">
             Commercial
+          </span>
+        );
+      case 'INVITE':
+      case 'GUEST':
+        return (
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-500/10 dark:text-amber-400">
+            Invité(e)
+          </span>
+        );
+      case 'EMPLOYEE':
+        return (
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800 dark:bg-cyan-500/10 dark:text-cyan-400">
+            Employé(e)
           </span>
         );
       case 'CASHIER':

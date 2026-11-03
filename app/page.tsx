@@ -3,6 +3,7 @@ import { MobileMenu } from './components/MobileMenu';
 import { ThemeToggle } from './components/ThemeToggle';
 import { PricingSection } from './components/PricingSection';
 import ContactForm from './components/ContactForm';
+import FaqCard from './components/FaqCard';
 import { CheckCircle2, ArrowRight, LayoutDashboard, Calculator, ShoppingCart, Package, Users, BarChart3, ChevronDown, Mail, Phone, MapPin, Box, FileText, Truck, Settings, Users2, LineChart, DollarSign, Clock, MessageCircle } from 'lucide-react';
 
 export default function LandingPage() {
@@ -24,7 +25,7 @@ export default function LandingPage() {
               <ThemeToggle />
             </nav>
             <div className="hidden lg:flex items-center space-x-6">
-              <Link href="#support" className="px-5 py-2.5 bg-[#0A1226] dark:bg-[#2563EB] text-white rounded-full font-bold text-sm lg:text-base hover:bg-slate-800 dark:hover:bg-blue-600 hover:-translate-y-1 hover:shadow-lg transition-all duration-300">Contactez-nous</Link>
+              <Link href="#contact" className="px-5 py-2.5 bg-[#0A1226] dark:bg-[#2563EB] text-white rounded-full font-bold text-sm lg:text-base hover:bg-slate-800 dark:hover:bg-blue-600 hover:-translate-y-1 hover:shadow-lg transition-all duration-300">Contactez-nous</Link>
             </div>
             <MobileMenu />
           </div>
@@ -641,118 +642,60 @@ export default function LandingPage() {
       {/* -------------------- PRICING SECTION -------------------- */}
       <PricingSection />
 
-      {/* -------------------- FAQ SECTION -------------------- */}
-      <section id="faq" className="py-24 bg-[#FAFBFF] dark:bg-[#050B14] transition-colors duration-300">
-        <div className="max-w-4xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-4">
-              Une question ? Nous avons la réponse.
-            </h2>
-            <p className="text-lg text-gray-500 dark:text-gray-400 font-medium">
-              Tout ce que vous devez savoir sur les offres et fonctionnalités de GESTORA avant de commencer.
-            </p>
-          </div>
-          
-          <div className="space-y-4">
-            <FaqItem 
-              question="1. Qu'est-ce que GESTORA ?" 
-              answer="GESTORA est une plateforme ERP qui permet de gérer vos ventes, stocks, produits, clients, achats et autres opérations depuis un seul endroit." 
-            />
-            <FaqItem 
-              question="2. À qui s'adresse GESTORA ?" 
-              answer="GESTORA est conçu pour les petits commerces, boutiques, PME et entreprises ayant plusieurs points de vente." 
-            />
-            <FaqItem 
-              question="3. Puis-je essayer GESTORA avant de m'abonner ?" 
-              answer="Oui, vous pouvez créer un compte et découvrir la plateforme avant de choisir l'offre adaptée à votre entreprise." 
-            />
-            <FaqItem 
-              question="4. Puis-je changer d'offre à tout moment ?" 
-              answer="Oui. Vous pouvez passer à une offre supérieure ou modifier votre abonnement selon l'évolution de vos besoins." 
-            />
-            <FaqItem 
-              question="5. Puis-je gérer plusieurs boutiques ?" 
-              answer="Oui. L'offre Starter permet de gérer 1 boutique, Business jusqu'à 3 boutiques et Entreprise un nombre illimité de boutiques." 
-            />
-            <FaqItem 
-              question="6. Combien d'utilisateurs puis-je ajouter ?" 
-              answer="Cela dépend de votre offre : Starter (1 utilisateur), Business (jusqu'à 5 utilisateurs), Entreprise (utilisateurs illimités)." 
-            />
-            <FaqItem 
-              question="7. Mes données sont-elles sécurisées ?" 
-              answer="GESTORA met en place des mesures de sécurité pour protéger les données de votre entreprise et contrôler les accès des utilisateurs." 
-            />
-            <FaqItem 
-              question="8. Puis-je accéder à GESTORA depuis mon téléphone ?" 
-              answer="Oui. GESTORA est conçu pour fonctionner sur ordinateur, tablette et smartphone." 
-            />
-            <FaqItem 
-              question="9. Que se passe-t-il si je dépasse les limites de mon offre ?" 
-              answer="Vous serez invité à passer à une offre supérieure afin de continuer à utiliser les fonctionnalités ou capacités supplémentaires." 
-            />
-            <FaqItem 
-              question="10. Puis-je résilier mon abonnement ?" 
-              answer="Oui. Vous pouvez demander l'arrêt ou la modification de votre abonnement selon les conditions applicables à votre formule." 
-            />
-            <FaqItem 
-              question="11. Quels moyens de paiement sont acceptés ?" 
-              answer="Les moyens de paiement disponibles sont affichés au moment du paiement et peuvent varier selon votre pays et votre mode d'abonnement." 
-            />
-            <FaqItem 
-              question="12. L'intelligence artificielle est-elle disponible pour toutes les offres ?" 
-              answer="L'assistant intelligent YEYA AI est inclus dans l'offre Entreprise." 
-            />
-            <FaqItem 
-              question="13. Puis-je obtenir de l'aide en cas de problème ?" 
-              answer="Oui. GESTORA propose une assistance pour accompagner les utilisateurs dans l'utilisation de la plateforme." 
-            />
-            <FaqItem 
-              question="14. Que se passe-t-il avec mes données si je change d'offre ?" 
-              answer="Vos données restent associées à votre entreprise. Le changement d'offre modifie principalement les fonctionnalités et limites disponibles." 
-            />
-            <FaqItem 
-              question="15. Comment commencer avec GESTORA ?" 
-              answer="Créez votre compte, configurez votre entreprise et choisissez l'offre adaptée à vos besoins pour commencer à gérer votre activité." 
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* -------------------- SUPPORT SECTION -------------------- */}
-      <section id="support" className="py-24 bg-white dark:bg-[#0A1226] transition-colors duration-300">
+      {/* -------------------- FAQ & CONTACT (CÔTE À CÔTE AU MÊME PIED) -------------------- */}
+      <section id="faq" className="relative py-24 bg-[#FAFBFF] dark:bg-[#050B14] transition-colors duration-300 scroll-mt-20">
+        <div id="contact" className="absolute -top-24"></div>
+        <div id="support" className="absolute -top-24"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-stretch">
             
-            {/* Left: Text and Map */}
-            <div>
-              <div className="mb-10">
-                <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-4">
-                  Contactez-nous
-                </h2>
-                <p className="text-lg text-gray-500 dark:text-gray-400 font-medium">
-                  Avez-vous des questions ou besoin d’aide ? Nous sommes juste à un message.
-                </p>
+            {/* GAUCHE : CARTE FAQ (6 questions par onglet, hauteur parfaitement équilibrée) */}
+            <div className="h-full">
+              <FaqCard />
+            </div>
+
+            {/* DROITE : CARTE FORMULAIRE DE CONTACT */}
+            <div id="contact-form" className="bg-white dark:bg-[#162032] p-8 md:p-10 rounded-[2rem] border border-gray-100 dark:border-slate-700/50 shadow-sm flex flex-col justify-between h-full transition-colors duration-300">
+              <div>
+                <div className="mb-6">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 mb-3">
+                    <Mail className="w-3.5 h-3.5" /> Support & Contact
+                  </span>
+                  <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-2">
+                    Contactez-nous
+                  </h2>
+                  <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 font-medium">
+                    Avez-vous des questions ou besoin d’aide ? Nous sommes juste à un message.
+                  </p>
+                </div>
+                <ContactForm variant="landing" />
               </div>
 
-              {/* Map embedded */}
-              <div className="rounded-3xl overflow-hidden shadow-lg border border-gray-100 dark:border-slate-800">
-                <iframe 
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d123616.71181862414!2d-17.545300096238686!3d14.73976527582236!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1121d5a73e6d2be1%3A0x6b6d51c367cefc73!2sDakar%2C%20S%C3%A9n%C3%A9gal!5e0!3m2!1sfr!2sfr!4v1714152562416!5m2!1sfr!2sfr" 
-                  width="100%" 
-                  height="450" 
-                  style={{ border: 0 }} 
-                  allowFullScreen={true} 
-                  loading="lazy" 
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title="Carte de Dakar, Sénégal"
-                ></iframe>
+              {/* PIED DE CARTE CONTACT (Aligné avec le pied de la FAQ) */}
+              <div className="mt-6 pt-5 border-t border-gray-100 dark:border-slate-800/60 flex flex-wrap items-center justify-between gap-3 text-xs text-gray-500 dark:text-slate-400">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">Réponse sous 24h</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <a 
+                    href="https://wa.me/221777042509?text=Bonjour%2C%20je%20souhaite%20en%20savoir%20plus%20sur%20GESTORA" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="hover:text-emerald-600 dark:hover:text-emerald-400 font-semibold flex items-center gap-1.5 transition-colors"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5 text-emerald-500" /> WhatsApp direct
+                  </a>
+                  <a 
+                    href="mailto:gestorame112@gmail.com" 
+                    className="hover:text-blue-600 dark:hover:text-blue-400 font-semibold flex items-center gap-1.5 transition-colors"
+                  >
+                    <Mail className="w-3.5 h-3.5 text-blue-500" /> Email direct
+                  </a>
+                </div>
               </div>
             </div>
 
-            {/* Right: Form */}
-            <div className="bg-[#FAFBFF] dark:bg-[#162032] p-8 md:p-10 rounded-[2rem] border border-gray-100 dark:border-slate-700/50 shadow-sm">
-              <ContactForm variant="landing" />
-            </div>
           </div>
         </div>
       </section>
@@ -886,8 +829,8 @@ export default function LandingPage() {
           </div>
           <p className="text-sm font-medium">&copy; 2026 GESTORA. Tous droits réservés.</p>
           <div className="space-x-6 mt-4 md:mt-0 text-sm font-medium">
-            <Link href="#" className="hover:text-white transition-colors">Confidentialité</Link>
-            <Link href="#" className="hover:text-white transition-colors">Conditions</Link>
+            <Link href="/privacy" className="hover:text-white transition-colors">Confidentialité</Link>
+            <Link href="/terms" className="hover:text-white transition-colors">Conditions</Link>
           </div>
         </div>
       </footer>
@@ -908,17 +851,3 @@ function FeatureCard({ icon, title, description }: { icon: React.ReactNode, titl
   );
 }
 
-
-function FaqItem({ question, answer }: { question: string, answer: string }) {
-  return (
-    <details className="group bg-white dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-2xl open:shadow-md transition-all">
-      <summary className="flex items-center justify-between cursor-pointer p-6 font-bold text-gray-900 dark:text-white">
-        {question}
-        <ChevronDown className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" />
-      </summary>
-      <div className="px-6 pb-6 text-gray-500 dark:text-gray-400 font-medium leading-relaxed">
-        {answer}
-      </div>
-    </details>
-  );
-}

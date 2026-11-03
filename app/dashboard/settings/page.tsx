@@ -1,18 +1,24 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Settings, Save, Building2, Globe, FileText, Users, UploadCloud, Image as ImageIcon, Loader2, Check, X, Phone, Mail, MapPin, Trash2 } from 'lucide-react';
+import { Settings, Save, Building2, Globe, FileText, Users, UploadCloud, Image as ImageIcon, Loader2, Check, X, Phone, Mail, MapPin, Trash2, Store, Plus, Edit2, ChevronRight } from 'lucide-react';
 import { getSettings, saveSettings } from '../../actions/settingsActions';
 import { SkeletonForm } from '../../../components/Skeletons';
 import { useSession } from 'next-auth/react';
 import { EmployeeModal } from '../../../components/EmployeeModal';
 import { getEmployees, createEmployee, updateEmployee, deleteEmployee } from '@/app/actions/hrActions';
+import { getWarehouses, createWarehouse, updateWarehouse, deleteWarehouse } from '@/app/actions/inventoryActions';
+import { useRouter } from 'next/navigation';
+import Cookies from 'js-cookie';
+import { compressImage } from '@/lib/imageUtils';
 
 export default function SettingsPage() {
   const { data: session, status } = useSession();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('profil');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [isCompressingLogo, setIsCompressingLogo] = useState(false);
   
   const [formData, setFormData] = useState({
     companyName: '',
@@ -31,12 +37,23 @@ export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [activeBoutiqueIdState, setActiveBoutiqueIdState] = useState<string | null>(null);
 
   const [employees, setEmployees] = useState<any[]>([]);
   const [isEmployeeModalOpen, setIsEmployeeModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<any>(null);
 
+  const [warehouses, setWarehouses] = useState<any[]>([]);
+  const [companyPlan, setCompanyPlan] = useState<string>('');
+  const [isBoutiqueModalOpen, setIsBoutiqueModalOpen] = useState(false);
+  const [newBoutiqueName, setNewBoutiqueName] = useState('');
+  const [newBoutiqueLocation, setNewBoutiqueLocation] = useState('');
+  const [isBoutiqueEditing, setIsBoutiqueEditing] = useState(false);
+  const [currentBoutiqueId, setCurrentBoutiqueId] = useState<string | null>(null);
+
   useEffect(() => {
+    setActiveBoutiqueIdState(Cookies.get('activeBoutiqueId') || null);
+
     async function load() {
       if (session?.user?.companyId) {
         const res = await getSettings(session.user.companyId);
@@ -57,6 +74,14 @@ export default function SettingsPage() {
         const empRes = await getEmployees(session.user.companyId);
         if (empRes.success && empRes.data) {
           setEmployees(empRes.data);
+        }
+        
+        const whRes = await getWarehouses(session.user.companyId);
+        if (whRes.success && whRes.data) {
+          setWarehouses(whRes.data);
+          if (whRes.plan) {
+            setCompanyPlan(whRes.plan);
+          }
         }
       }
       setIsLoading(false);
@@ -80,6 +105,8 @@ export default function SettingsPage() {
       });
       if (res.success && res.data) {
         setEmployees(prev => prev.map(p => p.id === editingEmployee.id ? res.data : p));
+      } else {
+        alert(res.error || "Erreur lors de la modification de l'employé.");
       }
     } else {
       const res = await createEmployee({
@@ -96,6 +123,8 @@ export default function SettingsPage() {
       });
       if (res.success && res.data) {
         setEmployees(prev => [res.data, ...prev]);
+      } else {
+        alert(res.error || "Erreur lors de l'ajout de l'employé.");
       }
     }
   };
@@ -112,23 +141,88 @@ export default function SettingsPage() {
     }
   };
 
+  const handleOpenBoutiqueModal = (warehouse?: any) => {
+    if (warehouse) {
+      setIsBoutiqueEditing(true);
+      setCurrentBoutiqueId(warehouse.id);
+      setNewBoutiqueName(warehouse.name);
+      setNewBoutiqueLocation(warehouse.location || '');
+    } else {
+      setIsBoutiqueEditing(false);
+      setCurrentBoutiqueId(null);
+      setNewBoutiqueName('');
+      setNewBoutiqueLocation('');
+    }
+    setIsBoutiqueModalOpen(true);
+  };
+
+  const handleCreateBoutique = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newBoutiqueName.trim()) return;
+    
+    if (isBoutiqueEditing && currentBoutiqueId) {
+      const res = await updateWarehouse(currentBoutiqueId, { name: newBoutiqueName, location: newBoutiqueLocation });
+      if (res.success && res.data) {
+        setWarehouses(prev => prev.map(w => w.id === currentBoutiqueId ? res.data : w));
+        setIsBoutiqueModalOpen(false);
+      } else {
+        alert(res.error || "Erreur lors de la modification de la boutique.");
+      }
+    } else {
+      const res = await createWarehouse({ name: newBoutiqueName, location: newBoutiqueLocation });
+      if (res.success && res.data) {
+        setWarehouses(prev => [...prev, res.data]);
+        setIsBoutiqueModalOpen(false);
+        setNewBoutiqueName('');
+        setNewBoutiqueLocation('');
+        alert("Boutique ajoutée avec succès !");
+      } else {
+        alert(res.error || "Erreur lors de l'ajout de la boutique.");
+      }
+    }
+  };
+
+  const handleDeleteBoutique = async (e: React.MouseEvent, id: string, name: string) => {
+    e.stopPropagation();
+    if (confirm(`Voulez-vous vraiment supprimer la boutique "${name}" ?`)) {
+      const res = await deleteWarehouse(id);
+      if (res.success) {
+        setWarehouses(prev => prev.filter(w => w.id !== id));
+      } else {
+        alert(res.error || "Erreur lors de la suppression.");
+      }
+    }
+  };
+
+  const handleEnterBoutique = (id: string) => {
+    Cookies.set('activeBoutiqueId', id, { expires: 7 });
+    setActiveBoutiqueIdState(id);
+    router.push('/dashboard');
+  };
+
   const tabs = [
     { id: 'profil', label: 'Profil de l\'entreprise', icon: Building2 },
+    { id: 'boutiques', label: 'Mes Boutiques', icon: Store },
     { id: 'regional', label: 'Régional & Devise', icon: Globe },
     { id: 'facturation', label: 'Modèles de facturation', icon: FileText },
     { id: 'equipe', label: 'Équipe & Accès', icon: Users },
   ];
 
-  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = reader.result as string;
-        setLogoPreview(base64);
-        setFormData(prev => ({ ...prev, logo: base64 }));
-      };
-      reader.readAsDataURL(file);
+      setIsCompressingLogo(true);
+      try {
+        // Optimisation et compression automatique côté client (supporte n'importe quelle taille de photo)
+        const compressedBase64 = await compressImage(file, 800, 0.85);
+        setLogoPreview(compressedBase64);
+        setFormData(prev => ({ ...prev, logo: compressedBase64 }));
+      } catch (err: any) {
+        console.error("Erreur compression logo:", err);
+        alert("Impossible de traiter cette image. Veuillez sélectionner un format valide (PNG, JPG, WEBP).");
+      } finally {
+        setIsCompressingLogo(false);
+      }
     }
   };
 
@@ -143,11 +237,19 @@ export default function SettingsPage() {
   const handleSave = async () => {
     if (!session?.user?.companyId) return;
     setIsSaving(true);
-    const res = await saveSettings(session.user.companyId, formData);
-    if (res.success) {
-      setShowSuccess(true);
+    try {
+      const res = await saveSettings(session.user.companyId, formData);
+      if (res.success) {
+        setShowSuccess(true);
+      } else {
+        alert(res.error || "Erreur lors de la sauvegarde.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Une erreur est survenue (fichier potentiellement trop volumineux).");
+    } finally {
+      setIsSaving(false);
     }
-    setIsSaving(false);
   };
 
   return (
@@ -260,12 +362,24 @@ export default function SettingsPage() {
                     />
                     <button 
                       onClick={() => fileInputRef.current?.click()}
-                      className="px-4 py-2 bg-white dark:bg-[#162032] border border-gray-200 dark:border-slate-700/50 rounded-lg text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800/30 transition-colors flex items-center gap-2 shadow-sm"
+                      disabled={isCompressingLogo}
+                      className="px-4 py-2 bg-white dark:bg-[#162032] border border-gray-200 dark:border-slate-700/50 rounded-lg text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800/30 transition-colors flex items-center gap-2 shadow-sm disabled:opacity-50"
                     >
-                      <UploadCloud className="w-4 h-4" />
-                      Importer un logo
+                      {isCompressingLogo ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+                          <span>Optimisation de l'image...</span>
+                        </>
+                      ) : (
+                        <>
+                          <UploadCloud className="w-4 h-4" />
+                          <span>Importer un logo</span>
+                        </>
+                      )}
                     </button>
-                    <p className="text-xs text-gray-500 mt-2">Format recommandé : PNG ou JPG, fond transparent. Max 2MB.</p>
+                    <p className="text-xs text-gray-500 mt-2">
+                      Format recommandé : PNG ou JPG. Les photos de smartphone sont automatiquement allégées et optimisées.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -375,6 +489,132 @@ export default function SettingsPage() {
             </div>
           )}
 
+          {activeTab === 'boutiques' && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 space-y-6">
+              <div className="bg-white dark:bg-[#162032] rounded-2xl border border-gray-200 dark:border-slate-700/50 p-5 shadow-sm transition-colors">
+                <div className="flex justify-between items-start mb-6">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-500/10 shrink-0">
+                      <Store className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-bold text-gray-900 dark:text-white">Mes Boutiques (Points de Vente)</h2>
+                      <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Gérez vos différentes boutiques selon votre forfait et accédez à leurs fonctionnalités.</p>
+                    </div>
+                  </div>
+                  {companyPlan !== 'STARTUP' && (
+                    <button 
+                      onClick={() => handleOpenBoutiqueModal()}
+                      className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Ajouter
+                    </button>
+                  )}
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {warehouses.map((warehouse) => {
+                    const isActive = warehouse.id === activeBoutiqueIdState;
+                    return (
+                    <div 
+                      key={warehouse.id}
+                      onClick={() => handleEnterBoutique(warehouse.id)}
+                      className={`group relative rounded-xl border ${isActive ? 'bg-blue-50/50 dark:bg-blue-900/10 border-blue-500 shadow-sm' : 'bg-gray-50 dark:bg-[#0A1226] border-gray-200 dark:border-slate-700/50 hover:border-blue-300 dark:hover:border-blue-500/50'} p-5 hover:shadow-md transition-all cursor-pointer flex flex-col`}
+                    >
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                          <Store className="w-5 h-5" />
+                        </div>
+                        <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
+                          <button 
+                            onClick={() => handleOpenBoutiqueModal(warehouse)}
+                            className="p-1.5 text-gray-400 hover:text-blue-600 bg-white hover:bg-blue-50 dark:bg-slate-800 dark:hover:bg-blue-500/10 rounded-md transition-colors"
+                            title="Modifier"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button 
+                            onClick={(e) => handleDeleteBoutique(e, warehouse.id, warehouse.name)}
+                            className="p-1.5 text-gray-400 hover:text-red-600 bg-white hover:bg-red-50 dark:bg-slate-800 dark:hover:bg-red-500/10 rounded-md transition-colors"
+                            title="Supprimer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="flex-1">
+                        <h3 className="text-[15px] font-bold text-gray-900 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                          {warehouse.name}
+                          {isActive && (
+                            <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 text-[10px] uppercase font-bold rounded-full align-middle">
+                              Active
+                            </span>
+                          )}
+                          {warehouse.isDefault && !isActive && (
+                            <span className="ml-2 px-2 py-0.5 bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 text-[10px] uppercase font-bold rounded-full align-middle">
+                              Principale
+                            </span>
+                          )}
+                        </h3>
+                        <div className="flex items-center text-gray-500 dark:text-slate-400 text-xs mt-2">
+                          <MapPin className="w-3 h-3 mr-1 shrink-0" />
+                          <span className="truncate">{warehouse.location || "Aucune adresse"}</span>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 pt-3 border-t border-gray-200 dark:border-slate-700/50 flex items-center justify-between text-blue-600 dark:text-blue-400 font-medium text-xs">
+                        <span>{isActive ? 'Actuellement sélectionnée' : 'Accéder à la boutique'}</span>
+                        {!isActive && <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
+                      </div>
+                    </div>
+                  )})}
+                  
+                  {warehouses.length === 0 && (
+                    <div className="col-span-full py-8 text-center bg-gray-50 dark:bg-[#0A1226] rounded-xl border border-gray-200 dark:border-slate-700/50">
+                      <Store className="w-8 h-8 text-gray-300 dark:text-slate-600 mx-auto mb-3" />
+                      <p className="text-sm text-gray-500 dark:text-slate-400">Vous n'avez pas encore ajouté de boutique.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Modal Ajout/Modif Boutique */}
+              {isBoutiqueModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                  <div className="w-full max-w-md bg-white dark:bg-[#162032] rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                    <div className="px-6 py-4 border-b border-gray-200 dark:border-slate-700/50 flex justify-between items-center bg-gray-50/50 dark:bg-[#1E293B]/50">
+                      <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                        {isBoutiqueEditing ? 'Modifier la boutique' : 'Nouvelle Boutique'}
+                      </h2>
+                      <button onClick={() => setIsBoutiqueModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                    
+                    <form onSubmit={handleCreateBoutique} className="p-6 space-y-4">
+                      <div className="space-y-1.5">
+                        <label className="block text-sm font-bold text-gray-700 dark:text-slate-300">Nom de la boutique *</label>
+                        <input type="text" required value={newBoutiqueName} onChange={e => setNewBoutiqueName(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700/50 bg-gray-50 dark:bg-[#0A1226] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Ex: GESTORA Point E" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="block text-sm font-bold text-gray-700 dark:text-slate-300">Localisation (Optionnel)</label>
+                        <input type="text" value={newBoutiqueLocation} onChange={e => setNewBoutiqueLocation(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700/50 bg-gray-50 dark:bg-[#0A1226] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Ex: Point E, Rue de Thiès" />
+                      </div>
+                      <div className="pt-4 flex justify-end gap-3 mt-4 border-t border-gray-100 dark:border-slate-800/60 pt-6">
+                        <button type="button" onClick={() => setIsBoutiqueModalOpen(false)} className="px-4 py-2 text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg font-medium">Annuler</button>
+                        <button type="submit" className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold transition-colors">
+                          {isBoutiqueEditing ? 'Enregistrer' : 'Créer'}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {activeTab === 'regional' && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 space-y-6">
               <div className="bg-white dark:bg-[#162032] rounded-2xl border border-gray-200 dark:border-slate-700/50 p-5 shadow-sm transition-colors">
@@ -401,8 +641,12 @@ export default function SettingsPage() {
                     <div className="space-y-1.5">
                       <label className="text-sm font-semibold text-gray-700 dark:text-slate-300">Fuseau horaire</label>
                       <select name="timezone" value={formData.timezone} onChange={handleInputChange as any} className="w-full bg-gray-50 dark:bg-[#0A1226] border border-gray-200 dark:border-slate-700/50 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50">
-                        <option value="GMT">GMT (Dakar)</option>
-                        <option value="CET">CET (Paris)</option>
+                        <option value="GMT">GMT (Dakar, Abidjan, Londres)</option>
+                        <option value="CET">CET (Paris, Berlin, Rome)</option>
+                        <option value="EST">EST (New York, Montréal)</option>
+                        <option value="PST">PST (Los Angeles, Vancouver)</option>
+                        <option value="WAT">WAT (Lagos, Kinshasa)</option>
+                        <option value="EAT">EAT (Nairobi, Addis-Abeba)</option>
                       </select>
                     </div>
                     <div className="space-y-1.5">
@@ -511,7 +755,7 @@ export default function SettingsPage() {
                             <div className="text-xs text-gray-500">{emp.email}</div>
                           </td>
                           <td className="px-4 py-3 text-gray-600 dark:text-slate-300">
-                            {emp.role === 'ADMIN' ? 'Administrateur' : emp.role === 'MANAGER' ? 'Manager' : emp.role === 'SALES' ? 'Commercial' : 'Caissier(e)'}
+                            {emp.role === 'ADMIN' ? 'Administrateur' : emp.role === 'MANAGER' ? 'Gérant' : emp.role === 'EMPLOYEE' ? 'Employé(e)' : (emp.role === 'INVITE' || emp.role === 'GUEST') ? 'Invité(e)' : 'Caissier(e)'}
                           </td>
                           <td className="px-4 py-3 text-right">
                             <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${emp.status === 'ACTIVE' ? 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400'}`}>

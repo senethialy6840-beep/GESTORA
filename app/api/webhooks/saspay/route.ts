@@ -27,10 +27,10 @@ function verifySignature(body: string, signature: string | null, secret: string)
 const PLAN_MAP: Record<string, string> = {
   startup: "STARTUP",
   business: "BUSINESS",
-  enterprise: "ENTERPRISE",
+  enterprise: "ENTREPRISE",
   STARTUP: "STARTUP",
   BUSINESS: "BUSINESS",
-  ENTERPRISE: "ENTERPRISE",
+  ENTREPRISE: "ENTREPRISE",
 };
 
 export async function POST(req: Request) {
@@ -139,6 +139,50 @@ export async function POST(req: Request) {
           subscriptionExpiresAt,
         },
       });
+
+      const amount = paymentData.amount || payload.amount || (plan === "STARTUP" ? 5900 : plan === "BUSINESS" ? 14900 : plan === "ENTREPRISE" ? 29900 : 0);
+      
+      const subPayment = await prisma.subscriptionPayment.create({
+        data: {
+          companyId,
+          providerPaymentId: order_id ? String(order_id) : undefined,
+          reference: `PAY-${Date.now()}-${companyId.substring(0, 4)}`,
+          plan,
+          amount: Number(amount),
+          statut: "CONFIRMED",
+          confirmedAt: new Date(),
+        }
+      });
+
+      const referral = await prisma.referral.findUnique({
+        where: { customerId: companyId },
+        include: { commercial: true }
+      });
+
+      if (referral) {
+        if (referral.statut === "PENDING") {
+          await prisma.referral.update({
+            where: { id: referral.id },
+            data: { statut: "CONVERTED" }
+          });
+        }
+
+        const taux = referral.commercial.tauxCommission;
+        const montantCommission = Math.floor(Number(amount) * (taux / 100));
+
+        await prisma.commission.create({
+          data: {
+            commercialId: referral.commercialId,
+            referralId: referral.id,
+            subscriptionPaymentId: subPayment.id,
+            montantPaye: Number(amount),
+            tauxCommission: taux,
+            montantCommission,
+            plan,
+            statut: "PENDING",
+          }
+        });
+      }
 
       console.log(`[SasPay Webhook] ✅ Abonnement activé: Company ${companyId} → Plan ${plan}`);
       return NextResponse.json({

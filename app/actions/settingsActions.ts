@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@supabase/supabase-js';
 import { SettingsSchema } from '@/lib/validations';
 import { auth } from '@/auth';
+import { cookies } from 'next/headers';
 
 const getSupabase = () => createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
@@ -32,6 +33,33 @@ export async function getSettings(requestedCompanyId?: string) {
     
     // FORCER l'utilisation du companyId de la session (IDOR Fix)
     const companyId = session.user.companyId as string;
+    
+    const cookieStore = await cookies();
+    const activeBoutiqueId = cookieStore.get('activeBoutiqueId')?.value;
+    
+    if (activeBoutiqueId) {
+      const warehouse = await prisma.warehouse.findUnique({
+        where: { id: activeBoutiqueId }
+      });
+      if (warehouse && warehouse.companyId === companyId) {
+        return { 
+          success: true, 
+          settings: {
+            companyName: warehouse.name,
+            companyId: warehouse.taxNumber || defaultSettings.companyId,
+            address: warehouse.address || defaultSettings.address,
+            email: warehouse.email || defaultSettings.email,
+            phone: warehouse.phone || defaultSettings.phone,
+            logo: warehouse.logoUrl || defaultSettings.logo,
+            currency: warehouse.currency || defaultSettings.currency,
+            timezone: warehouse.timezone || defaultSettings.timezone,
+            dateFormat: warehouse.dateFormat || defaultSettings.dateFormat,
+            invoicePrefix: warehouse.invoicePrefix || defaultSettings.invoicePrefix,
+            invoiceFooter: warehouse.invoiceFooter || defaultSettings.invoiceFooter
+          } 
+        };
+      }
+    }
     
     const company = await prisma.company.findUnique({
       where: { id: companyId }
@@ -68,12 +96,9 @@ export async function saveSettings(requestedCompanyId: string, data: any) {
     if (!session?.user?.companyId) return { success: false, error: "Non autorisé." };
     
     // FORCER l'utilisation du companyId de la session (IDOR Fix)
-    const companyId = session.user.companyId as string;
+    const dbCompanyId = session.user.companyId as string;
     
-    const validated = SettingsSchema.safeParse({
-      ...data,
-      companyId: companyId
-    });
+    const validated = SettingsSchema.safeParse(data);
     if (!validated.success) {
       console.error("Validation failed", validated.error.issues);
       return { success: false, error: "Données invalides." };
@@ -89,30 +114,39 @@ export async function saveSettings(requestedCompanyId: string, data: any) {
         if (matches && matches.length === 3) {
           const buffer = Buffer.from(matches[2], 'base64');
           
-          // Validation stricte des Magic Bytes (CWE-434 Fix)
-          const { fileTypeFromBuffer } = await import('file-type');
-          const typeInfo = await fileTypeFromBuffer(buffer);
+          // Validation manuelle (magic bytes simples)
+          const header = buffer.toString('hex', 0, 4);
+          let type = matches[1]; // from regex
+          let isValid = false;
           
-          if (!typeInfo || !typeInfo.mime.startsWith('image/')) {
+          if (header.startsWith('89504e47')) { type = 'png'; isValid = true; } // PNG
+          else if (header.startsWith('ffd8ff')) { type = 'jpeg'; isValid = true; } // JPG/JPEG
+          else if (header.startsWith('52494646')) { type = 'webp'; isValid = true; } // WEBP (partial check)
+          else if (type === 'png' || type === 'jpeg' || type === 'jpg' || type === 'webp') { isValid = true; } // fallback to mime
+          
+          if (!isValid) {
             throw new Error("Fichier invalide ou corrompu.");
           }
+          const filename = `${dbCompanyId}-${Date.now()}.${type}`;
           
-          const type = typeInfo.ext;
-          const filename = `${companyId}-${Date.now()}.${type}`;
-          
-          const { data: uploadData, error } = await getSupabase()
-            .storage
-            .from('logos')
-            .upload(filename, buffer, {
-              contentType: `image/${type}`,
-              upsert: true
-            });
-            
-          if (error) {
-            console.error("Supabase upload error:", error);
-          } else {
-            const { data: publicUrlData } = getSupabase().storage.from('logos').getPublicUrl(filename);
-            logoUrl = publicUrlData.publicUrl;
+          const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+          if (supabaseUrl && supabaseUrl !== 'https://placeholder.supabase.co') {
+            const { data: uploadData, error } = await getSupabase()
+              .storage
+              .from('logos')
+              .upload(filename, buffer, {
+                contentType: `image/${type}`,
+                upsert: true
+              });
+              
+            if (error) {
+              console.error("Supabase upload error, using compressed base64 fallback:", error);
+            } else {
+              const { data: publicUrlData } = getSupabase().storage.from('logos').getPublicUrl(filename);
+              if (publicUrlData?.publicUrl) {
+                logoUrl = publicUrlData.publicUrl;
+              }
+            }
           }
         }
       } catch (err) {
@@ -120,8 +154,51 @@ export async function saveSettings(requestedCompanyId: string, data: any) {
       }
     }
     
+    const cookieStore = await cookies();
+    const activeBoutiqueId = cookieStore.get('activeBoutiqueId')?.value;
+    
+    if (activeBoutiqueId) {
+      const warehouse = await prisma.warehouse.findUnique({
+        where: { id: activeBoutiqueId }
+      });
+      
+      if (warehouse && warehouse.companyId === dbCompanyId) {
+        const updatedWarehouse = await prisma.warehouse.update({
+          where: { id: activeBoutiqueId },
+          data: {
+            name: data.companyName,
+            taxNumber: data.companyId,
+            address: data.address,
+            email: data.email,
+            phone: data.phone,
+            logoUrl: logoUrl,
+            currency: data.currency,
+            timezone: data.timezone,
+            dateFormat: data.dateFormat,
+            invoicePrefix: data.invoicePrefix,
+            invoiceFooter: data.invoiceFooter
+          }
+        });
+        
+        revalidatePath('/dashboard/settings');
+        return { success: true, settings: {
+            companyName: updatedWarehouse.name,
+            companyId: updatedWarehouse.taxNumber,
+            address: updatedWarehouse.address,
+            email: updatedWarehouse.email,
+            phone: updatedWarehouse.phone,
+            logo: updatedWarehouse.logoUrl,
+            currency: updatedWarehouse.currency,
+            timezone: updatedWarehouse.timezone,
+            dateFormat: updatedWarehouse.dateFormat,
+            invoicePrefix: updatedWarehouse.invoicePrefix,
+            invoiceFooter: updatedWarehouse.invoiceFooter
+        }};
+      }
+    }
+    
     const company = await prisma.company.update({
-      where: { id: companyId },
+      where: { id: dbCompanyId },
       data: {
         name: data.companyName,
         taxNumber: data.companyId,
