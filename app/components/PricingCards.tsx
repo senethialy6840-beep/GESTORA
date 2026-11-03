@@ -8,9 +8,10 @@ export type PlanId = 'STARTUP' | 'BUSINESS' | 'ENTERPRISE';
 interface PricingCardsProps {
   onSelectPlan: (planId: PlanId, billingCycle: 'monthly' | 'annually', amount: number) => void;
   loadingPlan?: string | null;
+  currentPlan?: string;
 }
 
-export function PricingCards({ onSelectPlan, loadingPlan }: PricingCardsProps) {
+export function PricingCards({ onSelectPlan, loadingPlan, currentPlan }: PricingCardsProps) {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annually'>('monthly');
 
   const plans = [
@@ -129,18 +130,32 @@ export function PricingCards({ onSelectPlan, loadingPlan }: PricingCardsProps) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {plans.map((plan) => {
           const displayPrice = billingCycle === 'monthly' ? plan.monthlyPrice : plan.annualPrice;
+          const isCurrent = currentPlan?.toUpperCase() === plan.id;
+
           return (
             <div 
               key={plan.id}
-              className={`relative flex flex-col bg-white dark:bg-[#162032] rounded-2xl border ${plan.popular ? 'border-emerald-500 shadow-lg shadow-emerald-500/10' : 'border-gray-200 dark:border-slate-700/50'} p-8 transition-all hover:shadow-xl hover:-translate-y-1`}
+              className={`relative flex flex-col bg-white dark:bg-[#162032] rounded-2xl border ${
+                isCurrent 
+                  ? 'border-blue-500 ring-2 ring-blue-500/30 shadow-lg' 
+                  : plan.popular 
+                    ? 'border-emerald-500 shadow-lg shadow-emerald-500/10' 
+                    : 'border-gray-200 dark:border-slate-700/50'
+              } p-8 transition-all hover:shadow-xl hover:-translate-y-1`}
             >
-              {plan.popular && (
+              {isCurrent ? (
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                  <span className="bg-blue-600 text-white text-xs font-bold uppercase tracking-wider py-1 px-3 rounded-full shadow-sm">
+                    Votre forfait actuel
+                  </span>
+                </div>
+              ) : plan.popular ? (
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
                   <span className="bg-emerald-500 text-white text-xs font-bold uppercase tracking-wider py-1 px-3 rounded-full">
                     Le plus populaire
                   </span>
                 </div>
-              )}
+              ) : null}
 
               <div className="flex items-center space-x-4 mb-4">
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center bg-${plan.color}-100 dark:bg-${plan.color}-500/10`}>
@@ -172,11 +187,13 @@ export function PricingCards({ onSelectPlan, loadingPlan }: PricingCardsProps) {
                 onClick={() => onSelectPlan(plan.id, billingCycle, billingCycle === 'monthly' ? plan.monthlyPriceNum : plan.annualPriceNum)}
                 disabled={loadingPlan === plan.id}
                 className={`w-full py-3.5 rounded-xl font-bold text-white transition-all shadow-sm flex items-center justify-center space-x-2 
-                  ${plan.popular 
-                    ? 'bg-emerald-600 hover:bg-emerald-700' 
-                    : plan.id === 'ENTERPRISE' 
-                      ? 'bg-purple-600 hover:bg-purple-700'
-                      : 'bg-blue-600 hover:bg-blue-700'
+                  ${isCurrent
+                    ? 'bg-blue-600 hover:bg-blue-700'
+                    : plan.popular 
+                      ? 'bg-emerald-600 hover:bg-emerald-700' 
+                      : plan.id === 'ENTERPRISE' 
+                        ? 'bg-purple-600 hover:bg-purple-700'
+                        : 'bg-blue-600 hover:bg-blue-700'
                   } disabled:opacity-70 disabled:cursor-not-allowed`}
               >
                 {loadingPlan === plan.id ? (
@@ -187,7 +204,7 @@ export function PricingCards({ onSelectPlan, loadingPlan }: PricingCardsProps) {
                 ) : (
                   <>
                     <CreditCard className="w-5 h-5" />
-                    <span>Choisir ce forfait</span>
+                    <span>{isCurrent ? 'Renouveler ce forfait' : 'Choisir ce forfait'}</span>
                   </>
                 )}
               </button>

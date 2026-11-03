@@ -6,10 +6,13 @@ import { Suspense, useState, useEffect, useRef } from 'react';
 import { 
   LayoutDashboard, BarChart3, Sparkles, Monitor, ShoppingCart, 
   Users, Package, Box, Truck, Calculator, FileText, Users2, 
-  Building, Search, Menu, PanelLeftClose, PanelLeftOpen, Settings, User, LogOut, HelpCircle, X, CreditCard, Shield
+  Search, Menu, PanelLeftClose, PanelLeftOpen, Settings, User, 
+  LogOut, HelpCircle, X, CreditCard, Shield, Lock, ArrowUpRight, ShieldAlert
 } from 'lucide-react';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { useSession, signOut } from 'next-auth/react';
+import { hasPlanAccess, getFeatureDetailsForPath, PLAN_DISPLAY_NAMES } from '@/lib/planAccess';
+import { PlanLockedFeature } from '../../components/PlanLockedFeature';
 
 function SearchInput() {
   const router = useRouter();
@@ -114,11 +117,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const isActive = (path: string) => pathname === path;
 
-  const getLinkClass = (path: string) => {
+  const getLinkClass = (path: string, isLocked: boolean = false) => {
     const baseClass = `flex items-center py-2 text-sm font-medium rounded-lg transition-colors duration-200 group relative ${isSidebarCollapsed ? 'justify-center px-0' : 'px-3'}`;
-    return isActive(path)
-      ? `${baseClass} bg-[#1E293B]/80 text-white`
-      : `${baseClass} text-slate-400 hover:text-white hover:bg-slate-800/50`;
+    if (isActive(path)) {
+      return `${baseClass} bg-[#1E293B]/80 text-white`;
+    }
+    if (isLocked) {
+      return `${baseClass} text-slate-400 hover:text-white hover:bg-slate-800/40`;
+    }
+    return `${baseClass} text-slate-400 hover:text-white hover:bg-slate-800/50`;
   };
 
   const userRole = (session?.user as any)?.role || 'USER';
@@ -128,19 +135,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const isPlatformOwner = sessionEmail.trim().toLowerCase() === 'gestorame112@gmail.com' || userRole === 'SUPER_ADMIN';
 
   const hasAccess = (requiredPlan: string) => {
-    // Le PROPRIETAIRE a toujours accès à tout
-    if (isPlatformOwner) return true;
-
-    // ENTERPRISE a toujours accès à tout
-    if (userPlan === 'ENTERPRISE') return true;
-    
-    // BUSINESS a accès aux siens et à ceux de STARTUP
-    if (userPlan === 'BUSINESS' && ['STARTUP', 'BUSINESS'].includes(requiredPlan)) return true;
-    
-    // STARTUP a uniquement accès à STARTUP
-    if (userPlan === 'STARTUP' && requiredPlan === 'STARTUP') return true;
-    
-    return false;
+    return hasPlanAccess(userPlan, requiredPlan, isPlatformOwner);
   };
 
   // --- PROTECTION STRICTE PAR URL ---
@@ -157,50 +152,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     requiredPlanForCurrentRoute = 'BUSINESS';
   }
 
-  const isPlanRestricted = !isPlatformOwner && requiredPlanForCurrentRoute && !hasAccess(requiredPlanForCurrentRoute);
-
-  if (session?.user && (isSellerRestricted || isPlanRestricted)) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-[#0A1226] flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white dark:bg-[#162032] p-8 rounded-2xl shadow-xl text-center border border-gray-200 dark:border-slate-700/50">
-          <div className="w-16 h-16 bg-orange-100 dark:bg-orange-500/10 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Accès Refusé</h2>
-          <p className="text-gray-500 dark:text-slate-400 mb-8">
-            {isSellerRestricted 
-              ? "Vous n'avez pas les permissions nécessaires pour accéder à cette page." 
-              : "Cette fonctionnalité n'est pas incluse dans votre forfait actuel."}
-          </p>
-          <Link 
-            href={isSellerRestricted ? "/dashboard" : "/dashboard/subscription"}
-            className="block w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-center rounded-xl transition-colors"
-          >
-            {isSellerRestricted ? "Retour au tableau de bord" : "Voir les forfaits"}
-          </Link>
-        </div>
-      </div>
-    );
-  }
-  // --- FIN PROTECTION STRICTE ---
+  const isPlanRestricted = !isPlatformOwner && requiredPlanForCurrentRoute !== null && !hasAccess(requiredPlanForCurrentRoute);
+  const lockedFeatureDetails = isPlanRestricted ? getFeatureDetailsForPath(pathname) : null;
 
   // Les utilisateurs doivent avoir un abonnement actif avant d'accéder au dashboard.
   const subStatus = (session?.user as any)?.subscriptionStatus;
   const isSubscriptionBlocked = subStatus === 'PENDING' || subStatus === 'EXPIRED' || subStatus === 'CANCELLED';
 
   if (session?.user && isSubscriptionBlocked && !isPlatformOwner) {
-    // S'ils sont sur la page d'abonnement, on affiche UNIQUEMENT le contenu de la page (sans le menu latéral)
-    if (pathname === '/dashboard/subscription') {
-      return (
-        <div className="min-h-screen bg-gray-50 dark:bg-[#0A1226] font-sans text-gray-700 dark:text-slate-300 selection:bg-[#2563EB]/30 transition-colors duration-300 relative">
-          {children}
-        </div>
-      );
-    }
-
-    // Sinon, on affiche l'écran de blocage
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-[#0A1226] flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white dark:bg-[#162032] p-8 rounded-2xl shadow-xl text-center border border-gray-200 dark:border-slate-700/50">
@@ -222,7 +181,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             Choisir mon forfait
           </a>
           <button 
-            onClick={handleLogout}
+            onClick={handleLogout} 
             className="mt-4 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-slate-300"
           >
             Me déconnecter
@@ -231,6 +190,113 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </div>
     );
   }
+
+  // Navigation Items: Toutes les fonctionnalités sont déclarées ici
+  const navItems = [
+    {
+      name: 'Tableau de bord',
+      path: '/dashboard',
+      icon: LayoutDashboard,
+      requiredPlan: 'STARTUP',
+      sellerAllowed: true,
+    },
+    {
+      name: 'Caisse (POS)',
+      path: '/dashboard/pos',
+      icon: Monitor,
+      requiredPlan: 'STARTUP',
+      sellerAllowed: true,
+    },
+    {
+      name: 'Catalogue Produits',
+      path: '/dashboard/products',
+      icon: Package,
+      requiredPlan: 'STARTUP',
+      sellerAllowed: true,
+    },
+    {
+      name: 'Ventes',
+      path: '/dashboard/sales',
+      icon: ShoppingCart,
+      requiredPlan: 'STARTUP',
+      sellerAllowed: true,
+    },
+    {
+      name: 'Clients',
+      path: '/dashboard/clients',
+      icon: Users,
+      requiredPlan: 'STARTUP',
+      sellerAllowed: false,
+    },
+    {
+      name: 'Stock Avancé',
+      path: '/dashboard/inventory',
+      icon: Box,
+      requiredPlan: 'BUSINESS',
+      sellerAllowed: true,
+    },
+    {
+      name: 'Factures & Devis',
+      path: '/dashboard/invoices',
+      icon: FileText,
+      requiredPlan: 'BUSINESS',
+      sellerAllowed: true,
+    },
+    {
+      name: 'Achats & Fournisseurs',
+      path: '/dashboard/purchases',
+      icon: Truck,
+      requiredPlan: 'BUSINESS',
+      sellerAllowed: false,
+    },
+    {
+      name: 'Rapports & Analyses',
+      path: '/dashboard/reports',
+      icon: BarChart3,
+      requiredPlan: 'BUSINESS',
+      sellerAllowed: true,
+    },
+    {
+      name: 'Comptabilité',
+      path: '/dashboard/accounting',
+      icon: Calculator,
+      requiredPlan: 'ENTERPRISE',
+      sellerAllowed: false,
+    },
+    {
+      name: 'Ressources Humaines',
+      path: '/dashboard/hr',
+      icon: Users2,
+      requiredPlan: 'ENTERPRISE',
+      sellerAllowed: false,
+    },
+    {
+      name: 'Gestora AI',
+      path: '/dashboard/ai',
+      icon: Sparkles,
+      requiredPlan: 'ENTERPRISE',
+      sellerAllowed: true,
+    },
+    {
+      name: 'Paramètres',
+      path: '/dashboard/settings',
+      icon: Settings,
+      requiredPlan: 'STARTUP',
+      sellerAllowed: false,
+    },
+    {
+      name: 'Aide et assistance',
+      path: '/dashboard/support',
+      icon: HelpCircle,
+      requiredPlan: 'STARTUP',
+      sellerAllowed: true,
+    },
+  ];
+
+  const visibleNavItems = navItems.filter((item) => {
+    if (userRole === 'SELLER' && !item.sellerAllowed) return false;
+    return true;
+  });
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#0A1226] flex font-sans text-gray-700 dark:text-slate-300 selection:bg-[#2563EB]/30 transition-colors duration-300">
@@ -256,129 +322,55 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
 
         {/* NAVIGATION */}
-        <nav className={`flex-1 py-4 flex flex-col overflow-hidden`}>
+        <nav className="flex-1 py-4 flex flex-col overflow-hidden">
           
           <div className={`flex-1 min-h-0 overflow-y-auto scrollbar-hide pb-2 ${isSidebarCollapsed ? 'px-2' : 'px-3'}`}>
             <ul className="space-y-0.5">
-              <li>
-                <Link href="/dashboard" className={getLinkClass('/dashboard')} title="Tableau de bord">
-                  {isActive('/dashboard') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
-                  <LayoutDashboard className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard') ? 'text-blue-400' : ''}`} />
-                  {!isSidebarCollapsed && <span className="truncate">Tableau de bord</span>}
-                </Link>
-              </li>
+              {visibleNavItems.map((item) => {
+                const isLocked = !hasAccess(item.requiredPlan);
+                const isEnt = item.requiredPlan === 'ENTERPRISE';
 
-              {hasAccess('STARTUP') && (
-                <>
-                  <li>
-                    <Link href="/dashboard/pos" className={getLinkClass('/dashboard/pos')} title="Caisse (POS)">
-                      {isActive('/dashboard/pos') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
-                      <Monitor className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/pos') ? 'text-blue-400' : ''}`} />
-                      {!isSidebarCollapsed && <span className="truncate">Caisse (POS)</span>}
+                return (
+                  <li key={item.path}>
+                    <Link 
+                      href={item.path} 
+                      className={getLinkClass(item.path, isLocked)} 
+                      title={isLocked ? `${item.name} (Forfait ${PLAN_DISPLAY_NAMES[item.requiredPlan] || item.requiredPlan} requis)` : item.name}
+                    >
+                      {isActive(item.path) && (
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full" />
+                      )}
+
+                      {isSidebarCollapsed ? (
+                        <div className="relative flex items-center justify-center">
+                          <item.icon className={`w-5 h-5 shrink-0 ${isActive(item.path) ? 'text-blue-400' : ''}`} />
+                          {isLocked && (
+                            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-amber-500 text-slate-950 rounded-full flex items-center justify-center shadow-sm">
+                              <Lock className="w-2 h-2 text-white" />
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <>
+                          <item.icon className={`w-5 h-5 shrink-0 mr-3 ${isActive(item.path) ? 'text-blue-400' : ''}`} />
+                          <span className="truncate flex-1">{item.name}</span>
+                          {isLocked && (
+                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1 shrink-0 ${
+                              isEnt 
+                                ? 'bg-purple-500/15 text-purple-300 border border-purple-500/30' 
+                                : 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
+                            }`}>
+                              <Lock className="w-2.5 h-2.5" />
+                              {isEnt ? 'ENT' : 'PRO'}
+                            </span>
+                          )}
+                        </>
+                      )}
                     </Link>
                   </li>
-                  <li>
-                    <Link href="/dashboard/products" className={getLinkClass('/dashboard/products')} title="Catalogue Produits">
-                      {isActive('/dashboard/products') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
-                      <Package className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/products') ? 'text-blue-400' : ''}`} />
-                      {!isSidebarCollapsed && <span className="truncate">Catalogue Produits</span>}
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/dashboard/sales" className={getLinkClass('/dashboard/sales')} title="Ventes">
-                      {isActive('/dashboard/sales') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
-                      <ShoppingCart className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/sales') ? 'text-blue-400' : ''}`} />
-                      {!isSidebarCollapsed && <span className="truncate">Ventes</span>}
-                    </Link>
-                  </li>
-                </>
-              )}
+                );
+              })}
 
-              {hasAccess('BUSINESS') && (
-                <>
-                  <li>
-                    <Link href="/dashboard/inventory" className={getLinkClass('/dashboard/inventory')} title="Stock Avancé">
-                      {isActive('/dashboard/inventory') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
-                      <Box className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/inventory') ? 'text-blue-400' : ''}`} />
-                      {!isSidebarCollapsed && <span className="truncate">Stock Avancé</span>}
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/dashboard/reports" className={getLinkClass('/dashboard/reports')} title="Rapports & Analyses">
-                      {isActive('/dashboard/reports') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
-                      <BarChart3 className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/reports') ? 'text-blue-400' : ''}`} />
-                      {!isSidebarCollapsed && <span className="truncate">Rapports & Analyses</span>}
-                    </Link>
-                  </li>
-                </>
-              )}
-
-              {hasAccess('BUSINESS') && (session?.user as any)?.role !== 'SELLER' && (
-                <li>
-                  <Link href="/dashboard/purchases" className={getLinkClass('/dashboard/purchases')} title="Achats & Fournisseurs">
-                    {isActive('/dashboard/purchases') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
-                    <Truck className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/purchases') ? 'text-blue-400' : ''}`} />
-                    {!isSidebarCollapsed && <span className="truncate">Achats & Fournisseurs</span>}
-                  </Link>
-                </li>
-              )}
-
-
-
-              {hasAccess('BUSINESS') && (
-                <li>
-                  <Link href="/dashboard/invoices" className={getLinkClass('/dashboard/invoices')} title="Factures & Devis">
-                    {isActive('/dashboard/invoices') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
-                    <FileText className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/invoices') ? 'text-blue-400' : ''}`} />
-                    {!isSidebarCollapsed && <span className="truncate">Factures & Devis</span>}
-                  </Link>
-                </li>
-              )}
-
-              {hasAccess('ENTERPRISE') && (session?.user as any)?.role !== 'SELLER' && (
-                <>
-                  <li>
-                    <Link href="/dashboard/accounting" className={getLinkClass('/dashboard/accounting')} title="Comptabilité">
-                      {isActive('/dashboard/accounting') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
-                      <Calculator className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/accounting') ? 'text-blue-400' : ''}`} />
-                      {!isSidebarCollapsed && <span className="truncate">Comptabilité</span>}
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/dashboard/hr" className={getLinkClass('/dashboard/hr')} title="Ressources Humaines">
-                      {isActive('/dashboard/hr') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
-                      <Users2 className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/hr') ? 'text-blue-400' : ''}`} />
-                      {!isSidebarCollapsed && <span className="truncate">Ressources Humaines</span>}
-                    </Link>
-                  </li>
-                </>
-              )}
-
-              {hasAccess('ENTERPRISE') && (
-                <li>
-                  <Link href="/dashboard/ai" className={getLinkClass('/dashboard/ai')} title="Gestora AI">
-                    {isActive('/dashboard/ai') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
-                    <Sparkles className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/ai') ? 'text-blue-400' : ''}`} />
-                    {!isSidebarCollapsed && <span className="truncate">Gestora AI</span>}
-                  </Link>
-                </li>
-              )}
-              {(session?.user as any)?.role !== 'SELLER' && (
-                <li>
-                  <Link href="/dashboard/settings" className={getLinkClass('/dashboard/settings')} title="Paramètres">
-                    {isActive('/dashboard/settings') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
-                    <Settings className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/settings') ? 'text-blue-400' : ''}`} />
-                    {!isSidebarCollapsed && <span className="truncate">Paramètres</span>}
-                  </Link>
-                </li>
-              )}
-              <li>
-                <Link href="/dashboard/support" className={getLinkClass('/dashboard/support')} title="Aide et assistance">
-                  {isActive('/dashboard/support') && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"></div>}
-                  <HelpCircle className={`w-5 h-5 shrink-0 ${isSidebarCollapsed ? '' : 'mr-3'} ${isActive('/dashboard/support') ? 'text-blue-400' : ''}`} />
-                  {!isSidebarCollapsed && <span className="truncate">Aide et assistance</span>}
-                </Link>
-              </li>
               {isPlatformOwner && (
                 <li>
                   <Link href="/dashboard/super-admin" className={getLinkClass('/dashboard/super-admin')} title="Super Admin">
@@ -393,6 +385,42 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           {/* Sidebar Bottom Profile & Logout */}
           <div className={`p-4 border-t border-slate-800/60 mt-auto flex flex-col gap-2 shrink-0 ${isSidebarCollapsed ? 'px-2' : 'px-3'}`}>
+            
+            {/* Plan Status Widget */}
+            {!isSidebarCollapsed ? (
+              <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800/80 mb-1">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Forfait</span>
+                  <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full ${
+                    userPlan === 'ENTERPRISE' 
+                      ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' 
+                      : userPlan === 'BUSINESS' 
+                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' 
+                        : 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+                  }`}>
+                    {PLAN_DISPLAY_NAMES[userPlan?.toUpperCase()] || userPlan}
+                  </span>
+                </div>
+                {userPlan !== 'ENTERPRISE' && !isPlatformOwner && (
+                  <Link 
+                    href="/dashboard/subscription" 
+                    className="text-[11px] font-semibold text-blue-400 hover:text-blue-300 flex items-center justify-between group pt-1 transition-colors"
+                  >
+                    <span>Changer de forfait</span>
+                    <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                  </Link>
+                )}
+              </div>
+            ) : (
+              <Link
+                href="/dashboard/subscription"
+                title={`Forfait : ${PLAN_DISPLAY_NAMES[userPlan?.toUpperCase()] || userPlan} - Mettre à niveau`}
+                className="flex items-center justify-center p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/50 mb-1 transition-colors"
+              >
+                <CreditCard className="w-5 h-5 text-blue-400" />
+              </Link>
+            )}
+
             <button 
               onClick={handleLogout} 
               title="Déconnexion"
@@ -453,6 +481,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     <Link href="/dashboard/profile" className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-slate-800/50">
                       <User className="w-4 h-4 mr-3" /> Mon profil
                     </Link>
+                    <Link href="/dashboard/subscription" className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-slate-800/50">
+                      <CreditCard className="w-4 h-4 mr-3 text-blue-500" /> Mon abonnement ({PLAN_DISPLAY_NAMES[userPlan?.toUpperCase()] || userPlan})
+                    </Link>
                   </div>
                   <div className="py-1 border-t border-gray-200 dark:border-slate-700/50">
                     <button onClick={handleLogout} className="flex items-center w-full px-4 py-2 text-sm text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10 text-left">
@@ -468,7 +499,27 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* PAGE CONTENT */}
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-[#0A1226] p-6 transition-colors duration-300">
-          {children}
+          {isSellerRestricted ? (
+            <div className="w-full max-w-xl mx-auto my-12 bg-white dark:bg-[#162032] p-8 rounded-2xl shadow-sm text-center border border-gray-200 dark:border-slate-700/50">
+              <div className="w-16 h-16 bg-amber-100 dark:bg-amber-500/10 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <ShieldAlert className="w-8 h-8" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Accès Restreint</h2>
+              <p className="text-gray-500 dark:text-slate-400 mb-6">
+                Votre profil Vendeur ne dispose pas des autorisations nécessaires pour accéder à cette section. Veuillez contacter votre administrateur.
+              </p>
+              <Link 
+                href="/dashboard"
+                className="inline-block py-2.5 px-6 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-colors"
+              >
+                Retour au tableau de bord
+              </Link>
+            </div>
+          ) : isPlanRestricted && lockedFeatureDetails ? (
+            <PlanLockedFeature feature={lockedFeatureDetails} currentPlan={userPlan} />
+          ) : (
+            children
+          )}
         </main>
       </div>
 
